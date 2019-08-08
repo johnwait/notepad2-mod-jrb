@@ -25,6 +25,9 @@
 #include "CharacterSet.h"
 #include "LexerModule.h"
 
+#ifdef SCI_NAMESPACE
+using namespace Scintilla;
+#endif
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4100)

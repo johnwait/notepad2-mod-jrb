@@ -1844,7 +1844,7 @@ Document::CharacterExtracted Document::ExtractCharacter(Sci::Position position) 
  * searches (just pass minPos > maxPos to do a backward search)
  * Has not been tested with backwards DBCS searches yet.
  */
-long Document::FindText(Sci::Position minPos, Sci::Position maxPos, const char *search,
+Sci::Position Document::FindText(Sci::Position minPos, Sci::Position maxPos, const char *search,
                         int flags, Sci::Position *length) {
 	if (*length <= 0)
 		return minPos;
@@ -1894,14 +1894,14 @@ long Document::FindText(Sci::Position minPos, Sci::Position maxPos, const char *
 		} else if (SC_CP_UTF8 == dbcsCodePage) {
 			const size_t maxFoldingExpansion = 4;
 			std::vector<char> searchThing((lengthFind+1) * UTF8MaxBytes * maxFoldingExpansion + 1);
-			const int lenSearch = static_cast<int>(
-				pcf->Fold(&searchThing[0], searchThing.size(), search, lengthFind));
-			char bytes[UTF8MaxBytes + 1];
-			char folded[UTF8MaxBytes * maxFoldingExpansion + 1];
+			const size_t lenSearch =
+				pcf->Fold(&searchThing[0], searchThing.size(), search, lengthFind);
+			char bytes[UTF8MaxBytes + 1] = "";
+			char folded[UTF8MaxBytes * maxFoldingExpansion + 1] = "";
 			while (forward ? (pos < endPos) : (pos >= endPos)) {
 				int widthFirstCharacter = 0;
 				Sci::Position posIndexDocument = pos;
-				int indexSearch = 0;
+				size_t indexSearch = 0;
 				bool characterMatches = true;
 				for (;;) {
 					const unsigned char leadByte = static_cast<unsigned char>(cb.CharAt(posIndexDocument));
@@ -1918,8 +1918,8 @@ long Document::FindText(Sci::Position minPos, Sci::Position maxPos, const char *
 						widthFirstCharacter = widthChar;
 					if ((posIndexDocument + widthChar) > limitPos)
 						break;
-					const int lenFlat = static_cast<int>(pcf->Fold(folded, sizeof(folded), bytes, widthChar));
-					folded[lenFlat] = 0;
+					const size_t lenFlat = pcf->Fold(folded, sizeof(folded), bytes, widthChar);
+					///folded[lenFlat] = 0;
 					// memcmp may examine lenFlat bytes in both arguments so assert it doesn't read past end of searchThing
 					assert(static_cast<size_t>(indexSearch + lenFlat) <= searchThing.size());
 					// Does folded match the buffer
@@ -1931,7 +1931,7 @@ long Document::FindText(Sci::Position minPos, Sci::Position maxPos, const char *
 					if (indexSearch >= lenSearch)
 						break;
 				}
-				if (characterMatches && (indexSearch == static_cast<int>(lenSearch))) {
+				if (characterMatches && (indexSearch == lenSearch)) {
 					if (MatchesWordOptions(word, wordStart, pos, posIndexDocument - pos)) {
 						*length = posIndexDocument - pos;
 						return pos;
@@ -1948,25 +1948,24 @@ long Document::FindText(Sci::Position minPos, Sci::Position maxPos, const char *
 			const size_t maxBytesCharacter = 2;
 			const size_t maxFoldingExpansion = 4;
 			std::vector<char> searchThing((lengthFind+1) * maxBytesCharacter * maxFoldingExpansion + 1);
-			const int lenSearch = static_cast<int>(
-				pcf->Fold(&searchThing[0], searchThing.size(), search, lengthFind));
+			const size_t lenSearch = pcf->Fold(&searchThing[0], searchThing.size(), search, lengthFind);
 			while (forward ? (pos < endPos) : (pos >= endPos)) {
-				int indexDocument = 0;
-				int indexSearch = 0;
+				Sci::Position indexDocument = 0;
+				size_t indexSearch = 0;
 				bool characterMatches = true;
 				while (characterMatches &&
 					((pos + indexDocument) < limitPos) &&
 					(indexSearch < lenSearch)) {
 					char bytes[maxBytesCharacter + 1];
 					bytes[0] = cb.CharAt(pos + indexDocument);
-					const int widthChar = IsDBCSLeadByte(bytes[0]) ? 2 : 1;
+					const Sci::Position widthChar = IsDBCSLeadByte(bytes[0]) ? 2 : 1;
 					if (widthChar == 2)
 						bytes[1] = cb.CharAt(pos + indexDocument + 1);
 					if ((pos + indexDocument + widthChar) > limitPos)
 						break;
 					char folded[maxBytesCharacter * maxFoldingExpansion + 1];
-					const int lenFlat = static_cast<int>(pcf->Fold(folded, sizeof(folded), bytes, widthChar));
-					folded[lenFlat] = 0;
+					const size_t lenFlat = pcf->Fold(folded, sizeof(folded), bytes, widthChar);
+					///folded[lenFlat] = 0;
 					// memcmp may examine lenFlat bytes in both arguments so assert it doesn't read past end of searchThing
 					assert(static_cast<size_t>(indexSearch + lenFlat) <= searchThing.size());
 					// Does folded match the buffer
@@ -1974,7 +1973,7 @@ long Document::FindText(Sci::Position minPos, Sci::Position maxPos, const char *
 					indexDocument += widthChar;
 					indexSearch += lenFlat;
 				}
-				if (characterMatches && (indexSearch == static_cast<int>(lenSearch))) {
+				if (characterMatches && (indexSearch == lenSearch)) {
 					if (MatchesWordOptions(word, wordStart, pos, indexDocument)) {
 						*length = indexDocument;
 						return pos;
@@ -1990,7 +1989,7 @@ long Document::FindText(Sci::Position minPos, Sci::Position maxPos, const char *
 			while (forward ? (pos < endSearch) : (pos >= endSearch)) {
 				bool found = (pos + lengthFind) <= limitPos;
 				for (int indexSearch = 0; (indexSearch < lengthFind) && found; indexSearch++) {
-					char ch = CharAt(pos + indexSearch);
+					const char ch = CharAt(pos + indexSearch);
 					char folded[2];
 					pcf->Fold(folded, sizeof(folded), &ch, 1);
 					found = folded[0] == searchThing[indexSearch];
@@ -2039,9 +2038,9 @@ bool SCI_METHOD Document::SetStyleFor(Sci_Position length, char style) {
 		return false;
 	} else {
 		enteredStyling++;
-		Sci::Position prevEndStyled = endStyled;
+		const Sci::Position prevEndStyled = endStyled;
 		if (cb.SetStyleFor(endStyled, length, style)) {
-			DocModification mh(SC_MOD_CHANGESTYLE | SC_PERFORMED_USER,
+			const DocModification mh(SC_MOD_CHANGESTYLE | SC_PERFORMED_USER,
 			                   prevEndStyled, length);
 			NotifyModified(mh);
 		}
@@ -2070,7 +2069,7 @@ bool SCI_METHOD Document::SetStyles(Sci_Position length, const char *styles) {
 			}
 		}
 		if (didChange) {
-			DocModification mh(SC_MOD_CHANGESTYLE | SC_PERFORMED_USER,
+			const DocModification mh(SC_MOD_CHANGESTYLE | SC_PERFORMED_USER,
 			                   startMod, endMod - startMod + 1);
 			NotifyModified(mh);
 		}
@@ -2083,8 +2082,8 @@ void Document::EnsureStyledTo(Sci::Position pos) {
 	if ((enteredStyling == 0) && (pos > GetEndStyled())) {
 		IncrementStyleClock();
 		if (pli && !pli->UseContainerLexing()) {
-			Sci::Line lineEndStyled = LineFromPosition(GetEndStyled());
-			Sci::Position endStyledTo = LineStart(lineEndStyled);
+			const Sci::Line lineEndStyled = LineFromPosition(GetEndStyled());
+			const Sci::Position endStyledTo = LineStart(lineEndStyled);
 			pli->Colourise(endStyledTo, pos);
 		} else {
 			// Ask the watchers to style, and stop as soon as one responds.
@@ -2291,7 +2290,7 @@ void Document::NotifyModified(DocModification mh) {
 }
 
 // Used for word part navigation.
-static bool IsASCIIPunctuationCharacter(unsigned int ch) {
+static bool IsASCIIPunctuationCharacter(unsigned int ch) noexcept {
 	switch (ch) {
 	case '!':
 	case '"':
@@ -2425,7 +2424,7 @@ Sci::Position Document::WordPartRight(Sci::Position pos) const {
 	return pos;
 }
 
-static bool IsLineEndChar(char c) {
+static bool IsLineEndChar(char c) noexcept {
 	return (c == '\n' || c == '\r');
 }
 
@@ -2442,7 +2441,7 @@ Sci::Position Document::ExtendStyleRange(Sci::Position pos, int delta, bool sing
 	return pos;
 }
 
-static char BraceOpposite(char ch) {
+static char BraceOpposite(char ch) noexcept {
 	switch (ch) {
 	case '(':
 		return ')';
@@ -2506,7 +2505,7 @@ public:
 	~BuiltinRegex() override {
 	}
 
-	long FindText(Document *doc, Sci::Position minPos, Sci::Position maxPos, const char *s,
+	Sci::Position FindText(Document *doc, Sci::Position minPos, Sci::Position maxPos, const char *s,
                         bool caseSensitive, bool word, bool wordStart, int flags,
                         Sci::Position *length) override;
 
@@ -2577,14 +2576,14 @@ class DocumentIndexer : public CharacterIndexer {
 	Document *pdoc;
 	Sci::Position end;
 public:
-	DocumentIndexer(Document *pdoc_, Sci::Position end_) :
+	DocumentIndexer(Document *pdoc_, Sci::Position end_) noexcept :
 		pdoc(pdoc_), end(end_) {
 	}
 
 	~DocumentIndexer() override {
 	}
 
-	char CharAt(Sci::Position index) override {
+	char CharAt(Sci::Position index) noexcept override {
 		if (index < 0 || index >= end)
 			return 0;
 		else
@@ -2594,49 +2593,61 @@ public:
 
 #ifndef NO_CXX11_REGEX
 
-class ByteIterator : public std::iterator<std::bidirectional_iterator_tag, char> {
+class ByteIterator {
 public:
+	typedef std::bidirectional_iterator_tag iterator_category;
+	typedef char value_type;
+	typedef ptrdiff_t difference_type;
+	typedef char* pointer;
+	typedef char& reference;
+
 	const Document *doc;
 	Sci::Position position;
-	ByteIterator(const Document *doc_ = 0, Sci::Position position_ = 0) : doc(doc_), position(position_) {
+
+	ByteIterator(const Document *doc_=nullptr, Sci::Position position_=0) noexcept :
+		doc(doc_), position(position_) {
 	}
-	ByteIterator(const ByteIterator &other) NOEXCEPT {
+	ByteIterator(const ByteIterator &other) noexcept {
 		doc = other.doc;
 		position = other.position;
 	}
-	ByteIterator &operator=(const ByteIterator &other) {
+	ByteIterator(ByteIterator &&other) noexcept {
+		doc = other.doc;
+		position = other.position;
+	}
+	ByteIterator &operator=(const ByteIterator &other) noexcept {
 		if (this != &other) {
 			doc = other.doc;
 			position = other.position;
 		}
 		return *this;
 	}
-	char operator*() const {
+	char operator*() const noexcept {
 		return doc->CharAt(position);
 	}
-	ByteIterator &operator++() {
+	ByteIterator &operator++() noexcept {
 		position++;
 		return *this;
 	}
-	ByteIterator operator++(int) {
+	ByteIterator operator++(int) noexcept {
 		ByteIterator retVal(*this);
 		position++;
 		return retVal;
 	}
-	ByteIterator &operator--() {
+	ByteIterator &operator--() noexcept {
 		position--;
 		return *this;
 	}
-	bool operator==(const ByteIterator &other) const {
+	bool operator==(const ByteIterator &other) const noexcept {
 		return doc == other.doc && position == other.position;
 	}
-	bool operator!=(const ByteIterator &other) const {
+	bool operator!=(const ByteIterator &other) const noexcept {
 		return doc != other.doc || position != other.position;
 	}
-	Sci::Position Pos() const {
+	Sci::Position Pos() const noexcept {
 		return position;
 	}
-	Sci::Position PosRoundUp() const {
+	Sci::Position PosRoundUp() const noexcept {
 		return position;
 	}
 };
@@ -2657,7 +2668,7 @@ public:
 
 // On Windows, report non-BMP characters as 2 separate surrogates as that
 // matches wregex since it is based on wchar_t.
-class UTF8Iterator : public std::iterator<std::bidirectional_iterator_tag, wchar_t> {
+class UTF8Iterator {
 	// These 3 fields determine the iterator position and are used for comparisons
 	const Document *doc;
 	Sci::Position position;
@@ -2667,15 +2678,21 @@ class UTF8Iterator : public std::iterator<std::bidirectional_iterator_tag, wchar
 	size_t lenCharacters;
 	wchar_t buffered[2];
 public:
-	UTF8Iterator(const Document *doc_ = 0, Sci::Position position_ = 0) :
-		doc(doc_), position(position_), characterIndex(0), lenBytes(0), lenCharacters(0) {
+	typedef std::bidirectional_iterator_tag iterator_category;
+	typedef wchar_t value_type;
+	typedef ptrdiff_t difference_type;
+	typedef wchar_t* pointer;
+	typedef wchar_t& reference;
+
+	UTF8Iterator(const Document *doc_=nullptr, Sci::Position position_=0) noexcept :
+		doc(doc_), position(position_), characterIndex(0), lenBytes(0), lenCharacters(0), buffered{} {
 		buffered[0] = 0;
 		buffered[1] = 0;
 		if (doc) {
 			ReadCharacter();
 		}
 	}
-	UTF8Iterator(const UTF8Iterator &other) {
+	UTF8Iterator(const UTF8Iterator &other) noexcept : buffered{} {
 		doc = other.doc;
 		position = other.position;
 		characterIndex = other.characterIndex;
@@ -2684,7 +2701,7 @@ public:
 		buffered[0] = other.buffered[0];
 		buffered[1] = other.buffered[1];
 	}
-	UTF8Iterator &operator=(const UTF8Iterator &other) {
+	UTF8Iterator &operator=(const UTF8Iterator &other) noexcept {
 		if (this != &other) {
 			doc = other.doc;
 			position = other.position;
@@ -2696,11 +2713,11 @@ public:
 		}
 		return *this;
 	}
-	wchar_t operator*() const {
+	wchar_t operator*() const noexcept {
 		assert(lenCharacters != 0);
 		return buffered[characterIndex];
 	}
-	UTF8Iterator &operator++() {
+	UTF8Iterator &operator++() noexcept {
 		if ((characterIndex + 1) < (lenCharacters)) {
 			characterIndex++;
 		} else {
@@ -2710,7 +2727,7 @@ public:
 		}
 		return *this;
 	}
-	UTF8Iterator operator++(int) {
+	UTF8Iterator operator++(int) noexcept {
 		UTF8Iterator retVal(*this);
 		if ((characterIndex + 1) < (lenCharacters)) {
 			characterIndex++;
@@ -2721,7 +2738,7 @@ public:
 		}
 		return retVal;
 	}
-	UTF8Iterator &operator--() {
+	UTF8Iterator &operator--() noexcept {
 		if (characterIndex) {
 			characterIndex--;
 		} else {
@@ -2731,29 +2748,29 @@ public:
 		}
 		return *this;
 	}
-	bool operator==(const UTF8Iterator &other) const {
+	bool operator==(const UTF8Iterator &other) const noexcept {
 		// Only test the determining fields, not the character widths and values derived from this
 		return doc == other.doc &&
 			position == other.position &&
 			characterIndex == other.characterIndex;
 	}
-	bool operator!=(const UTF8Iterator &other) const {
+	bool operator!=(const UTF8Iterator &other) const noexcept {
 		// Only test the determining fields, not the character widths and values derived from this
 		return doc != other.doc ||
 			position != other.position ||
 			characterIndex != other.characterIndex;
 	}
-	Sci::Position Pos() const {
+	Sci::Position Pos() const noexcept {
 		return position;
 	}
-	Sci::Position PosRoundUp() const {
+	Sci::Position PosRoundUp() const noexcept {
 		if (characterIndex)
 			return position + lenBytes;	// Force to end of character
 		else
 			return position;
 	}
 private:
-	void ReadCharacter() {
+	void ReadCharacter() noexcept {
 		const Document::CharacterExtracted charExtracted = doc->ExtractCharacter(position);
 		lenBytes = charExtracted.widthBytes;
 		if (charExtracted.character == unicodeReplacementChar) {
@@ -2769,50 +2786,58 @@ private:
 
 // On Unix, report non-BMP characters as single characters
 
-class UTF8Iterator : public std::iterator<std::bidirectional_iterator_tag, wchar_t> {
+class UTF8Iterator {
 	const Document *doc;
 	Sci::Position position;
 public:
-	UTF8Iterator(const Document *doc_=0, Sci::Position position_=0) : doc(doc_), position(position_) {
+	typedef std::bidirectional_iterator_tag iterator_category;
+	typedef wchar_t value_type;
+	typedef ptrdiff_t difference_type;
+	typedef wchar_t* pointer;
+	typedef wchar_t& reference;
+
+
+	UTF8Iterator(const Document *doc_=0, Sci::Position position_=0) noexcept :
+		doc(doc_), position(position_) {
 	}
-	UTF8Iterator(const UTF8Iterator &other) NOEXCEPT {
+	UTF8Iterator(const UTF8Iterator &other) noexcept {
 		doc = other.doc;
 		position = other.position;
 	}
-	UTF8Iterator &operator=(const UTF8Iterator &other) {
+	UTF8Iterator &operator=(const UTF8Iterator &other) noexcept {
 		if (this != &other) {
 			doc = other.doc;
 			position = other.position;
 		}
 		return *this;
 	}
-	wchar_t operator*() const {
+	wchar_t operator*() const noexcept {
 		Document::CharacterExtracted charExtracted = doc->ExtractCharacter(position);
 		return charExtracted.character;
 	}
-	UTF8Iterator &operator++() {
+	UTF8Iterator &operator++() noexcept {
 		position = doc->NextPosition(position, 1);
 		return *this;
 	}
-	UTF8Iterator operator++(int) {
+	UTF8Iterator operator++(int) noexcept {
 		UTF8Iterator retVal(*this);
 		position = doc->NextPosition(position, 1);
 		return retVal;
 	}
-	UTF8Iterator &operator--() {
+	UTF8Iterator &operator--() noexcept {
 		position = doc->NextPosition(position, -1);
 		return *this;
 	}
-	bool operator==(const UTF8Iterator &other) const {
+	bool operator==(const UTF8Iterator &other) const noexcept {
 		return doc == other.doc && position == other.position;
 	}
 	bool operator!=(const UTF8Iterator &other) const {
 		return doc != other.doc || position != other.position;
 	}
-	Sci::Position Pos() const {
+	Sci::Position Pos() const noexcept {
 		return position;
 	}
-	Sci::Position PosRoundUp() const {
+	Sci::Position PosRoundUp() const noexcept {
 		return position;
 	}
 };
@@ -2948,7 +2973,7 @@ Sci::Position Cxx11RegexFindText(Document *doc, Sci::Position minPos, Sci::Posit
 
 }
 
-long BuiltinRegex::FindText(Document *doc, Sci::Position minPos, Sci::Position maxPos, const char *s,
+Sci::Position BuiltinRegex::FindText(Document *doc, Sci::Position minPos, Sci::Position maxPos, const char *s,
                         bool caseSensitive, bool, bool, int flags,
                         Sci::Position *length) {
 

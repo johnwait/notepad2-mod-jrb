@@ -481,7 +481,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void Indent(bool forwards);
 
 	virtual CaseFolder *CaseFolderForEncoding();
-	long FindText(uptr_t wParam, sptr_t lParam);
+	Sci::Position FindText(uptr_t wParam, sptr_t lParam);
 	void SearchAnchor();
 	long SearchText(unsigned int iMessage, uptr_t wParam, sptr_t lParam);
 	long SearchInTarget(const char *text, Sci::Position length);
@@ -580,6 +580,11 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void SetSelectionNMessage(unsigned int iMessage, uptr_t wParam, sptr_t lParam);
 
 	static const char *StringFromEOLMode(int eolMode);
+
+	// Coercion functions for transforming WndProc parameters into pointers
+	static void *PtrFromSPtr(sptr_t lParam) {
+		return reinterpret_cast<void *>(lParam);
+	}
 
 	static sptr_t StringResult(sptr_t lParam, const char *val);
 	static sptr_t BytesResult(sptr_t lParam, const unsigned char *val, size_t len);

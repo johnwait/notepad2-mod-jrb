@@ -8,6 +8,8 @@
 #ifndef CELLBUFFER_H
 #define CELLBUFFER_H
 
+#include "Position.h"
+
 #ifdef SCI_NAMESPACE
 namespace Scintilla {
 #endif
