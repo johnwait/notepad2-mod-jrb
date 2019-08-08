@@ -209,6 +209,9 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd,UINT umsg,WPARAM wParam,LPARAM lParam)
 {
 
   static HFONT hFontTitle;
+#ifdef JRB_BUILD
+  static HFONT hFontJrbAbout;
+#endif
 
   switch(umsg)
   {
@@ -231,6 +234,22 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd,UINT umsg,WPARAM wParam,LPARAM lParam)
         lf.lfWeight = FW_BOLD;
         hFontTitle = CreateFontIndirect(&lf);
         SendDlgItemMessage(hwnd,IDC_VERSION,WM_SETFONT,(WPARAM)hFontTitle,TRUE);
+
+#ifdef JRB_BUILD
+        SetDlgItemText(hwnd,IDC_JRB_SCINTILLA_VER,VERSION_SCINTILLA);
+        SetDlgItemText(hwnd,IDC_JRB_ONIGMO_VER,VERSION_ONIGMO);
+
+        if (hFontJrbAbout)
+          DeleteObject(hFontJrbAbout);
+
+        if (NULL == (hFontJrbAbout = (HFONT)SendDlgItemMessage(hwnd,IDC_JRB_ABOUT1,WM_GETFONT,0,0)))
+          hFontJrbAbout = GetStockObject(DEFAULT_GUI_FONT);
+        GetObject(hFontJrbAbout,sizeof(LOGFONT),&lf);
+        lf.lfItalic = 1;
+        hFontJrbAbout = CreateFontIndirect(&lf);
+        SendDlgItemMessage(hwnd,IDC_JRB_ABOUT1,WM_SETFONT,(WPARAM)hFontJrbAbout,TRUE);
+        SendDlgItemMessage(hwnd,IDC_JRB_ABOUT2,WM_SETFONT,(WPARAM)hFontJrbAbout,TRUE);
+#endif
 
         if (GetDlgItem(hwnd,IDC_WEBPAGE) == NULL) {
           SetDlgItemText(hwnd,IDC_WEBPAGE2,VERSION_WEBPAGEDISPLAY);
