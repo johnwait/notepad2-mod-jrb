@@ -14,6 +14,8 @@
 /build/Notepad2-mod.tgz
 /build/packages
 /build/temp_zip*
+/build/vs.path
+/build/clean_output_dirs.bat
 /distrib/Notepad2-mod.*.exe
 /res/Notepad2.exe.manifest
 /signinfo.txt

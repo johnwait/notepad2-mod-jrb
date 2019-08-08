@@ -1,0 +1,37 @@
+﻿Building Notepad2-mod
+---------------------
+
+In order to compile & build the Notepad2-mod project from source, using 
+Microsoft® Visual Studio® 2017 Community is recommended. Yuo will also 
+need the following build dependencies:
+
+  1) Min GW and MSYS collection of GNU tools;
+     - See http://www.mingw.org/wiki/MSYS for details on MinGW
+     - Install MinGW by downloading the online package installer from
+       http://www.mingw.org/download/installer
+     - Packages you should include when installing (from Basic Setup):
+       · MSYS Base (msys-base-bin)
+       · MSYS Installation for MinGW (mingw-developer-toolkit-bin)
+       · Basic MinGW Tools (mingw32-base-bin)
+       · GNU C++ Compiler for MinGW (mingw32-gcc-g++-bin)
+     - At the end, ensure you have an environment variable MSYS (either
+       system or user-specific) that points to the MSYS installation
+       root, be it:
+       · C:\MinGW\msys\1.0
+       · C:\msys\1.0
+       · or something else that corresponds to your installation setup.
+
+  2) If the first build errors out saying v141_xp toolset could not be
+     found, follow these steps to install it:
+     - Open Visual Studio® 2017
+     - From the [Tools] menu, select [Get Tools and Features...]
+     - On the right pane titled "Installation details", expand the
+       set named "Desktop development with C++" and make sure the
+       optional package "Windows XP support for C++" is checked.
+     - If it isn't checked, tick it and then click on [Modify] to
+       update your VS2017 installation.
+     - If it is *already* checked, the toolset might be improperly
+       installed so untick it, click on [Modify] to update your VS2017
+       installation and once done come back to the same place and do
+       the opposite to reinstall it.
+
