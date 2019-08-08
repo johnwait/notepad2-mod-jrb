@@ -15,7 +15,6 @@
   Inno Setup, LaTeX, Lua, Markdown, NSIS, Ruby, Tcl, YAML and VHDL scripts
 * Improved support for NFO ANSI art
 * Other various minor changes and tweaks
-[//]: # "Wasn't that already provided by the original Notepad2? // * Support for replacing Windows Notepad using a clean, unintrusive registry-based method"
 
 ## Changes compared to the Notepad2-mod fork:
 
