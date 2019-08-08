@@ -14,7 +14,12 @@ rem *
 rem ******************************************************************************
 
 SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
+
 CD /D "%~dp0"
+
+SET "DEFAULT_BUILDTYPE=Build"     & REM One of { Build, Clean, Rebuild }
+SET "DEFAULT_ARCH=all"            & REM One of { x86, x64, all }
+SET "DEFAULT_CONFIG=Release"      & REM One of { Debug, Release, all }
 
 rem Check for the help switches
 IF /I "%~1" == "help"   GOTO SHOWHELP
@@ -169,8 +174,9 @@ SET l_zbidx=
 
 
 rem Check for the first switch
+IF "%DEFAULT_BUILDTYPE%"=="" SET "DEFAULT_BUILDTYPE=Build"
 IF "%~1" == "" (
-  SET "BUILDTYPE=Build"
+  SET "BUILDTYPE=%DEFAULT_BUILDTYPE%"
 ) ELSE (
   IF /I "%~1" == "Build"     SET "BUILDTYPE=Build"   & GOTO CHECKSECONDARG
   IF /I "%~1" == "/Build"    SET "BUILDTYPE=Build"   & GOTO CHECKSECONDARG
@@ -194,8 +200,9 @@ IF "%~1" == "" (
 
 :CHECKSECONDARG
 rem Check for the second switch
+IF "%DEFAULT_ARCH%"=="" SET "DEFAULT_ARCH=all"
 IF "%~2" == "" (
-  SET "ARCH=all"
+  SET "ARCH=%DEFAULT_ARCH%"
 ) ELSE (
   IF /I "%~2" == "x86"   SET "ARCH=x86" & GOTO CHECKTHIRDARG
   IF /I "%~2" == "/x86"  SET "ARCH=x86" & GOTO CHECKTHIRDARG
@@ -219,8 +226,9 @@ IF "%~2" == "" (
 
 :CHECKTHIRDARG
 rem Check for the third switch
+IF "%DEFAULT_CONFIG%"=="" SET "DEFAULT_CONFIG=all"
 IF "%~3" == "" (
-  SET "CONFIG=Release"
+  SET "CONFIG=%DEFAULT_CONFIG%"
 ) ELSE (
   IF /I "%~3" == "Debug"     SET "CONFIG=Debug"   & GOTO START
   IF /I "%~3" == "/Debug"    SET "CONFIG=Debug"   & GOTO START
@@ -267,6 +275,9 @@ IF /I "%CONFIG%" == "all" (CALL :SUBMSVC %BUILDTYPE% Debug x64 && CALL :SUBMSVC 
 :END
 TITLE Building Notepad2-mod with MSVC2017 - Finished!
 ENDLOCAL
+ECHO:
+ECHO:Script "%~nx0" has completed.
+PAUSE
 EXIT /B
 
 

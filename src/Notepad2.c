@@ -605,7 +605,11 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInst,LPSTR lpCmdLine,int n
         (LPWSTR)&lpMsgBuf,
         0,
         NULL);
+#ifdef JRB_BUILD
+    MessageBox(NULL,(LPCWSTR)lpMsgBuf,L"Notepad2-jrb",MB_OK|MB_ICONEXCLAMATION);
+#else
     MessageBox(NULL,(LPCWSTR)lpMsgBuf,L"Notepad2-mod",MB_OK|MB_ICONEXCLAMATION);
+#endif
     LocalFree(lpMsgBuf);
     return(0);
   }
@@ -6411,6 +6415,7 @@ int CheckIniFile(LPWSTR lpszFile,LPCWSTR lpszModule)
 {
   WCHAR tchFileExpanded[MAX_PATH];
   WCHAR tchBuild[MAX_PATH];
+  WCHAR tchAppData[MAX_PATH];
   ExpandEnvironmentStrings(lpszFile,tchFileExpanded,COUNTOF(tchFileExpanded));
 
   if (PathIsRelative(tchFileExpanded)) {
@@ -6421,11 +6426,19 @@ int CheckIniFile(LPWSTR lpszFile,LPCWSTR lpszModule)
       lstrcpy(lpszFile,tchBuild);
       return(1);
     }
-    // %appdata%
-    if (S_OK == SHGetFolderPath(NULL,CSIDL_APPDATA,NULL,SHGFP_TYPE_CURRENT,tchBuild)) {
-      PathAppend(tchBuild,tchFileExpanded);
+    // %APPDATA%\Notepad2, %APPDATA%
+    if (S_OK == SHGetFolderPath(NULL,CSIDL_APPDATA,NULL,SHGFP_TYPE_CURRENT,tchAppData)) {
+      lstrcpy(tchBuild, tchAppData);
+      PathAppend(tchBuild, L"Notepad2");
+      PathAppend(tchBuild, tchFileExpanded);
       if (PathFileExists(tchBuild)) {
-        lstrcpy(lpszFile,tchBuild);
+        lstrcpy(lpszFile, tchBuild);
+        return(1);
+      }
+      lstrcpy(tchBuild, tchAppData);
+      PathAppend(tchBuild, tchFileExpanded);
+      if (PathFileExists(tchBuild)) {
+        lstrcpy(lpszFile, tchBuild);
         return(1);
       }
     }
