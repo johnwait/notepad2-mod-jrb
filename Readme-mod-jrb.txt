@@ -1,5 +1,5 @@
-Notepad2-jrb - A fork of Notepad2-mod aimed mainly at providing better
-               regular expressions support
+Notepad2-mod-jrb - A fork of Notepad2-mod aimed mainly at providing
+                   better regular expressions support
 
 Changes compared to the official Notepad2:
 * Code folding
@@ -43,18 +43,22 @@ Contributors to the Notepad2 fork:
 * Everyone else on GitHub; discover them at
   https://github.com/XhmikosR/notepad2-mod/graphs/contributors
 
+Contributors to this Notepad2-mod fork:
+* Rainer Kottenhoff (https://github.com/RaiKoHoff) and the Notepad3
+  project (for the Onigmo bindings)
+
 More information:
 * Official Notepad2-mod site:  https://xhmikosr.github.io/notepad2-mod/
 * Notepad2-mod repository:     https://github.com/XhmikosR/notepad2-mod/
 * Code folding usage guide:    https://github.com/XhmikosR/notepad2-mod/wiki/Code-Folding-Usage
 * Official Notepad2 website:   http://www.flos-freeware.ch/notepad2.html
 
-Changed keyboard shortcuts compared to Notepad2:
+Keyboard shortcuts changed compared to Notepad2:
 * [Ctrl]+[Alt]+[F2]            Expand selection to next match.
 * [Ctrl]+[Alt]+[Shift]+[F2]    Expand selection to previous match.
 * [Ctrl]+[Shift]+[Enter]       New line with toggled auto indent option.
 
-Changed keyboard shortcuts compared to the Notepad2-mod fork:
+Keyboard shortcuts changed compared to Notepad2-mod:
 * [Ctrl]+[Shift]+[F12]         Customize syntax schemes.
 
-It's recommended you use MSVC 2017 or later to build Notepad2-jrb.
+It's recommended you use MSVC 2017 or later to build Notepad2-mod-jrb.

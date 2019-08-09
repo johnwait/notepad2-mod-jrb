@@ -1,4 +1,4 @@
-# Notepad2-jrb
+# Notepad2-mod-jrb
 
 > *A fork of Notepad2-mod aimed mainly at providing better regular expressions support*
 
@@ -51,6 +51,12 @@
 * Bruno Barbieri
 * Everyone else on [GitHub](https://github.com/XhmikosR/notepad2-mod/graphs/contributors)
 
+## Contributors to this Notepad2-mod fork:
+
+* [Rainer Kottenhoff (RaiKoHoff)](https://github.com/RaiKoHoff) and the
+  [Notepad3 project](https://github.com/rizonesoft/Notepad3) (for the
+  [Onigmo bindings](https://github.com/rizonesoft/Notepad3/commit/85531cae8e2037eac9d60196facda18232d70479))
+
 ## More information:
 
 * [Official Notepad2-mod website](https://xhmikosr.github.io/notepad2-mod/)
@@ -58,14 +64,14 @@
 * [Code folding usage guide](https://github.com/XhmikosR/notepad2-mod/wiki/Code-Folding-Usage)
 * [Official Notepad2 website](http://www.flos-freeware.ch/notepad2.html)
 
-## Changed keyboard shortcuts compared to Notepad2:
+## Keyboard shortcuts changed compared to Notepad2:
 
 * <kbd>Ctrl+Alt+F2</kbd>       Expand selection to next match.
 * <kbd>Ctrl+Alt+Shift+F2</kbd> Expand selection to previous match.
 * <kbd>Ctrl+Shift+Enter</kbd>  New line with toggled auto indent option.
 
-## Changed keyboard shortcuts compared to the Notepad2-mod fork:
+## Keyboard shortcuts changed compared to Notepad2-mod:
 
 * <kbd>Ctrl+Shift+F12</kbd>    Customize syntax schemes. *(previously was <kbd>Ctrl+F12</kbd>)*
 
-It's recommended you use [MSVC 2017 or later](https://visualstudio.microsoft.com/vs/whatsnew) to build Notepad2-jrb.
+It's recommended you use [MSVC 2017 or later](https://visualstudio.microsoft.com/vs/whatsnew) to build Notepad2-mod-jrb.
