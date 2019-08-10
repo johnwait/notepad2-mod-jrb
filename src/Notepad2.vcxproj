@@ -75,7 +75,7 @@
     <GenerateManifest>false</GenerateManifest>
     <IntDir>..\bin\$(Configuration)_$(PlatformShortName)\obj\</IntDir>
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\bin$(Configuration)_$(PlatformShortName)\</OutDir>
+    <OutDir>..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <GenerateManifest>false</GenerateManifest>
