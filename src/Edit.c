@@ -4868,6 +4868,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd,UINT umsg,WPARAM wParam,LPARA
   WCHAR tch[512+32];
   BOOL bCloseDlg;
   BOOL bIsFindDlg;
+#ifdef JRB_BUILD
+  WCHAR tchFindStrLbl[1024];
+#endif
 
   static UINT uCPEdit;
 
@@ -4889,6 +4892,16 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd,UINT umsg,WPARAM wParam,LPARA
 
         SetWindowLongPtr(hwnd,DWLP_USER,(LONG_PTR)lParam);
         lpefr = (LPEDITFINDREPLACE)lParam;
+
+        BOOL bRegExFind = ((lpefr->fuFlags & SCFIND_REGEXP) == SCFIND_REGEXP);
+
+#ifdef JRB_BUILD
+        // Search string edit label
+        if (GetString(bRegExFind ? IDS_FINDTEXTLABEL_SEARCHPTRN : IDS_FINDTEXTLABEL_SEARCHSTR,
+                      tchFindStrLbl, COUNTOF(tchFindStrLbl))) {
+            SetDlgItemTextW(hwnd, IDC_FINDTEXTLABEL, tchFindStrLbl);
+        }
+#endif
 
         // Get the current code page for Unicode conversion
         uCPEdit = (UINT)SendMessage(lpefr->hwnd,SCI_GETCODEPAGE,0,0);
@@ -4969,6 +4982,11 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd,UINT umsg,WPARAM wParam,LPARA
         if (lpefr->fuFlags & SCFIND_REGEXP)
           CheckDlgButton(hwnd,IDC_FINDREGEXP,BST_CHECKED);
 
+#ifdef JRB_BUILD
+        if (lpefr->fuFlags & SCFIND_DOT_MATCH_ALL)
+            CheckDlgButton(hwnd, IDC_DOTMATCHALL, BST_CHECKED);
+#endif
+
         if (lpefr->bTransformBS)
           CheckDlgButton(hwnd,IDC_FINDTRANSFORMBS,BST_CHECKED);
 
@@ -4978,6 +4996,10 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd,UINT umsg,WPARAM wParam,LPARA
             CheckDlgButton(hwnd,IDC_WILDCARDSEARCH,BST_CHECKED);
             CheckDlgButton(hwnd,IDC_FINDREGEXP,BST_UNCHECKED);
         }
+#endif
+#ifdef JRB_BUILD
+        // Enable/disable "dot-matches-all" option
+        EnableWindow(GetDlgItem(hwnd, IDC_DOTMATCHALL), IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED);
 #endif
 
         if (lpefr->bNoFindWrap)
@@ -5053,8 +5075,18 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd,UINT umsg,WPARAM wParam,LPARA
           break;
 
         case IDC_FINDREGEXP:
-          if (IsDlgButtonChecked(hwnd,IDC_FINDREGEXP) == BST_CHECKED)
-          {
+          BOOL bIsChecked = (IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED);
+#ifdef JRB_BUILD
+          tchFindStrLbl[0] = '\0';
+
+          if (GetString(bIsChecked ? IDS_FINDTEXTLABEL_SEARCHPTRN : IDS_FINDTEXTLABEL_SEARCHSTR,
+                        tchFindStrLbl, COUNTOF(tchFindStrLbl))) {
+            SetDlgItemTextW(hwnd, IDC_FINDTEXTLABEL, tchFindStrLbl);
+          }
+            // Enable/disable "dot-matches-all" option
+            EnableWindow(GetDlgItem(hwnd, IDC_DOTMATCHALL), bIsChecked);
+#endif
+          if (bIsChecked) {
             CheckDlgButton(hwnd,IDC_FINDTRANSFORMBS,BST_UNCHECKED);
 #ifdef BOOKMARK_EDITION
             CheckDlgButton(hwnd,IDC_WILDCARDSEARCH,BST_UNCHECKED); // Can not use wildcard search together with regexp
@@ -5132,6 +5164,11 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd,UINT umsg,WPARAM wParam,LPARA
 
           if (IsDlgButtonChecked(hwnd,IDC_FINDREGEXP) == BST_CHECKED)
             lpefr->fuFlags |= SCFIND_REGEXP | SCFIND_POSIX;
+
+#ifdef JRB_BUILD
+          if (IsDlgButtonChecked(hwnd, IDC_DOTMATCHALL) == BST_CHECKED)
+            lpefr->fuFlags |= SCFIND_DOT_MATCH_ALL;
+#endif
 
           lpefr->bTransformBS =
             (IsDlgButtonChecked(hwnd,IDC_FINDTRANSFORMBS) == BST_CHECKED) ? TRUE : FALSE;
