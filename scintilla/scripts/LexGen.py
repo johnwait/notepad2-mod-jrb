@@ -113,14 +113,14 @@ def RegenerateAll(root):
     sci = ScintillaData.ScintillaData(root)
 
     Regenerate(root + "src/Catalogue.cxx", "//", sci.lexerModules)
-    #Regenerate(root + "win32/scintilla.mak", "#", sci.lexFiles)    #commented out
+    #Regenerate(root + "win32/scintilla.mak", "#", sci.lexFiles)    #commented out for Notepad2-mod
 
     #RegenerateXcodeProject(root + "cocoa/ScintillaFramework/ScintillaFramework.xcodeproj/project.pbxproj",
-        sci.lexFiles, sci.lexersXcode)    #commented out
+        sci.lexFiles, sci.lexersXcode)    #commented out for Notepad2-mod
 
-    #UpdateVersionNumbers(sci, root)     #commented out
+    #UpdateVersionNumbers(sci, root)     #commented out for Notepad2-mod
 
-    #HFacer.RegenerateAll(root, False)   #commented out
+    #HFacer.RegenerateAll(root, False)   #commented out for Notepad2-mod
 
 if __name__=="__main__":
     RegenerateAll("../")
