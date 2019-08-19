@@ -20,20 +20,14 @@
 #if !defined(_WIN32_WINNT)
 #define _WIN32_WINNT 0x501
 #endif
-#include <windows.h>
-#include <shlwapi.h>
-#include <commctrl.h>
-#include <commdlg.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
-#include "scintilla.h"
-#include "scilexer.h"
-#include "notepad2.h"
-#include "edit.h"
-#include "styles.h"
-#include "dialogs.h"
-#include "helpers.h"
+#include "StdAfx.h" // platform includes
+#include "Scintilla.h"
+#include "SciLexer.h"
+#include "Notepad2.h"
+#include "Edit.h"
+#include "Styles.h"
+#include "Dialogs.h"
+#include "Helpers.h"
 #include "resource.h"
 #include "SciCall.h"
 

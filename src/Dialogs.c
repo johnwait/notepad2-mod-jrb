@@ -20,21 +20,15 @@
 #if !defined(_WIN32_WINNT)
 #define _WIN32_WINNT 0x501
 #endif
-#include <windows.h>
-#include <commctrl.h>
-#include <shlobj.h>
-#include <shellapi.h>
-#include <shlwapi.h>
-#include <commdlg.h>
-#include <string.h>
-#include "scintilla.h"
-#include "notepad2.h"
-#include "edit.h"
-#include "dlapi.h"
-#include "dialogs.h"
-#include "helpers.h"
+#include "StdAfx.h" // platform includes
+#include "Scintilla.h"
+#include "Notepad2.h"
+#include "Edit.h"
+#include "Dlapi.h"
+#include "Dialogs.h"
+#include "Helpers.h"
 #include "resource.h"
-#include "version.h"
+#include "Version.h"
 
 
 extern HWND  hwndMain;

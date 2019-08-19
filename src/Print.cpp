@@ -21,20 +21,15 @@
 #if !defined(_WIN32_WINNT)
 #define _WIN32_WINNT 0x501
 #endif
-#include <windows.h>
-#include <commctrl.h>
-#include <shlwapi.h>
-#include <commdlg.h>
-#include <string.h>
-#include "platform.h"
-#include "scintilla.h"
-#include "scilexer.h"
+#include "StdAfx.h" // platform includes
+#include "Platform.h"
+#include "Scintilla.h"
+#include "SciLexer.h"
 extern "C" {
-#include "dialogs.h"
-#include "helpers.h"
+#include "Dialogs.h"
+#include "Helpers.h"
 }
 #include "resource.h"
-
 
 extern "C" HINSTANCE g_hInstance;
 

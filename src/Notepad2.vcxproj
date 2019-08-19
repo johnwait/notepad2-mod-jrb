@@ -110,7 +110,7 @@
       <PreprocessorDefinitions>JRB_BUILD;STATIC_BUILD;SCI_LEXER;BOOKMARK_EDITION;WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;imm32.lib;shlwapi.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -137,7 +137,7 @@
       <PreprocessorDefinitions>JRB_BUILD;STATIC_BUILD;SCI_LEXER;BOOKMARK_EDITION;_WIN64;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;imm32.lib;shlwapi.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -162,7 +162,7 @@
       <PreprocessorDefinitions>JRB_BUILD;STATIC_BUILD;SCI_LEXER;BOOKMARK_EDITION;WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;imm32.lib;shlwapi.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -190,7 +190,7 @@
       <PreprocessorDefinitions>JRB_BUILD;STATIC_BUILD;SCI_LEXER;BOOKMARK_EDITION;_WIN64;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;imm32.lib;shlwapi.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -226,6 +226,7 @@
     <ClInclude Include="Helpers.h" />
     <ClInclude Include="Notepad2.h" />
     <ClInclude Include="SciCall.h" />
+    <ClInclude Include="StdAfx.h" />
     <ClInclude Include="Styles.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Version.h" />
