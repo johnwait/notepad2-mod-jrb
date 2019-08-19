@@ -41,6 +41,14 @@
 /* for byte-code statistical data. */
 /* #define ONIG_DEBUG_STATISTICS */
 
+// Added on 2019-08-08
+#ifdef _DEBUG
+#  define ONIG_DEBUG_PARSE_TREE 1
+#  define ONIG_DEBUG_COMPILE    1
+#  define ONIG_DEBUG_SEARCH     1
+#  define ONIG_DEBUG_MATCH      1
+#endif // _DEBUG
+
 #if defined(ONIG_DEBUG_PARSE_TREE) || defined(ONIG_DEBUG_MATCH) || \
     defined(ONIG_DEBUG_SEARCH) || defined(ONIG_DEBUG_COMPILE) || \
     defined(ONIG_DEBUG_STATISTICS) || defined(ONIG_DEBUG_MEMLEAK)
