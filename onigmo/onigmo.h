@@ -544,7 +544,7 @@ ONIG_EXTERN const OnigSyntaxType*   OnigDefaultSyntax;
 #define ONIG_SYN_OP_DECIMAL_BACKREF             (1U<<16)  /* \num   */
 #define ONIG_SYN_OP_BRACKET_CC                  (1U<<17)  /* [...]  */
 #define ONIG_SYN_OP_ESC_W_WORD                  (1U<<18)  /* \w, \W */
-#define ONIG_SYN_OP_ESC_LTGT_WORD_BEGIN_END     (1U<<19)  /* \<. \> */
+#define ONIG_SYN_OP_ESC_LTGT_WORD_BEGIN_END     (1U<<19)  /* \<, \> */
 #define ONIG_SYN_OP_ESC_B_WORD_BOUND            (1U<<20)  /* \b, \B */
 #define ONIG_SYN_OP_ESC_S_WHITE_SPACE           (1U<<21)  /* \s, \S */
 #define ONIG_SYN_OP_ESC_D_DIGIT                 (1U<<22)  /* \d, \D */
@@ -553,7 +553,7 @@ ONIG_EXTERN const OnigSyntaxType*   OnigDefaultSyntax;
 #define ONIG_SYN_OP_QMARK_NON_GREEDY            (1U<<25)  /* ??,*?,+?,{n,m}? */
 #define ONIG_SYN_OP_ESC_CONTROL_CHARS           (1U<<26)  /* \n,\r,\t,\a ... */
 #define ONIG_SYN_OP_ESC_C_CONTROL               (1U<<27)  /* \cx  */
-#define ONIG_SYN_OP_ESC_OCTAL3                  (1U<<28)  /* \OOO */
+#define ONIG_SYN_OP_ESC_OCTAL3                  (1U<<28)  /* \000 => \777 */
 #define ONIG_SYN_OP_ESC_X_HEX2                  (1U<<29)  /* \xHH */
 #define ONIG_SYN_OP_ESC_X_BRACE_HEX8            (1U<<30)  /* \x{7HHHHHHH} */
 #define ONIG_SYN_OP_ESC_O_BRACE_OCTAL           (1U<<31)  /* \o{OOO} */

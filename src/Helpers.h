@@ -27,6 +27,17 @@ extern UINT16 g_uWinVer;
 #define COUNTOF(ar) (sizeof(ar)/sizeof(ar[0]))
 #define CSTRLEN(s)  (COUNTOF(s)-1)
 
+// Added on 2019-08-08
+#define CEILING(X)      ( ((X) > 0) ? ((X-(int)(X)) > 0 ? (int)(X+1) : (int)(X)) : (int)(X) )
+#define CEIL(X)          CEILING(X)
+#define DLG_ITEM_MAXLEN  4096
+#define SEL_MAXLEN       DLG_ITEM_MAXLEN
+
+// Added on 2019-08-08
+#define MRUINI_IDX_MAXLEN     3 // 2 == CEIL(log(MRU_MAXITEMS)/log(10))
+#define MRUINI_NAME_MAXLEN   64
+#define MRUINI_VALUE_MAXLEN  DLG_ITEM_MAXLEN
+#define MRUINI_LINE_MAXLEN   ( MRUINI_NAME_MAXLEN + sizeof('=') + MRUINI_VALUE_MAXLEN + sizeof('\r\n') )
 
 extern WCHAR szIniFile[MAX_PATH];
 #define IniGetString(lpSection,lpName,lpDefault,lpReturnedStr,nSize) \
@@ -64,7 +75,6 @@ __inline void EndWaitCursor()
   GetCursorPos(&pt);
   SetCursorPos(pt.x,pt.y);
 }
-
 
 #define Is2k()    (g_uWinVer >= 0x0500)
 #define IsXP()    (g_uWinVer >= 0x0501)
