@@ -863,8 +863,8 @@ EDITLEXER lexPL = { SCLEX_PERL, 63014, L"Perl Script", L"pl; pm; cgi; pod", L"",
 KEYWORDLIST KeyWords_INI = {
 "", "", "", "", "", "", "", "", "" };
 
-
-EDITLEXER lexINI = { SCLEX_PROPERTIES, 63015, L"Configuration Files", L"ini; inf; reg; cfg; properties; oem; sif; url; sed; theme", L"", &KeyWords_INI, {
+// Removed "reg" from list of extensions handled by the lexINI lexer (now being handled by lexREGISTRY)
+EDITLEXER lexINI = { SCLEX_PROPERTIES, 63015, L"Configuration Files", L"ini; inf; cfg; properties; oem; sif; url; sed; theme", L"", &KeyWords_INI, {
                      { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
                      //{ SCE_PROPS_DEFAULT, L"Default", L"", L"" },
                      { SCE_PROPS_COMMENT, 63127, L"Comment", L"fore:#008000", L"" },
@@ -2774,6 +2774,45 @@ EDITLEXER lexCOFFEESCRIPT = { SCLEX_COFFEESCRIPT, 63362, L"Coffeescript", L"coff
                        { MULTI_STYLE(SCE_COFFEESCRIPT_VERBATIM,SCE_COFFEESCRIPT_TRIPLEVERBATIM,0,0), 63381, L"Verbatim", L"", L"" },
                        { -1, 00000, L"", L"", L"" } } };
 
+KEYWORDLIST KeyWords_MATLAB = {
+    "break case catch classdef continue else elseif end for function global if otherwise parfor persistent return spmd switch try while",
+    "", "", "", "", "", "", "", ""
+};
+
+EDITLEXER lexMATLAB = { SCLEX_MATLAB, 63383, L"MATLAB", L"m", L"", &KeyWords_MATLAB, {
+                      { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
+                  //  { SCE_MATLAB_DEFAULT, 63126, L"Default", L"", L"" },
+                      { SCE_MATLAB_COMMENT, 63127, L"Comment", L"fore:#008000", L"" },
+                      { SCE_MATLAB_COMMAND, 63236, L"Command", L"fore:#FF8000", L"" },
+                      { SCE_MATLAB_NUMBER, 63130, L"Number", L"fore:#FF0000", L"" },
+                      { SCE_MATLAB_KEYWORD, 63128, L"Keyword", L"bold; fore:#0A246A", L"" },
+                      { SCE_MATLAB_STRING, 63131, L"String", L"fore:#008000", L"" },
+                      { SCE_MATLAB_OPERATOR, 63132, L"Operator", L"fore:#B000B0", L"" },
+                      { SCE_MATLAB_IDENTIFIER, 63129, L"Identifier", L"", L"" },
+                      { SCE_MATLAB_DOUBLEQUOTESTRING, 63384, L"Double-quoted String", L"fore:#008000", L"" },
+                      { -1, 00000, L"", L"", L"" } } };
+
+KEYWORDLIST KeyWords_REGISTRY = {
+    "", "", "", "", "", "", "", "", ""
+};
+
+EDITLEXER lexREGISTRY = { SCLEX_REGISTRY, 63392, L"Registry", L"reg", L"", &KeyWords_REGISTRY, {
+                        { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
+                    //  { SCE_REG_DEFAULT, 63126, L"Default", L"", L"" },
+                        { SCE_REG_ADDEDKEY, 63393, L"Normal Key", L"bold; fore:#2D340C; back:#DFEF8F; eolfilled", L"" },
+                        { SCE_REG_DELETEDKEY, 63394, L"Deleted Key", L"bold; fore:#340C16; back:#EF8FA8; eolfilled", L"" },
+                        { SCE_REG_KEYDEFAULTVALUE, 63395, L"Default Value", L"bold; fore:#FF0000", L"" },
+                        { SCE_REG_VALUENAME, 63396, L"Value Name", L"bold; fore:#A00080", L"" },
+                        { SCE_REG_VALUETYPE, 63397, L"Value Type", L"bold; fore:#0000FF", L"" },
+                        { SCE_REG_HEXDIGIT, 63398, L"Hex Digit", L"fore:#E00000", L"" },
+                        { SCE_REG_STRING, 63131, L"String", L"fore:#0000C0", L"" },
+                        { SCE_REG_ESCAPED, 63399, L"Escaped Char", L"fore:#000080; back:#EAEAFF", L"" },
+                        { SCE_REG_KEYPATH_GUID, 63400, L"GUID in Key Path", L"bold; fore:#34340C; back:#EFEF8F", L"" },
+                        { SCE_REG_STRING_GUID, 63401, L"GUID in Value", L"fore:#8000FF", L"" },
+                        { SCE_REG_PARAMETER, 63294, L"Parameter", L"bold; fore:#008040", L"" },
+                        { SCE_REG_OPERATOR, 63132, L"Operator", L"fore:#000000", L"" },
+                        { SCE_REG_COMMENT, 63127, L"Comment", L"fore:#808080", L"" },
+                        { -1, 00000, L"", L"", L"" } } };
 
 // This array holds all the lexers...
 // Don't forget to change the number of the lexer for HTML and XML
@@ -2800,6 +2839,7 @@ PEDITLEXER pLexArray[NUMLEXERS] =
   &lexJS,
   &lexMAK,
   &lexMARKDOWN,
+  &lexMATLAB,
   &lexLATEX,
   &lexLUA,
   &lexNSIS,
@@ -2808,6 +2848,7 @@ PEDITLEXER pLexArray[NUMLEXERS] =
   &lexPS,
   &lexPY,
   &lexRC,
+  &lexREGISTRY,
   &lexRUBY,
   &lexBASH,
   &lexSQL,

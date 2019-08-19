@@ -2093,7 +2093,232 @@ BEGIN
     63255                   "Format body"
     63256                   "HTML Element Text"
     63257                   "XML Element Text"
+    63258                   "ANSI Art"
+    63259                   "Shell Script"
+    63260                   "Error"
+/*
+    63261                   ""
+    63262                   ""
+    63263                   ""
+*/
 END
+
+STRINGTABLE
+BEGIN
+/*
+    63264                   ""
+    63265                   ""
+    63266                   ""
+    63267                   ""
+*/
+    63268                   "Scalar"
+    63269                   "Parameter expansion"
+    63270                   "Back Ticks"
+    63271                   "Here-doc (Delimiter)"
+    63272                   "Here-doc (Single quoted, q)"
+    63273                   "Tcl Script"
+    63274                   "Substitution"
+    63275                   "Modifier"
+    63276                   "AutoIt3 Script"
+    63277                   "Function"
+    63278                   "Macro"
+    63279                   "Send Key"
+END
+
+STRINGTABLE
+BEGIN
+    63280                   "Special"
+    63281                   "LaTeX Files"
+    63282                   "Tag"
+    63283                   "Math"
+    63284                   "NSIS Script"
+    63285                   "Variable within String"
+    63286                   "Constant"
+    63287                   "Sub Section"
+    63288                   "Section Group"
+    63289                   "Function Definition"
+    63290                   "PageEx"
+    63291                   "If Definition"
+    63292                   "Macro Definition"
+    63293                   "Inno Setup Script"
+    63294                   "Parameter"
+    63295                   "Inline Expansion"
+END
+
+STRINGTABLE
+BEGIN
+    63296                   "Pascal Comment"
+    63297                   "Pascal Keyword"
+    63298                   "Lua Script"
+/*
+    63299                   ""
+    63300                   ""
+    63301                   ""
+*/
+    63302                   "Literal String"
+/*
+    63303                   ""
+*/
+    63304                   "Ruby Script"
+    63305                   "AutoHotkey Script"
+    63306                   "Escape"
+    63307                   "Syntax Operator"
+    63308                   "Expression operator"
+    63309                   "Variable dereferencing"
+    63310                   "Flow of control"
+    63311                   "Keys & buttons"
+END
+
+STRINGTABLE
+BEGIN
+    63312                   "Built-in Variables"
+    63313                   "Variable keyword"
+    63314                   "POD"
+    63315                   "Regex"
+    63316                   "Symbol"
+    63317                   "Module name"
+    63318                   "Instance Var"
+    63319                   "Class Var"
+    63320                   "Data Section"
+/*
+    63321                   ""
+    63322                   ""
+    63323                   ""
+*/
+    63324                   "Cmake Script"
+    63325                   "While def"
+    63326                   "For each def"
+    63327                   "If def"
+END
+
+STRINGTABLE
+BEGIN
+    63328                   "Macro def"
+    63329                   "Variable within string"
+    63330                   "Special Char"
+    63331                   "Verbatim Segment"
+    63332                   "AviSynth Script"
+    63333                   "Filter"
+    63334                   "Plugin"
+    63335                   "Clip property"
+    63336                   "Markdown"
+    63337                   "Global Class"
+    63338                   "Line Begin"
+    63339                   "Strong"
+    63340                   "Emphasis"
+    63341                   "Header 1"
+    63342                   "Header 2"
+    63343                   "Header 3"
+END
+
+STRINGTABLE
+BEGIN
+    63344                   "Header 4"
+    63345                   "Header 5"
+    63346                   "Header 6"
+    63347                   "Pre char"
+    63348                   "Unordered list"
+    63349                   "Ordered list"
+    63350                   "Block quote"
+    63351                   "Strikeout"
+    63352                   "Horizontal rule"
+    63353                   "Link"
+    63354                   "Code"
+    63355                   "YAML"
+    63356                   "Reference"
+    63357                   "Document"
+    63358                   "Text"
+    63359                   "Error"
+END
+
+STRINGTABLE
+BEGIN
+    63360                   "User-Defined Function"
+    63361                   "Pseudo-element"
+    63362                   "Coffeescript"
+/*
+    63363                   ""
+    63364                   ""
+    63365                   ""
+    63366                   ""
+    63367                   ""
+    63368                   ""
+    63369                   ""
+*/
+    63370                   "User-Defined Function"
+    63371                   "Standard operator"
+    63372                   "Attribute"
+    63373                   "Standard function"
+    63374                   "Standard package"
+    63375                   "Standard type"
+END
+
+STRINGTABLE
+BEGIN
+    63376                   "Character"
+//  63377                   ""
+    63378                   "Global Class"
+    63379                   "Comment line"
+    63380                   "Word"
+    63381                   "Verbatim"
+    63382                   "Media"
+    63383                   "MATLAB"
+    63384                   "Double-quoted String"
+/*
+    63385                   ""
+    63386                   ""
+    63387                   ""
+    63388                   ""
+    63389                   ""
+    63390                   ""
+    63391                   ""
+*/
+END
+
+STRINGTABLE
+BEGIN
+    63392                   "Registry"
+    63393                   "Normal Key"
+    63394                   "Deleted Key"
+    63395                   "Default Value"
+    63396                   "Value Name"
+    63397                   "Value Type"
+    63398                   "Hex Digit"
+    63399                   "Escaped Char"
+    63400                   "GUID in Key Path"
+    63401                   "GUID in Value"
+/*
+    63402                   ""
+    63403                   ""
+    63404                   ""
+    63405                   ""
+    63406                   ""
+    63407                   ""
+*/
+END
+
+/*
+STRINGTABLE
+BEGIN
+    63408                   ""
+    63409                   ""
+    63410                   ""
+    63411                   ""
+    63412                   ""
+    63413                   ""
+    63414                   ""
+    63415                   ""
+    63416                   ""
+    63417                   ""
+    63418                   ""
+    63419                   ""
+    63420                   ""
+    63421                   ""
+    63422                   ""
+    63423                   ""
+END
+*/
+
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////

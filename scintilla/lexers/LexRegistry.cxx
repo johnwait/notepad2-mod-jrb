@@ -229,6 +229,11 @@ void SCI_METHOD LexerRegistry::Lex(Sci_PositionU startPos,
 					context.SetState(SCE_REG_DEFAULT);
 				}
 				break;
+            case SCE_REG_KEYDEFAULTVALUE:
+                if (context.ch == '=') {
+                    context.SetState(SCE_REG_DEFAULT);
+                }
+                break;
 			case SCE_REG_VALUENAME:
 			case SCE_REG_STRING: {
 					Sci_Position currPos = static_cast<Sci_Position>(context.currentPos);
@@ -286,7 +291,17 @@ void SCI_METHOD LexerRegistry::Lex(Sci_PositionU startPos,
 					context.ForwardSetState(SCE_REG_DEFAULT);
 				} else if (context.ch == '\\') {
 					context.Forward();
-				} else {
+                // 2019-08-18: BUGFIX: Fixes GUIDs following escaped sequences not being styled (JRB)
+                } else if (context.ch == '{') {
+                    Sci_Position currPos = static_cast<Sci_Position>(context.currentPos);
+                    if (AtGUID(styler, currPos)) {
+                        beforeGUID = context.state;
+                        context.SetState(SCE_REG_STRING_GUID);
+                    } else {
+                        context.SetState(beforeEscape);
+                        beforeEscape = SCE_REG_DEFAULT;
+                    }
+                } else {
 					context.SetState(beforeEscape);
 					beforeEscape = SCE_REG_DEFAULT;
 				}
@@ -317,7 +332,14 @@ void SCI_METHOD LexerRegistry::Lex(Sci_PositionU startPos,
 			Sci_Position currPos = static_cast<Sci_Position>(context.currentPos);
 			if (context.ch == ';') {
 				context.SetState(SCE_REG_COMMENT);
-			} else if (context.ch == '"') {
+            // 2019-08-18: Added independent style & its detection for "@" as default value (of a key)
+            } else if (context.ch == '@') {
+                if (context.atLineStart) {
+                    context.SetState(SCE_REG_KEYDEFAULTVALUE);
+                } else {
+                    context.SetState(SCE_REG_OPERATOR);
+                }
+            } else if (context.ch == '"') {
 				if (AtValueName(styler, currPos)) {
 					context.SetState(SCE_REG_VALUENAME);
 				} else {
@@ -339,8 +361,7 @@ void SCI_METHOD LexerRegistry::Lex(Sci_PositionU startPos,
 				}
 			} else if (isxdigit(context.ch) && highlight) {
 				context.SetState(SCE_REG_HEXDIGIT);
-			}
-			highlight = (context.ch == '@') ? true : highlight;
+            }
 			if (setOperators.Contains(context.ch) && highlight) {
 				context.SetState(SCE_REG_OPERATOR);
 			}
