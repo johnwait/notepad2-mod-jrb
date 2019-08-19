@@ -19,6 +19,14 @@
 
 #ifdef SCI_OWNREGEX
 
+ // Added on 2019-08-08
+#ifdef _DEBUG
+#  define ONIG_DEBUG_PARSE_TREE 1
+#  define ONIG_DEBUG_COMPILE    1
+#  define ONIG_DEBUG_SEARCH     1
+#  define ONIG_DEBUG_MATCH      1
+#endif // _DEBUG
+
 // clang-format off
 #include <cstdlib>
 #include <string>
@@ -311,10 +319,23 @@ Sci::Position OnigmoRegExEngine::FindText(Document* doc, Sci::Position minPos, S
 
     // ---  search document range for pattern match   ---
     // !!! Performance issue: Scintilla: moving Gap needs memcopy - high costs for find/replace in large document
-    auto const docBegPtr = UCharCPtr(doc->RangePointer(0, docLen));
-    auto const docEndPtr = UCharCPtr(doc->RangePointer(docLen, 0));
-    auto const rangeBegPtr = UCharCPtr(doc->RangePointer(rangeBeg, rangeLen));
-    auto const rangeEndPtr = UCharCPtr(doc->RangePointer(rangeEnd, 0));
+    // 2019-08-12: Modified Scintilla's code to use something other than
+    //             RangePointer(), which is optimized for insertion of text
+    //             and thus has a habit of giving out pointers passed passed
+    //             deleted text.
+    //
+    // TODO: Report bug at least to the Notepad3 project
+    // Steps to reproduce bug:
+    //  1) Paste some predefined text in a Scntilla's edit window.
+    //  2) Devise a regular expression that matches the whole text, using
+    //     at least the $ anchor and making sure the regex doesn't
+    //     end with any of the quantifiers (?, *, + or {m,n}) but instead
+    //     a fixed length section, e.g. [..](?:-(?:20|19)[0-9][0-9]))
+    //  3) Match the regex pattern 
+    auto const docBegPtr = UCharCPtr(doc->ContentPointer(0, docLen));
+    auto const docEndPtr = UCharCPtr(doc->ContentPointer(docLen, 0));
+    auto const rangeBegPtr = UCharCPtr(doc->ContentPointer(rangeBeg, rangeLen));
+    auto const rangeEndPtr = UCharCPtr(doc->ContentPointer(rangeEnd, 0));
 
     OnigPosition result = ONIG_MISMATCH;
     try {

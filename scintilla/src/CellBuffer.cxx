@@ -598,6 +598,10 @@ const char *CellBuffer::RangePointer(Sci::Position position, Sci::Position range
 	return substance.RangePointer(position, rangeLength);
 }
 
+const char *CellBuffer::DataPointer(Sci::Position position, Sci::Position rangeLength) {
+    return substance.DataPointer(position, rangeLength);
+}
+
 Sci::Position CellBuffer::GapPosition() const noexcept {
 	return substance.GapPosition();
 }
