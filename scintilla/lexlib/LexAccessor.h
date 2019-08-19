@@ -8,9 +8,7 @@
 #ifndef LEXACCESSOR_H
 #define LEXACCESSOR_H
 
-#ifdef SCI_NAMESPACE
 namespace Scintilla {
-#endif
 
 enum EncodingType { enc8bit, encUnicode, encDBCS };
 
@@ -197,8 +195,13 @@ public:
 	}
 };
 
-#ifdef SCI_NAMESPACE
+struct LexicalClass {
+	int value;
+	const char *name;
+	const char *tags;
+	const char *description;
+};
+
 }
-#endif
 
 #endif

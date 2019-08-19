@@ -10,13 +10,12 @@
 #include <cstring>
 
 #include <algorithm>
+#include <iterator>
 
 #include "StringCopy.h"
 #include "WordList.h"
 
-#ifdef SCI_NAMESPACE
 using namespace Scintilla;
-#endif
 
 /**
  * Creates an array that points into each word in the string and puts \0 terminators
@@ -130,7 +129,7 @@ void WordList::Set(const char *s) {
 #else
 	SortWordList(words, len);
 #endif
-	std::fill(starts, starts + ELEMENTS(starts), -1);
+	std::fill(starts, std::end(starts), -1);
 	for (int l = len - 1; l >= 0; l--) {
 		unsigned char indexChar = words[l][0];
 		starts[indexChar] = l;

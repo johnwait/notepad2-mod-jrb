@@ -11,15 +11,15 @@
 #include <stdexcept>
 #include <vector>
 #include <map>
+#include <algorithm>
+#include <iterator>
 #include <memory>
 
 #include "Platform.h"
 
 #include "XPM.h"
 
-#ifdef SCI_NAMESPACE
 using namespace Scintilla;
-#endif
 
 static const char *NextField(const char *s) {
 	// In case there are leading spaces in the string
@@ -49,7 +49,7 @@ ColourDesired XPM::ColourFromCode(int ch) const {
 
 void XPM::FillRun(Surface *surface, int code, int startX, int y, int x) const {
 	if ((code != codeTransparent) && (startX != x)) {
-		PRectangle rc = PRectangle::FromInts(startX, y, x, y + 1);
+		const PRectangle rc = PRectangle::FromInts(startX, y, x, y + 1);
 		surface->FillRectangle(rc, ColourFromCode(code));
 	}
 }
@@ -89,7 +89,7 @@ void XPM::Init(const char *const *linesForm) {
 	if (!linesForm)
 		return;
 
-	std::fill(colourCodeTable, colourCodeTable+256, 0);
+	std::fill(colourCodeTable, std::end(colourCodeTable), 0);
 	const char *line0 = linesForm[0];
 	width = atoi(line0);
 	line0 = NextField(line0);

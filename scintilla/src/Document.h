@@ -8,9 +8,9 @@
 #ifndef DOCUMENT_H
 #define DOCUMENT_H
 
-#ifdef SCI_NAMESPACE
+#include "ILoader.h"
+
 namespace Scintilla {
-#endif
 
 enum EncodingFamily { efEightBit, efUnicode, efDBCS };
 
@@ -183,7 +183,7 @@ public:
 	virtual ~LexInterface() {
 	}
 	void Colourise(Sci::Position start, Sci::Position end);
-	int LineEndTypesSupported();
+	virtual int LineEndTypesSupported();
 	bool UseContainerLexing() const {
 		return instance == 0;
 	}
@@ -267,7 +267,7 @@ public:
 
 	DecorationList decorations;
 
-	Document();
+	Document(int options);
 	// Deleted so Document objects can not be copied.
 	Document(const Document &) = delete;
 	void operator=(const Document &) = delete;
@@ -316,7 +316,7 @@ public:
 	bool DeleteChars(Sci::Position pos, Sci::Position len);
 	Sci::Position InsertString(Sci::Position position, const char *s, Sci::Position insertLength);
 	void ChangeInsertion(const char *s, Sci::Position length);
-	int SCI_METHOD AddData(char *data, Sci_Position length);
+	int SCI_METHOD AddData(const char *data, Sci_Position length);
 	void * SCI_METHOD ConvertToDocument();
 	Sci::Position Undo();
 	Sci::Position Redo();
@@ -360,10 +360,10 @@ public:
 
 	char CharAt(Sci::Position position) const { return cb.CharAt(position); }
 	void SCI_METHOD GetCharRange(char *buffer, Sci_Position position, Sci_Position lengthRetrieve) const {
-		cb.GetCharRange(buffer, position, lengthRetrieve);
+		cb.GetCharRange(buffer, static_cast<Sci::Position>(position), static_cast<Sci::Position>(lengthRetrieve));
 	}
-	char SCI_METHOD StyleAt(Sci_Position position) const { return cb.StyleAt(position); }
-	int StyleIndexAt(Sci_Position position) const { return static_cast<unsigned char>(cb.StyleAt(position)); }
+	char SCI_METHOD StyleAt(Sci_Position position) const { return cb.StyleAt(static_cast<Sci::Position>(position)); }
+	int StyleIndexAt(Sci_Position position) const { return static_cast<unsigned char>(cb.StyleAt(static_cast<Sci::Position>(position))); }
 	void GetStyleRange(unsigned char *buffer, Sci::Position position, Sci::Position lengthRetrieve) const {
 		cb.GetStyleRange(buffer, position, lengthRetrieve);
 	}
@@ -547,8 +547,6 @@ public:
 	virtual void NotifyErrorOccurred(Document *doc, void *userData, int status) = 0;
 };
 
-#ifdef SCI_NAMESPACE
 }
-#endif
 
 #endif

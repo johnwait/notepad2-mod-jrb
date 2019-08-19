@@ -26,6 +26,7 @@
 #include <shlobj.h>
 #include <shlwapi.h>
 #include <stdio.h>
+#define INCLUDE_DEPRECATED_FEATURES // As of Scintilla v3.8.0 (see end of file "\scintilla\include\scintilla.h")
 #include "scintilla.h"
 #include "scilexer.h"
 #include "notepad2.h"

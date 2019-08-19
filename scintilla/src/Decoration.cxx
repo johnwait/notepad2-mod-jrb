@@ -24,9 +24,7 @@
 #include "RunStyles.h"
 #include "Decoration.h"
 
-#ifdef SCI_NAMESPACE
 using namespace Scintilla;
-#endif
 
 Decoration::Decoration(int indicator_) : indicator(indicator_) {
 }
@@ -55,17 +53,17 @@ Decoration *DecorationList::DecorationFromIndicator(int indicator) {
 	return nullptr;
 }
 
-Decoration *DecorationList::Create(int indicator, int length) {
+Decoration *DecorationList::Create(int indicator, Sci::Position length) {
 	currentIndicator = indicator;
 	std::unique_ptr<Decoration> decoNew(new Decoration(indicator));
 	decoNew->rs.InsertSpace(0, length);
 
 	std::vector<std::unique_ptr<Decoration>>::iterator it = std::lower_bound(
-		decorationList.begin(), decorationList.end(), decoNew, 
+		decorationList.begin(), decorationList.end(), decoNew,
 		[](const std::unique_ptr<Decoration> &a, const std::unique_ptr<Decoration> &b) {
 		return a->Indicator() < b->Indicator();
 	});
-	std::vector<std::unique_ptr<Decoration>>::iterator itAdded = 
+	std::vector<std::unique_ptr<Decoration>>::iterator itAdded =
 		decorationList.insert(it, std::move(decoNew));
 
 	SetView();
@@ -92,7 +90,7 @@ void DecorationList::SetCurrentValue(int value) {
 	currentValue = value ? value : 1;
 }
 
-bool DecorationList::FillRange(int &position, int value, int &fillLength) {
+bool DecorationList::FillRange(Sci::Position &position, int value, Sci::Position &fillLength) {
 	if (!current) {
 		current = DecorationFromIndicator(currentIndicator);
 		if (!current) {
@@ -106,7 +104,7 @@ bool DecorationList::FillRange(int &position, int value, int &fillLength) {
 	return changed;
 }
 
-void DecorationList::InsertSpace(int position, int insertLength) {
+void DecorationList::InsertSpace(Sci::Position position, Sci::Position insertLength) {
 	const bool atEnd = position == lengthDocument;
 	lengthDocument += insertLength;
 	for (const std::unique_ptr<Decoration> &deco : decorationList) {
@@ -117,7 +115,7 @@ void DecorationList::InsertSpace(int position, int insertLength) {
 	}
 }
 
-void DecorationList::DeleteRange(int position, int deleteLength) {
+void DecorationList::DeleteRange(Sci::Position position, Sci::Position deleteLength) {
 	lengthDocument -= deleteLength;
 	for (const std::unique_ptr<Decoration> &deco : decorationList) {
 		deco->rs.DeleteRange(position, deleteLength);
@@ -157,7 +155,7 @@ void DecorationList::SetView() {
 	}
 }
 
-int DecorationList::AllOnFor(int position) const {
+int DecorationList::AllOnFor(Sci::Position position) const {
 	int mask = 0;
 	for (const std::unique_ptr<Decoration> &deco : decorationList) {
 		if (deco->rs.ValueAt(position)) {
@@ -169,7 +167,7 @@ int DecorationList::AllOnFor(int position) const {
 	return mask;
 }
 
-int DecorationList::ValueAt(int indicator, int position) {
+int DecorationList::ValueAt(int indicator, Sci::Position position) {
 	const Decoration *deco = DecorationFromIndicator(indicator);
 	if (deco) {
 		return deco->rs.ValueAt(position);
@@ -177,7 +175,7 @@ int DecorationList::ValueAt(int indicator, int position) {
 	return 0;
 }
 
-int DecorationList::Start(int indicator, int position) {
+Sci::Position DecorationList::Start(int indicator, Sci::Position position) {
 	const Decoration *deco = DecorationFromIndicator(indicator);
 	if (deco) {
 		return deco->rs.StartRun(position);
@@ -185,7 +183,7 @@ int DecorationList::Start(int indicator, int position) {
 	return 0;
 }
 
-int DecorationList::End(int indicator, int position) {
+Sci::Position DecorationList::End(int indicator, Sci::Position position) {
 	const Decoration *deco = DecorationFromIndicator(indicator);
 	if (deco) {
 		return deco->rs.EndRun(position);

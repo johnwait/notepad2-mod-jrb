@@ -8,9 +8,7 @@
 #ifndef STYLECONTEXT_H
 #define STYLECONTEXT_H
 
-#ifdef SCI_NAMESPACE
 namespace Scintilla {
-#endif
 
 // All languages handled so far can treat all characters >= 0x80 as one class
 // which just continues the current token or starts an identifier if in default.
@@ -133,7 +131,12 @@ public:
 	void ForwardBytes(Sci_Position nb) {
 		const Sci_PositionU forwardPos = currentPos + nb;
 		while (forwardPos > currentPos) {
+			const Sci_PositionU currentPosStart = currentPos;
 			Forward();
+			if (currentPos == currentPosStart) {
+				// Reached end
+				return;
+			}
 		}
 	}
 	void ChangeState(int state_) {
@@ -204,8 +207,6 @@ public:
 	void GetCurrentLowered(char *s, Sci_PositionU len);
 };
 
-#ifdef SCI_NAMESPACE
 }
-#endif
 
 #endif

@@ -8,9 +8,7 @@
 #ifndef AUTOCOMPLETE_H
 #define AUTOCOMPLETE_H
 
-#ifdef SCI_NAMESPACE
 namespace Scintilla {
-#endif
 
 /**
  */
@@ -29,7 +27,7 @@ public:
 	bool chooseSingle;
 	std::unique_ptr<ListBox> lb;
 	Sci::Position posStart;
-	int startLen;
+	Sci::Position startLen;
 	/// Should autocompletion be canceled if editor's currentPos <= startPos?
 	bool cancelAtStartPos;
 	bool autoHide;
@@ -51,7 +49,7 @@ public:
 
 	/// Display the auto completion list positioned to be near a character position
 	void Start(Window &parent, int ctrlID, Sci::Position position, Point location,
-		int startLen_, int lineHeight, bool unicodeMode, int technology);
+		Sci::Position startLen_, int lineHeight, bool unicodeMode, int technology);
 
 	/// The stop chars are characters which, when typed, cause the auto completion list to disappear
 	void SetStopChars(const char *stopChars_);
@@ -88,8 +86,6 @@ public:
 	void Select(const char *word);
 };
 
-#ifdef SCI_NAMESPACE
 }
-#endif
 
 #endif

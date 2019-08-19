@@ -22,6 +22,7 @@
 
 #include "Platform.h"
 
+#include "ILoader.h"
 #include "ILexer.h"
 #include "Scintilla.h"
 
@@ -35,7 +36,6 @@
 #include "CellBuffer.h"
 #include "KeyMap.h"
 #include "Indicator.h"
-#include "XPM.h"
 #include "LineMarker.h"
 #include "Style.h"
 #include "ViewStyle.h"
@@ -50,28 +50,24 @@
 #include "MarginView.h"
 #include "EditView.h"
 
-#ifdef SCI_NAMESPACE
 using namespace Scintilla;
-#endif
 
-#ifdef SCI_NAMESPACE
 namespace Scintilla {
-#endif
 
 void DrawWrapMarker(Surface *surface, PRectangle rcPlace,
 	bool isEndMarker, ColourDesired wrapColour) {
 	surface->PenColour(wrapColour);
 
 	enum { xa = 1 }; // gap before start
-	int w = static_cast<int>(rcPlace.right - rcPlace.left) - xa - 1;
+	const int w = static_cast<int>(rcPlace.right - rcPlace.left) - xa - 1;
 
 	const bool xStraight = isEndMarker;  // x-mirrored symbol for start marker
 
 	const int x0 = static_cast<int>(xStraight ? rcPlace.left : rcPlace.right - 1);
 	const int y0 = static_cast<int>(rcPlace.top);
 
-	int dy = static_cast<int>(rcPlace.bottom - rcPlace.top) / 5;
-	int y = static_cast<int>(rcPlace.bottom - rcPlace.top) / 2 + dy;
+	const int dy = static_cast<int>(rcPlace.bottom - rcPlace.top) / 5;
+	const int y = static_cast<int>(rcPlace.bottom - rcPlace.top) / 2 + dy;
 
 	struct Relative {
 		Surface *surface;
@@ -140,7 +136,7 @@ void MarginView::RefreshPixMaps(Surface *surfaceWindow, WindowID wid, const View
 		// for scroll bars and Visual Studio for its selection margin. The colour of this pattern is half
 		// way between the chrome colour and the chrome highlight colour making a nice transition
 		// between the window chrome and the content area. And it works in low colour depths.
-		PRectangle rcPattern = PRectangle::FromInts(0, 0, patternSize, patternSize);
+		const PRectangle rcPattern = PRectangle::FromInts(0, 0, patternSize, patternSize);
 
 		// Initialize default colours based on the chrome colour scheme.  Typically the highlight is white.
 		ColourDesired colourFMFill = vsDraw.selbar;
@@ -165,7 +161,7 @@ void MarginView::RefreshPixMaps(Surface *surfaceWindow, WindowID wid, const View
 		pixmapSelPatternOffset1->FillRectangle(rcPattern, colourFMStripes);
 		for (int y = 0; y < patternSize; y++) {
 			for (int x = y % 2; x < patternSize; x += 2) {
-				PRectangle rcPixel = PRectangle::FromInts(x, y, x + 1, y + 1);
+				const PRectangle rcPixel = PRectangle::FromInts(x, y, x + 1, y + 1);
 				pixmapSelPattern->FillRectangle(rcPixel, colourFMStripes);
 				pixmapSelPatternOffset1->FillRectangle(rcPixel, colourFMFill);
 			}
@@ -187,7 +183,7 @@ void MarginView::PaintMargin(Surface *surface, Sci::Line topLine, PRectangle rc,
 	if (rcSelMargin.bottom < rc.bottom)
 		rcSelMargin.bottom = rc.bottom;
 
-	Point ptOrigin = model.GetVisibleOriginInMain();
+	const Point ptOrigin = model.GetVisibleOriginInMain();
 	FontAlias fontLineNumber = vs.styles[STYLE_LINENUMBER].font;
 	for (size_t margin = 0; margin < vs.ms.size(); margin++) {
 		if (vs.ms[margin].width > 0) {
@@ -247,8 +243,9 @@ void MarginView::PaintMargin(Surface *surface, Sci::Line topLine, PRectangle rc,
 					}
 				}
 				if (highlightDelimiter.isEnabled) {
-					Sci::Line lastLine = model.cs.DocFromDisplay(topLine + model.LinesOnScreen()) + 1;
-					model.pdoc->GetHighlightDelimiters(highlightDelimiter, model.pdoc->LineFromPosition(model.sel.MainCaret()), lastLine);
+					const Sci::Line lastLine = model.cs.DocFromDisplay(topLine + model.LinesOnScreen()) + 1;
+					model.pdoc->GetHighlightDelimiters(highlightDelimiter,
+						static_cast<Sci::Line>(model.pdoc->LineFromPosition(model.sel.MainCaret())), lastLine);
 				}
 			}
 
@@ -389,8 +386,8 @@ void MarginView::PaintMargin(Surface *surface, Sci::Line topLine, PRectangle rc,
 						}
 						PRectangle rcNumber = rcMarker;
 						// Right justify
-						XYPOSITION width = surface->WidthText(fontLineNumber, number, static_cast<int>(strlen(number)));
-						XYPOSITION xpos = rcNumber.right - width - vs.marginNumberPadding;
+						const XYPOSITION width = surface->WidthText(fontLineNumber, number, static_cast<int>(strlen(number)));
+						const XYPOSITION xpos = rcNumber.right - width - vs.marginNumberPadding;
 						rcNumber.left = xpos;
 						DrawTextNoClipPhase(surface, rcNumber, vs.styles[STYLE_LINENUMBER],
 							rcNumber.top + vs.maxAscent, number, static_cast<int>(strlen(number)), drawAll);
@@ -411,7 +408,7 @@ void MarginView::PaintMargin(Surface *surface, Sci::Line topLine, PRectangle rc,
 							surface->FillRectangle(rcMarker,
 								vs.styles[stMargin.StyleAt(0) + vs.marginStyleOffset].back);
 							if (vs.ms[margin].style == SC_MARGIN_RTEXT) {
-								int width = WidestLineWidth(surface, vs, vs.marginStyleOffset, stMargin);
+								const int width = WidestLineWidth(surface, vs, vs.marginStyleOffset, stMargin);
 								rcMarker.left = rcMarker.right - width - 3;
 							}
 							DrawStyledText(surface, vs, vs.marginStyleOffset, rcMarker,
@@ -464,7 +461,5 @@ void MarginView::PaintMargin(Surface *surface, Sci::Line topLine, PRectangle rc,
 	surface->FillRectangle(rcBlankMargin, vs.styles[STYLE_DEFAULT].back);
 }
 
-#ifdef SCI_NAMESPACE
 }
-#endif
 

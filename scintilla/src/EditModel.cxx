@@ -20,6 +20,7 @@
 
 #include "Platform.h"
 
+#include "ILoader.h"
 #include "ILexer.h"
 #include "Scintilla.h"
 
@@ -33,7 +34,6 @@
 #include "CellBuffer.h"
 #include "KeyMap.h"
 #include "Indicator.h"
-#include "XPM.h"
 #include "LineMarker.h"
 #include "Style.h"
 #include "ViewStyle.h"
@@ -46,9 +46,7 @@
 #include "PositionCache.h"
 #include "EditModel.h"
 
-#ifdef SCI_NAMESPACE
 using namespace Scintilla;
-#endif
 
 Caret::Caret() :
 	active(false), on(false), period(500) {}
@@ -69,7 +67,7 @@ EditModel::EditModel() {
 	hotspot = Range(Sci::invalidPosition);
 	hoverIndicatorPos = Sci::invalidPosition;
 	wrapWidth = LineLayout::wrapWidthInfinite;
-	pdoc = new Document();
+	pdoc = new Document(SC_DOCUMENTOPTION_DEFAULT);
 	pdoc->AddRef();
 }
 

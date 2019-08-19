@@ -15,9 +15,7 @@
 
 #include "PropSetSimple.h"
 
-#ifdef SCI_NAMESPACE
 using namespace Scintilla;
-#endif
 
 typedef std::map<std::string, std::string> mapss;
 
@@ -102,7 +100,7 @@ struct VarChain {
 static int ExpandAllInPlace(const PropSetSimple &props, std::string &withVars, int maxExpands, const VarChain &blankVars) {
 	size_t varStart = withVars.find("$(");
 	while ((varStart != std::string::npos) && (maxExpands > 0)) {
-		size_t varEnd = withVars.find(")", varStart+2);
+		const size_t varEnd = withVars.find(")", varStart+2);
 		if (varEnd == std::string::npos) {
 			break;
 		}

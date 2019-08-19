@@ -8,9 +8,7 @@
 #ifndef EDITVIEW_H
 #define EDITVIEW_H
 
-#ifdef SCI_NAMESPACE
 namespace Scintilla {
-#endif
 
 struct PrintParameters {
 	int magnification;
@@ -147,7 +145,7 @@ public:
 		const ViewStyle &vsDraw);
 	void FillLineRemainder(Surface *surface, const EditModel &model, const ViewStyle &vsDraw, const LineLayout *ll,
 		Sci::Line line, PRectangle rcArea, int subLine) const;
-	long FormatRange(bool draw, Sci_RangeToFormat *pfr, Surface *surface, Surface *surfaceMeasure,
+	Sci::Position FormatRange(bool draw, Sci_RangeToFormat *pfr, Surface *surface, Surface *surfaceMeasure,
 		const EditModel &model, const ViewStyle &vs);
 };
 
@@ -177,8 +175,6 @@ public:
 	}
 };
 
-#ifdef SCI_NAMESPACE
 }
-#endif
 
 #endif

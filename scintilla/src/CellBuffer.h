@@ -10,9 +10,7 @@
 
 #include "Position.h"
 
-#ifdef SCI_NAMESPACE
 namespace Scintilla {
-#endif
 
 // Interface to per-line data that wants to see each line insertion and deletion
 class PerLine {
@@ -28,7 +26,7 @@ public:
  */
 class LineVector {
 
-	Partitioning starts;
+	Partitioning<int> starts;
 	PerLine *perLine;
 
 public:
@@ -137,6 +135,7 @@ public:
  */
 class CellBuffer {
 private:
+	bool hasStyles;
 	SplitVector<char> substance;
 	SplitVector<char> style;
 	bool readOnly;
@@ -155,7 +154,7 @@ private:
 
 public:
 
-	CellBuffer();
+	CellBuffer(bool hasStyles_);
 	// Deleted so CellBuffer objects can not be copied.
 	CellBuffer(const CellBuffer &) = delete;
 	void operator=(const CellBuffer &) = delete;
@@ -222,8 +221,6 @@ public:
 	void PerformRedoStep();
 };
 
-#ifdef SCI_NAMESPACE
 }
-#endif
 
 #endif

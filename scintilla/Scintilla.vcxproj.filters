@@ -312,6 +312,21 @@
     <ClCompile Include="..\onigmo\st.c">
       <Filter>onigmo</Filter>
     </ClCompile>
+    <ClCompile Include="lexers\LexMSSQL.cxx">
+      <Filter>lexers</Filter>
+    </ClCompile>
+    <ClCompile Include="lexers\LexMySQL.cxx">
+      <Filter>lexers</Filter>
+    </ClCompile>
+    <ClCompile Include="lexers\LexRegistry.cxx">
+      <Filter>lexers</Filter>
+    </ClCompile>
+    <ClCompile Include="lexlib\DefaultLexer.cxx">
+      <Filter>lexlib</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DBCS.cxx">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\ILexer.h">
@@ -473,7 +488,6 @@
     <ClInclude Include="win32\PlatWin.h">
       <Filter>win32</Filter>
     </ClInclude>
-    <ClInclude Include="include\Sci_Position.h" />
     <ClInclude Include="..\onigmo\enc\jis\props.h">
       <Filter>onigmo\enc\jis</Filter>
     </ClInclude>
@@ -506,6 +520,18 @@
     </ClInclude>
     <ClInclude Include="..\onigmo\regparse.h">
       <Filter>onigmo</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ILoader.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Sci_Position.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="lexlib\DefaultLexer.h">
+      <Filter>lexlib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DBCS.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

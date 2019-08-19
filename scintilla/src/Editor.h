@@ -8,9 +8,7 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-#ifdef SCI_NAMESPACE
 namespace Scintilla {
-#endif
 
 /**
  */
@@ -314,6 +312,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void ThinRectangularRange();
 	void InvalidateSelection(SelectionRange newMain, bool invalidateWholeSelection=false);
 	void InvalidateWholeSelection();
+	SelectionRange LineSelectionRange(SelectionPosition currentPos_, SelectionPosition anchor_) const;
 	void SetSelection(SelectionPosition currentPos_, SelectionPosition anchor_);
 	void SetSelection(Sci::Position currentPos_, Sci::Position anchor_);
 	void SetSelection(SelectionPosition currentPos_);
@@ -379,7 +378,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void PaintSelMargin(Surface *surfaceWindow, PRectangle &rc);
 	void RefreshPixMaps(Surface *surfaceWindow);
 	void Paint(Surface *surfaceWindow, PRectangle rcArea);
-	long FormatRange(bool draw, Sci_RangeToFormat *pfr);
+	Sci::Position FormatRange(bool draw, Sci_RangeToFormat *pfr);
 	int TextWidth(int style, const char *text);
 
 	virtual void SetVerticalScrollPos() = 0;
@@ -425,19 +424,13 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void NotifySavePoint(bool isSavePoint);
 	void NotifyModifyAttempt();
 	virtual void NotifyDoubleClick(Point pt, int modifiers);
-	virtual void NotifyDoubleClick(Point pt, bool shift, bool ctrl, bool alt);
 	void NotifyHotSpotClicked(Sci::Position position, int modifiers);
-	void NotifyHotSpotClicked(Sci::Position position, bool shift, bool ctrl, bool alt);
 	void NotifyHotSpotDoubleClicked(Sci::Position position, int modifiers);
-	void NotifyHotSpotDoubleClicked(Sci::Position position, bool shift, bool ctrl, bool alt);
 	void NotifyHotSpotReleaseClick(Sci::Position position, int modifiers);
-	void NotifyHotSpotReleaseClick(Sci::Position position, bool shift, bool ctrl, bool alt);
 	bool NotifyUpdateUI();
 	void NotifyPainted();
 	void NotifyIndicatorClick(bool click, Sci::Position position, int modifiers);
-	void NotifyIndicatorClick(bool click, Sci::Position position, bool shift, bool ctrl, bool alt);
 	bool NotifyMarginClick(Point pt, int modifiers);
-	bool NotifyMarginClick(Point pt, bool shift, bool ctrl, bool alt);
 	bool NotifyMarginRightClick(Point pt, int modifiers);
 	void NotifyNeedShown(Sci::Position pos, Sci::Position len);
 	void NotifyDwelling(Point pt, bool state);
@@ -476,15 +469,14 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	virtual int KeyCommand(unsigned int iMessage);
 	virtual int KeyDefault(int /* key */, int /*modifiers*/);
 	int KeyDownWithModifiers(int key, int modifiers, bool *consumed);
-	int KeyDown(int key, bool shift, bool ctrl, bool alt, bool *consumed=0);
 
 	void Indent(bool forwards);
 
 	virtual CaseFolder *CaseFolderForEncoding();
 	Sci::Position FindText(uptr_t wParam, sptr_t lParam);
 	void SearchAnchor();
-	long SearchText(unsigned int iMessage, uptr_t wParam, sptr_t lParam);
-	long SearchInTarget(const char *text, Sci::Position length);
+	Sci::Position SearchText(unsigned int iMessage, uptr_t wParam, sptr_t lParam);
+	Sci::Position SearchInTarget(const char *text, Sci::Position length);
 	void GoToLine(Sci::Line lineNo);
 
 	virtual void CopyToClipboard(const SelectionText &selectedText) = 0;
@@ -510,17 +502,12 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void MouseLeave();
 	virtual void ButtonDownWithModifiers(Point pt, unsigned int curTime, int modifiers);
 	virtual void RightButtonDownWithModifiers(Point pt, unsigned int curTime, int modifiers);
-	virtual void ButtonDown(Point pt, unsigned int curTime, bool shift, bool ctrl, bool alt);
-	void ButtonMoveWithModifiers(Point pt, int modifiers);
-	void ButtonMove(Point pt);
-	void ButtonUp(Point pt, unsigned int curTime, bool ctrl);
+	void ButtonMoveWithModifiers(Point pt, unsigned int curTime, int modifiers);
+	void ButtonUpWithModifiers(Point pt, unsigned int curTime, int modifiers);
 
-	void Tick();
 	bool Idle();
-	virtual void SetTicking(bool on);
 	enum TickReason { tickCaret, tickScroll, tickWiden, tickDwell, tickPlatform };
 	virtual void TickFor(TickReason reason);
-	virtual bool FineTickerAvailable();
 	virtual bool FineTickerRunning(TickReason reason);
 	virtual void FineTickerStart(TickReason reason, int millis, int tolerance);
 	virtual void FineTickerCancel(TickReason reason);
@@ -563,7 +550,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 
 	bool PositionIsHotspot(Sci::Position position) const;
 	bool PointIsHotspot(Point pt);
-	void SetHotSpotRange(Point *pt);
+	void SetHotSpotRange(const Point *pt);
 	Range GetHotSpotRange() const override;
 	void SetHoverIndicatorPosition(Sci::Position position);
 	void SetHoverIndicatorPoint(Point pt);
@@ -580,11 +567,6 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void SetSelectionNMessage(unsigned int iMessage, uptr_t wParam, sptr_t lParam);
 
 	static const char *StringFromEOLMode(int eolMode);
-
-	// Coercion functions for transforming WndProc parameters into pointers
-	static void *PtrFromSPtr(sptr_t lParam) {
-		return reinterpret_cast<void *>(lParam);
-	}
 
 	static sptr_t StringResult(sptr_t lParam, const char *val);
 	static sptr_t BytesResult(sptr_t lParam, const unsigned char *val, size_t len);
@@ -638,8 +620,6 @@ public:
 	}
 };
 
-#ifdef SCI_NAMESPACE
 }
-#endif
 
 #endif

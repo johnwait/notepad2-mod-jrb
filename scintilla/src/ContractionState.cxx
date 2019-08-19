@@ -24,9 +24,7 @@
 #include "SparseVector.h"
 #include "ContractionState.h"
 
-#ifdef SCI_NAMESPACE
 using namespace Scintilla;
-#endif
 
 ContractionState::ContractionState() : linesInDocument(1) {
 }
@@ -37,11 +35,11 @@ ContractionState::~ContractionState() {
 
 void ContractionState::EnsureData() {
 	if (OneToOne()) {
-		visible.reset(new RunStyles());
-		expanded.reset(new RunStyles());
-		heights.reset(new RunStyles());
+		visible.reset(new RunStyles<Sci::Line, char>());
+		expanded.reset(new RunStyles<Sci::Line, char>());
+		heights.reset(new RunStyles<Sci::Line, int>());
 		foldDisplayTexts.reset(new SparseVector<UniqueString>());
-		displayLines.reset(new Partitioning(4));
+		displayLines.reset(new Partitioning<Sci::Line>(4));
 		InsertLines(0, linesInDocument);
 	}
 }
@@ -95,7 +93,7 @@ Sci::Line ContractionState::DocFromDisplay(Sci::Line lineDisplay) const {
 		if (lineDisplay > LinesDisplayed()) {
 			return displayLines->PartitionFromPosition(LinesDisplayed());
 		}
-		Sci::Line lineDoc = displayLines->PartitionFromPosition(lineDisplay);
+		const Sci::Line lineDoc = displayLines->PartitionFromPosition(lineDisplay);
 		PLATFORM_ASSERT(GetVisible(lineDoc));
 		return lineDoc;
 	}
@@ -113,7 +111,7 @@ void ContractionState::InsertLine(Sci::Line lineDoc) {
 		heights->SetValueAt(lineDoc, 1);
 		foldDisplayTexts->InsertSpace(lineDoc, 1);
 		foldDisplayTexts->SetValueAt(lineDoc, nullptr);
-		Sci::Line lineDisplay = DisplayFromDoc(lineDoc);
+		const Sci::Line lineDisplay = DisplayFromDoc(lineDoc);
 		displayLines->InsertPartition(lineDoc, lineDisplay);
 		displayLines->InsertText(lineDoc, 1);
 	}
@@ -168,7 +166,7 @@ bool ContractionState::SetVisible(Sci::Line lineDocStart, Sci::Line lineDocEnd, 
 		if ((lineDocStart <= lineDocEnd) && (lineDocStart >= 0) && (lineDocEnd < LinesInDoc())) {
 			for (Sci::Line line = lineDocStart; line <= lineDocEnd; line++) {
 				if (GetVisible(line) != isVisible) {
-					int difference = isVisible ? heights->ValueAt(line) : -heights->ValueAt(line);
+					const int difference = isVisible ? heights->ValueAt(line) : -heights->ValueAt(line);
 					visible->SetValueAt(line, isVisible ? 1 : 0);
 					displayLines->InsertText(line, difference);
 					delta += difference;
@@ -245,7 +243,7 @@ Sci::Line ContractionState::ContractedNext(Sci::Line lineDocStart) const {
 		if (!expanded->ValueAt(lineDocStart)) {
 			return lineDocStart;
 		} else {
-			Sci::Line lineDocNextChange = expanded->EndRun(lineDocStart);
+			const Sci::Line lineDocNextChange = expanded->EndRun(lineDocStart);
 			if (lineDocNextChange < LinesInDoc())
 				return lineDocNextChange;
 			else
@@ -286,7 +284,7 @@ bool ContractionState::SetHeight(Sci::Line lineDoc, int height) {
 }
 
 void ContractionState::ShowAll() {
-	Sci::Line lines = LinesInDoc();
+	const Sci::Line lines = LinesInDoc();
 	Clear();
 	linesInDocument = lines;
 }
