@@ -76,24 +76,28 @@
     <IntDir>..\bin\$(Configuration)_$(PlatformShortName)\obj\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <OutDir>..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
+    <TargetName>$(ProjectName)-jrb</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <GenerateManifest>false</GenerateManifest>
     <IntDir>..\bin\$(Configuration)_$(PlatformShortName)\obj\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
+    <TargetName>$(ProjectName)-jrb</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
     <IntDir>..\bin\$(Configuration)_$(PlatformShortName)\obj\</IntDir>
     <LinkIncremental>true</LinkIncremental>
     <OutDir>..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
+    <TargetName>$(ProjectName)-jrb</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <GenerateManifest>false</GenerateManifest>
     <IntDir>..\bin\$(Configuration)_$(PlatformShortName)\obj\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <OutDir>..\bin\$(Configuration)_$(PlatformShortName)\</OutDir>
+    <TargetName>$(ProjectName)-jrb</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -106,6 +110,7 @@
       <PreprocessorDefinitions>JRB_BUILD;STATIC_BUILD;SCI_LEXER;BOOKMARK_EDITION;WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;imm32.lib;shlwapi.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -125,13 +130,14 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\scintilla\include;..\scintilla\lexlib;..\scintilla\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>JRB_BUILD;STATIC_BUILD;SCI_LEXER;BOOKMARK_EDITION;_WIN64;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;imm32.lib;shlwapi.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -156,6 +162,7 @@
       <PreprocessorDefinitions>JRB_BUILD;STATIC_BUILD;SCI_LEXER;BOOKMARK_EDITION;WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;imm32.lib;shlwapi.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -183,6 +190,7 @@
       <PreprocessorDefinitions>JRB_BUILD;STATIC_BUILD;SCI_LEXER;BOOKMARK_EDITION;_WIN64;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;imm32.lib;shlwapi.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -242,6 +250,9 @@
     <ProjectReference Include="..\scintilla\Scintilla.vcxproj">
       <Project>{5877b917-512b-49f5-b514-1b4159e7a9ca}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="..\res\Notepad2.exe.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -16,8 +16,6 @@
 #ifndef NOTEPAD2_VERSION_H
 #define NOTEPAD2_VERSION_H
 
-#include "VersionRev.h"
-
 #ifndef _T
 #if !defined(ISPP_INVOKED) && (defined(UNICODE) || defined(_UNICODE))
 #define _T(text) L##text
@@ -26,6 +24,8 @@
 #endif
 #endif // _T
 
+#include "VersionRev.h"
+
 #define DO_STRINGIFY(x) _T(#x)
 #define STRINGIFY(x)    DO_STRINGIFY(x)
 
@@ -33,9 +33,8 @@
 #define VERSION_MINOR   2
 #define VERSION_BUILD   25
 
-// 2019-08-04: Provisioned for future mods & personal builds (JRB)
 #ifdef JRB_BUILD
-    #define MY_APPNAME                   L"Notepad2-jrb"
+    #define MY_APPNAME                   L"Notepad2-mod-jrb"
 #else
     #define MY_APPNAME                   L"Notepad2-mod"
 #endif

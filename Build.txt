@@ -1,9 +1,9 @@
-﻿Building Notepad2-mod
----------------------
+﻿Building Notepad2-mod-jrb
+-------------------------
 
-In order to compile & build the Notepad2-mod project from source, using 
-Microsoft® Visual Studio® 2017 Community is recommended. Yuo will also 
-need the following build dependencies:
+In order to compile & build the Notepad2-mod-jrb project from source,
+using Microsoft® Visual Studio® 2017 Community is recommended. You will
+also need the following build dependencies:
 
   1) Min GW and MSYS collection of GNU tools;
      - See http://www.mingw.org/wiki/MSYS for details on MinGW

@@ -82,12 +82,14 @@
 #define IDD_FILEMRU                     109
 #define IDC_FINDPREV                    109
 #define IDC_NEXTSTYLE                   109
-#define IDC_JRB_ABOUT1                  109
+#define IDC_JRB_ABOUT_LN1               109
 #define IDD_CHANGENOTIFY                110
 #define IDC_IMPORT                      110
-#define IDC_JRB_ABOUT2                  110
+#define IDC_DOTMATCHALL                 110
+#define IDC_JRB_ABOUT_LN2               110
 #define IDD_MODIFYLINES                 111
 #define IDC_EXPORT                      111
+#define IDC_FINDTEXTLABEL               111
 #define IDC_REPLACE                     112
 #define IDC_TITLE                       112
 #define IDD_ALIGN                       112
@@ -150,6 +152,9 @@
 #define IDS_BACKSLASHHELP               10019
 #define IDS_REGEXPHELP                  10020
 #define IDS_WILDCARDHELP                10021
+#define IDS_REGEXPHELP_DOTALL           10022
+#define IDS_FINDTEXTLABEL_SEARCHSTR     10023
+#define IDS_FINDTEXTLABEL_SEARCHPTRN    10024
 #define CMD_ESCAPE                      20000
 #define CMD_SHIFTESC                    20001
 #define CMD_CTRLENTER                   20002

@@ -35,7 +35,7 @@ Notes:
   or Visual Studio Code (https://code.visualstudio.com).
 * This fork is not expected to be localized either.
 
-Contributors to the Notepad2 fork:
+All contributors to the Notepad2 fork:
 * Kai Liu (Notepad2-mod main contributor)
 * RL Vision (for the Bookmarks feature)
 * Aleksandar Lekov
@@ -43,22 +43,28 @@ Contributors to the Notepad2 fork:
 * Everyone else on GitHub; discover them at
   https://github.com/XhmikosR/notepad2-mod/graphs/contributors
 
-Contributors to this Notepad2-mod fork:
-* Rainer Kottenhoff (https://github.com/RaiKoHoff) and the Notepad3
-  project (for the Onigmo bindings)
+Contributors to this Notepad2-mod-jrb fork:
+* Rainer Kottenhoff (https://github.com/RaiKoHoff), Rizonesoft
+  (https://www.rizonesoft.com) and the Notepad3 project for the Onigmo
+  integration and bindings
+* Jonathan R.-Brochu (https://github.com/johnwait) for the fork itself
 
 More information:
+* Official Notepad3 website:   https://www.rizonesoft.com/downloads/notepad3/
+* Notepad3 repository:         https://github.com/rizonesoft/Notepad3/
+* Onigmo repository:           https://github.com/k-takata/Onigmo/
 * Official Notepad2-mod site:  https://xhmikosr.github.io/notepad2-mod/
 * Notepad2-mod repository:     https://github.com/XhmikosR/notepad2-mod/
 * Code folding usage guide:    https://github.com/XhmikosR/notepad2-mod/wiki/Code-Folding-Usage
 * Official Notepad2 website:   http://www.flos-freeware.ch/notepad2.html
 
-Keyboard shortcuts changed compared to Notepad2:
+Keyboard shortcuts changed for Notepad2-mod:
 * [Ctrl]+[Alt]+[F2]            Expand selection to next match.
 * [Ctrl]+[Alt]+[Shift]+[F2]    Expand selection to previous match.
 * [Ctrl]+[Shift]+[Enter]       New line with toggled auto indent option.
 
-Keyboard shortcuts changed compared to Notepad2-mod:
+Keyboard shortcuts changed for Notepad2-mod-jrb:
 * [Ctrl]+[Shift]+[F12]         Customize syntax schemes.
 
-It's recommended you use MSVC 2017 or later to build Notepad2-mod-jrb.
+Build notes:
+* It's recommended you use MSVC 2017 or later to build Notepad2-mod-jrb.

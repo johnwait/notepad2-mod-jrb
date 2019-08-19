@@ -2,9 +2,6 @@
 
 > *A fork of Notepad2-mod aimed mainly at providing better regular expressions support*
 
-[//]: # "[![Build status](https://img.shields.io/appveyor/ci/XhmikosR/notepad2-mod/master.svg)](https://ci.appveyor.com/project/XhmikosR/notepad2-mod/branch/master)"
-[//]: # "[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/1113.svg)](https://scan.coverity.com/projects/1113)"
-
 ## Changes compared to the official Notepad2:
 
 * Code folding
@@ -43,7 +40,7 @@
   code editor like **[Atom](https://atom.io)** or **[Visual Studio Code](https://code.visualstudio.com)**.
 * This fork is not expected to be **localized** either.
 
-## Contributors to the Notepad2 fork:
+## All contributors to the Notepad2 fork:
 
 * [Kai Liu](http://code.kliu.org/misc/notepad2/) (Notepad2-mod main contributor)
 * [RL Vision](http://www.rlvision.com/notepad2/about.asp) (for the Bookmarks feature)
@@ -51,27 +48,32 @@
 * Bruno Barbieri
 * Everyone else on [GitHub](https://github.com/XhmikosR/notepad2-mod/graphs/contributors)
 
-## Contributors to this Notepad2-mod fork:
+## Contributors to this Notepad2-mod-jrb fork:
 
-* [Rainer Kottenhoff (RaiKoHoff)](https://github.com/RaiKoHoff) and the
-  [Notepad3 project](https://github.com/rizonesoft/Notepad3) (for the
-  [Onigmo bindings](https://github.com/rizonesoft/Notepad3/commit/85531cae8e2037eac9d60196facda18232d70479))
+* [Rainer Kottenhoff (RaiKoHoff)](https://github.com/RaiKoHoff), [Rizonesoft](https://www.rizonesoft.com) and the [Notepad3 project](https://github.com/rizonesoft/Notepad3) for the
+  [Onigmo](https://github.com/k-takata/Onigmo) [integration and bindings](https://github.com/rizonesoft/Notepad3/commit/85531cae8e2037eac9d60196facda18232d70479)
+* [Jonathan R.-Brochu](https://github.com/johnwait) for the fork itself
 
 ## More information:
 
-* [Official Notepad2-mod website](https://xhmikosr.github.io/notepad2-mod/)
-* [Notepad2-mod repository (archived)](https://github.com/XhmikosR/notepad2-mod/)
-* [Code folding usage guide](https://github.com/XhmikosR/notepad2-mod/wiki/Code-Folding-Usage)
+* [Official Notepad3 website (on rizonesoft.com)](https://www.rizonesoft.com/downloads/notepad3/)
+* [Notepad3 repository (GitHub)](https://github.com/rizonesoft/Notepad3/)
+* [Onigmo repository (GitHub)](https://github.com/k-takata/Onigmo/)
+* [Official Notepad2-mod website (on GitHub)](https://xhmikosr.github.io/notepad2-mod/)
+* [Notepad2-mod repository (GitHub, archived)](https://github.com/XhmikosR/notepad2-mod/)
+* [Code folding usage guide (GitHub, wiki)](https://github.com/XhmikosR/notepad2-mod/wiki/Code-Folding-Usage)
 * [Official Notepad2 website](http://www.flos-freeware.ch/notepad2.html)
 
-## Keyboard shortcuts changed compared to Notepad2:
+## Keyboard shortcuts changed for Notepad2-mod:
 
 * <kbd>Ctrl+Alt+F2</kbd>       Expand selection to next match.
 * <kbd>Ctrl+Alt+Shift+F2</kbd> Expand selection to previous match.
 * <kbd>Ctrl+Shift+Enter</kbd>  New line with toggled auto indent option.
 
-## Keyboard shortcuts changed compared to Notepad2-mod:
+## Keyboard shortcuts changed for Notepad2-mod-jrb:
 
 * <kbd>Ctrl+Shift+F12</kbd>    Customize syntax schemes. *(previously was <kbd>Ctrl+F12</kbd>)*
 
-It's recommended you use [MSVC 2017 or later](https://visualstudio.microsoft.com/vs/whatsnew) to build Notepad2-mod-jrb.
+## Build Notes:
+
+* It's recommended you use [MSVC 2017 or later](https://visualstudio.microsoft.com/vs/whatsnew) to build Notepad2-mod-jrb.

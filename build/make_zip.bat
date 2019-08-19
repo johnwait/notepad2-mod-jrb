@@ -49,8 +49,8 @@ SET INPUTDIRx64=bin\%COMPILER%\Release_x64
 IF /I NOT "%COMPILER%" == "VS2017" SET SUFFIX=_%COMPILER%
 SET "TEMP_NAME=temp_zip%SUFFIX%"
 
-IF NOT EXIST "..\%INPUTDIRx86%\Notepad2.exe" CALL :SUBMSG "ERROR" "Compile Notepad2 x86 first!"
-IF NOT EXIST "..\%INPUTDIRx64%\Notepad2.exe" CALL :SUBMSG "ERROR" "Compile Notepad2 x64 first!"
+IF NOT EXIST "..\%INPUTDIRx86%\Notepad2-jrb.exe" CALL :SUBMSG "ERROR" "Compile Notepad2 x86 first!"
+IF NOT EXIST "..\%INPUTDIRx64%\Notepad2-jrb.exe" CALL :SUBMSG "ERROR" "Compile Notepad2 x64 first!"
 
 CALL :SubGetVersion
 CALL :SubDetectSevenzipPath
@@ -103,13 +103,13 @@ IF EXIST "%TEMP_NAME%"     RD /S /Q "%TEMP_NAME%"
 IF NOT EXIST "%TEMP_NAME%" MD "%TEMP_NAME%"
 IF NOT EXIST "packages"    MD "packages"
 
-FOR %%A IN ("..\License.txt" "..\%1\Notepad2.exe"^
+FOR %%A IN ("..\License.txt" "..\%1\Notepad2-jrb.exe"^
  "..\distrib\Notepad2.ini" "..\Notepad2.txt" "..\Readme-mod.txt"
 ) DO COPY /Y /V "%%A" "%TEMP_NAME%\"
 
 PUSHD "%TEMP_NAME%"
 "%SEVENZIP%" a -tzip -mx=9^
- "%ZIP_NAME%.zip" "License.txt" "Notepad2.exe"^
+ "%ZIP_NAME%.zip" "License.txt" "Notepad2-jrb.exe"^
  "Notepad2.ini" "Notepad2.txt" "Readme-mod.txt" >NUL
 IF %ERRORLEVEL% NEQ 0 CALL :SUBMSG "ERROR" "Compilation failed!"
 
@@ -153,9 +153,9 @@ EXIT /B
 IF %ERRORLEVEL% NEQ 0 EXIT /B
 REM %1 is the subfolder
 
-CALL "%~dp0sign.bat" "..\%1\Notepad2.exe" || (CALL :SUBMSG "ERROR" "Problem signing ..\%1\Notepad2.exe" & GOTO Break)
+CALL "%~dp0sign.bat" "..\%1\Notepad2-jrb.exe" || (CALL :SUBMSG "ERROR" "Problem signing ..\%1\Notepad2-jrb.exe" & GOTO Break)
 
-CALL :SUBMSG "INFO" "..\%1\Notepad2.exe signed successfully."
+CALL :SUBMSG "INFO" "..\%1\Notepad2-jrb.exe signed successfully."
 
 :Break
 EXIT /B

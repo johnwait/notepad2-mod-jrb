@@ -56,8 +56,8 @@ SET INPUTDIRx64=bin\%COMPILER%\Release_x64
 IF /I NOT "%COMPILER%" == "VS2017" SET SUFFIX=_%COMPILER%
 SET "TEMP_NAME=temp_zip%SUFFIX%"
 
-IF NOT EXIST "..\%INPUTDIRx86%\Notepad2.exe" CALL :SUBMSG "ERROR" "Compile Notepad2 x86 first!"
-IF NOT EXIST "..\%INPUTDIRx64%\Notepad2.exe" CALL :SUBMSG "ERROR" "Compile Notepad2 x64 first!"
+IF NOT EXIST "..\%INPUTDIRx86%\Notepad2-jrb.exe" CALL :SUBMSG "ERROR" "Compile Notepad2 x86 first!"
+IF NOT EXIST "..\%INPUTDIRx64%\Notepad2-jrb.exe" CALL :SUBMSG "ERROR" "Compile Notepad2 x64 first!"
 
 IF /I "%SIGN%" == "True" CALL :SubSign %INPUTDIRx86%
 IF /I "%SIGN%" == "True" CALL :SubSign %INPUTDIRx64%
@@ -114,9 +114,9 @@ EXIT /B
 IF %ERRORLEVEL% NEQ 0 EXIT /B
 REM %1 is the subfolder
 
-CALL "%~dp0sign.bat" "..\%1\Notepad2.exe" || (CALL :SUBMSG "ERROR" "Problem signing ..\%1\Notepad2.exe" & GOTO Break)
+CALL "%~dp0sign.bat" "..\%1\Notepad2-jrb.exe" || (CALL :SUBMSG "ERROR" "Problem signing ..\%1\Notepad2-jrb.exe" & GOTO Break)
 
-CALL :SUBMSG "INFO" "..\%1\Notepad2.exe signed successfully."
+CALL :SUBMSG "INFO" "..\%1\Notepad2-jrb.exe signed successfully."
 
 :Break
 EXIT /B

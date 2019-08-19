@@ -242,13 +242,13 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd,UINT umsg,WPARAM wParam,LPARAM lParam)
         if (hFontJrbAbout)
           DeleteObject(hFontJrbAbout);
 
-        if (NULL == (hFontJrbAbout = (HFONT)SendDlgItemMessage(hwnd,IDC_JRB_ABOUT1,WM_GETFONT,0,0)))
+        if (NULL == (hFontJrbAbout = (HFONT)SendDlgItemMessage(hwnd,IDC_JRB_ABOUT_LN1,WM_GETFONT,0,0)))
           hFontJrbAbout = GetStockObject(DEFAULT_GUI_FONT);
         GetObject(hFontJrbAbout,sizeof(LOGFONT),&lf);
         lf.lfItalic = 1;
         hFontJrbAbout = CreateFontIndirect(&lf);
-        SendDlgItemMessage(hwnd,IDC_JRB_ABOUT1,WM_SETFONT,(WPARAM)hFontJrbAbout,TRUE);
-        SendDlgItemMessage(hwnd,IDC_JRB_ABOUT2,WM_SETFONT,(WPARAM)hFontJrbAbout,TRUE);
+        SendDlgItemMessage(hwnd,IDC_JRB_ABOUT_LN1,WM_SETFONT,(WPARAM)hFontJrbAbout,TRUE);
+        SendDlgItemMessage(hwnd,IDC_JRB_ABOUT_LN2,WM_SETFONT,(WPARAM)hFontJrbAbout,TRUE);
 #endif
 
         if (GetDlgItem(hwnd,IDC_WEBPAGE) == NULL) {

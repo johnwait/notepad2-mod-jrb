@@ -1,13 +1,13 @@
-;* Notepad2-mod - Installer script
+;* Notepad2-mod-jrb - Installer script
 ;*
 ;* Copyright (C) 2010-2017 XhmikosR
 ;*
-;* This file is part of Notepad2-mod.
+;* This file is part of Notepad2-mod-jrb and adapted from Notepad2-mod.
 ;*
 ;* See License.txt for details.
 
 ; Requirements:
-; Inno Setup: http://www.jrsoftware.org/isdl.php
+;   Inno Setup: http://www.jrsoftware.org/isdl.php
 
 
 #define VS2017
@@ -27,11 +27,11 @@
 
 #define bindir "..\bin\" + compiler
 
-#ifnexist bindir + "\Release_x86\Notepad2.exe"
+#ifnexist bindir + "\Release_x86\Notepad2-jrb.exe"
   #error Compile Notepad2 x86 first
 #endif
 
-#ifnexist bindir + "\Release_x64\Notepad2.exe"
+#ifnexist bindir + "\Release_x64\Notepad2-jrb.exe"
   #error Compile Notepad2 x64 first
 #endif
 
@@ -40,9 +40,9 @@
 #define VerBuild
 #define VerRevision
 
-#expr ParseVersion(bindir + "\Release_x86\Notepad2.exe", VerMajor, VerMinor, VerBuild, VerRevision)
+#expr ParseVersion(bindir + "\Release_x86\Notepad2-jrb.exe", VerMajor, VerMinor, VerBuild, VerRevision)
 #define app_version   str(VerMajor) + "." + str(VerMinor) + "." + str(VerBuild) + "." + str(VerRevision)
-#define app_name      "Notepad2-mod"
+#define app_name      "Notepad2-mod-jrb"
 #define app_copyright "Copyright © 2004-2017, Florian Balmer et al."
 #define quick_launch  "{userappdata}\Microsoft\Internet Explorer\Quick Launch"
 
@@ -52,14 +52,14 @@ AppId={#app_name}
 AppName={#app_name}
 AppVersion={#app_version}
 AppVerName={#app_name} {#app_version}
-AppPublisher=XhmikosR
-AppPublisherURL=https://github.com/XhmikosR/notepad2-mod
-AppSupportURL=https://github.com/XhmikosR/notepad2-mod
-AppUpdatesURL=https://github.com/XhmikosR/notepad2-mod
-AppContact=https://github.com/XhmikosR/notepad2-mod
+AppPublisher=Jonathan R.-Brochu
+AppPublisherURL=https://github.com/johnwait/notepad2-mod
+AppSupportURL=https://github.com/johnwait/notepad2-mod
+AppUpdatesURL=https://github.com/johnwait/notepad2-mod
+AppContact=https://github.com/johnwait/notepad2-mod
 AppCopyright={#app_copyright}
 VersionInfoVersion={#app_version}
-UninstallDisplayIcon={app}\Notepad2.exe
+UninstallDisplayIcon={app}\Notepad2-jrb.exe
 #if defined(VS2017)
 UninstallDisplayName={#app_name} {#app_version}
 #else
@@ -137,19 +137,19 @@ Name: remove_default;     Description: {cm:tsk_RemoveDefault};     GroupDescript
 
 
 [Files]
-Source: {#bindir}\Release_x64\Notepad2.exe; DestDir: {app};                  Flags: ignoreversion;                         Check: Is64BitInstallMode()
-Source: {#bindir}\Release_x86\Notepad2.exe; DestDir: {app};                  Flags: ignoreversion;                         Check: not Is64BitInstallMode()
-Source: ..\License.txt;                     DestDir: {app};                  Flags: ignoreversion
-Source: ..\Notepad2.txt;                    DestDir: {app};                  Flags: ignoreversion
-Source: ..\Readme-mod.txt;                  DestDir: {app};                  Flags: ignoreversion
-Source: Notepad2.ini;                       DestDir: {userappdata}\Notepad2; Flags: onlyifdoesntexist uninsneveruninstall
+Source: {#bindir}\Release_x64\Notepad2-jrb.exe; DestDir: {app};                  Flags: ignoreversion;                         Check: Is64BitInstallMode()
+Source: {#bindir}\Release_x86\Notepad2-jrb.exe; DestDir: {app};                  Flags: ignoreversion;                         Check: not Is64BitInstallMode()
+Source: ..\License.txt;                         DestDir: {app};                  Flags: ignoreversion
+Source: ..\Notepad2.txt;                        DestDir: {app};                  Flags: ignoreversion
+Source: ..\Readme-mod-jrb.txt;                  DestDir: {app};                  Flags: ignoreversion
+Source: Notepad2.ini;                           DestDir: {userappdata}\Notepad2; Flags: onlyifdoesntexist uninsneveruninstall
 
 
 [Icons]
-Name: {commondesktop}\{#app_name}; Filename: {app}\Notepad2.exe; Tasks: desktopicon\common; Comment: {#app_name} {#app_version}; WorkingDir: {app}; AppUserModelID: Notepad2; IconFilename: {app}\Notepad2.exe; IconIndex: 0
-Name: {userdesktop}\{#app_name};   Filename: {app}\Notepad2.exe; Tasks: desktopicon\user;   Comment: {#app_name} {#app_version}; WorkingDir: {app}; AppUserModelID: Notepad2; IconFilename: {app}\Notepad2.exe; IconIndex: 0
-Name: {userstartmenu}\{#app_name}; Filename: {app}\Notepad2.exe; Tasks: startup_icon;       Comment: {#app_name} {#app_version}; WorkingDir: {app}; AppUserModelID: Notepad2; IconFilename: {app}\Notepad2.exe; IconIndex: 0
-Name: {#quick_launch}\{#app_name}; Filename: {app}\Notepad2.exe; Tasks: quicklaunchicon;    Comment: {#app_name} {#app_version}; WorkingDir: {app};                           IconFilename: {app}\Notepad2.exe; IconIndex: 0
+Name: {commondesktop}\{#app_name}; Filename: {app}\Notepad2-jrb.exe; Tasks: desktopicon\common; Comment: {#app_name} {#app_version}; WorkingDir: {app}; AppUserModelID: Notepad2; IconFilename: {app}\Notepad2-jrb.exe; IconIndex: 0
+Name: {userdesktop}\{#app_name};   Filename: {app}\Notepad2-jrb.exe; Tasks: desktopicon\user;   Comment: {#app_name} {#app_version}; WorkingDir: {app}; AppUserModelID: Notepad2; IconFilename: {app}\Notepad2-jrb.exe; IconIndex: 0
+Name: {userstartmenu}\{#app_name}; Filename: {app}\Notepad2-jrb.exe; Tasks: startup_icon;       Comment: {#app_name} {#app_version}; WorkingDir: {app}; AppUserModelID: Notepad2; IconFilename: {app}\Notepad2-jrb.exe; IconIndex: 0
+Name: {#quick_launch}\{#app_name}; Filename: {app}\Notepad2-jrb.exe; Tasks: quicklaunchicon;    Comment: {#app_name} {#app_version}; WorkingDir: {app};                           IconFilename: {app}\Notepad2-jrb.exe; IconIndex: 0
 
 
 [INI]
@@ -157,7 +157,7 @@ Filename: {app}\Notepad2.ini; Section: Notepad2; Key: Notepad2.ini; String: %APP
 
 
 [Run]
-Filename: {app}\Notepad2.exe; Description: {cm:LaunchProgram,{#app_name}}; WorkingDir: {app}; Flags: nowait postinstall skipifsilent unchecked
+Filename: {app}\Notepad2-jrb.exe; Description: {cm:LaunchProgram,{#app_name}}; WorkingDir: {app}; Flags: nowait postinstall skipifsilent unchecked
 
 
 [InstallDelete]
@@ -166,7 +166,7 @@ Type: files;      Name: {commondesktop}\{#app_name}.lnk; Check: not IsTaskSelect
 Type: files;      Name: {userstartmenu}\{#app_name}.lnk; Check: not IsTaskSelected('startup_icon')       and IsUpgrade()
 Type: files;      Name: {#quick_launch}\{#app_name}.lnk; Check: not IsTaskSelected('quicklaunchicon')    and IsUpgrade(); OnlyBelowVersion: 6.01
 Type: files;      Name: {app}\Notepad2.ini
-Type: files;      Name: {app}\Readme.txt
+Type: files;      Name: {app}\Readme-mod-jrb.txt
 
 
 [UninstallDelete]
@@ -189,7 +189,7 @@ var
   sDebugger: String;
 begin
   if RegQueryStringValue(HKLM, IFEO, 'Debugger', sDebugger) and
-  (sDebugger = (ExpandConstant('"{app}\Notepad2.exe" /z'))) then begin
+  (sDebugger = (ExpandConstant('"{app}\Notepad2-jrb.exe" /z'))) then begin
     Log('Custom Code: {#app_name} is set as the default notepad');
     Result := True;
   end
@@ -283,9 +283,9 @@ end;
 
 procedure AddReg();
 begin
-  RegWriteStringValue(HKCR, 'Applications\notepad2.exe', 'AppUserModelID', 'Notepad2');
-  RegWriteStringValue(HKCR, 'Applications\notepad2.exe\shell\open\command', '', ExpandConstant('"{app}\Notepad2.exe" %1'));
-  RegWriteStringValue(HKCR, '*\OpenWithList\notepad2.exe', '', '');
+  RegWriteStringValue(HKCR, 'Applications\Notepad2-jrb.exe', 'AppUserModelID', 'Notepad2');
+  RegWriteStringValue(HKCR, 'Applications\Notepad2-jrb.exe\shell\open\command', '', ExpandConstant('"{app}\Notepad2-jrb.exe" %1'));
+  RegWriteStringValue(HKCR, '*\OpenWithList\Notepad2-jrb.exe', '', '');
 end;
 
 
@@ -298,8 +298,8 @@ end;
 
 procedure RemoveReg();
 begin
-  RegDeleteKeyIncludingSubkeys(HKCR, 'Applications\notepad2.exe');
-  RegDeleteKeyIncludingSubkeys(HKCR, '*\OpenWithList\notepad2.exe');
+  RegDeleteKeyIncludingSubkeys(HKCR, 'Applications\Notepad2-jrb.exe');
+  RegDeleteKeyIncludingSubkeys(HKCR, '*\OpenWithList\Notepad2-jrb.exe');
 end;
 
 
@@ -338,14 +338,14 @@ begin
       // This is the case where the old build is installed; the DefaulNotepadCheck() returns true
       // and the set_default task isn't selected
       if not IsTaskSelected('remove_default') then
-        RegWriteStringValue(HKLM, IFEO, 'Debugger', ExpandConstant('"{app}\Notepad2.exe" /z'));
+        RegWriteStringValue(HKLM, IFEO, 'Debugger', ExpandConstant('"{app}\Notepad2-jrb.exe" /z'));
 
     end;
   end;
 
   if CurStep = ssPostInstall then begin
     if IsTaskSelected('set_default') then
-      RegWriteStringValue(HKLM, IFEO, 'Debugger', ExpandConstant('"{app}\Notepad2.exe" /z'));
+      RegWriteStringValue(HKLM, IFEO, 'Debugger', ExpandConstant('"{app}\Notepad2-jrb.exe" /z'));
     if IsTaskSelected('remove_default') then begin
       RegDeleteValue(HKLM, IFEO, 'Debugger');
       RegDeleteKeyIfEmpty(HKLM, IFEO);
