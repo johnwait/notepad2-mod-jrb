@@ -116,18 +116,18 @@
 
     <h1>Scintilla Documentation</h1>
 
-    <p>Last edited 1 February 2018 NH</p>
+    <p>Last edited 6 June 2018 NH</p>
 
     <p>There is <a class="jump" href="Design.html">an overview of the internal design of
     Scintilla</a>.<br />
      <a class="jump" href="ScintillaUsage.html">Some notes on using Scintilla</a>.<br />
      <a class="jump" href="Steps.html">How to use the Scintilla Edit Control on Windows</a>.<br />
-     <a class="jump" href="http://www.scintilla.org/dmapp.zip">A simple sample using Scintilla from
+     <a class="jump" href="https://www.scintilla.org/dmapp.zip">A simple sample using Scintilla from
     C++ on Windows</a>.<br />
-     <a class="jump" href="http://www.scintilla.org/SciTry.vb">A simple sample using Scintilla from
+     <a class="jump" href="https://www.scintilla.org/SciTry.vb">A simple sample using Scintilla from
     Visual Basic</a>.<br />
-     <a class="jump" href="http://www.scintilla.org/bait.zip">Bait is a tiny sample using Scintilla
-     on GTK+</a>.<br />
+     <a class="jump" href="https://www.scintilla.org/bait.zip">Bait is a tiny sample using Scintilla
+     on GTK</a>.<br />
      <a class="jump" href="Lexer.txt">A detailed description of how to write a lexer, including a
     discussion of folding</a>.<br />
      <a class="jump" href="http://sphere.sourceforge.net/flik/docs/scintilla-container_lexer.html">
@@ -149,8 +149,8 @@
     of a normal Edit control, Scintilla allows control of syntax styling, folding, markers, autocompletion
     and call tips.</p>
 
-    <p>The GTK+ version also uses messages in a similar way to the Windows version. This is
-    different to normal GTK+ practice but made it easier to implement rapidly.</p>
+    <p>The GTK version also uses messages in a similar way to the Windows version. This is
+    different to normal GTK practice but made it easier to implement rapidly.</p>
 
     <p>Scintilla also builds with Cocoa on OS X, with Qt, and with curses, and follows the conventions of
     those platforms.</p>
@@ -267,136 +267,139 @@
         <tr>
           <td>&cir; <a class="toc" href="#SelectionAndInformation">Selection and information</a></td>
 
-          <td>&cir; <a class="toc" href="#MultipleSelectionAndVirtualSpace">Multiple Selection and Virtual Space</a></td>
+          <td>&cir; <a class="toc" href="#ByCharacterOrCodeUnit">By character or UTF-16 code unit</a></td>
 
-          <td>&cir; <a class="toc" href="#ScrollingAndAutomaticScrolling">Scrolling and automatic
-          scrolling</a></td>
+          <td>&cir; <a class="toc" href="#MultipleSelectionAndVirtualSpace">Multiple Selection and Virtual Space</a></td>
 
         </tr>
 
         <tr>
+          <td>&cir; <a class="toc" href="#ScrollingAndAutomaticScrolling">Scrolling and automatic scrolling</a></td>
+
           <td>&cir; <a class="toc" href="#WhiteSpace">White space</a></td>
 
           <td>&cir; <a class="toc" href="#Cursor">Cursor</a></td>
 
-          <td>&cir; <a class="toc" href="#MouseCapture">Mouse capture</a></td>
-
         </tr>
 
         <tr>
+          <td>&cir; <a class="toc" href="#MouseCapture">Mouse capture</a></td>
+
           <td>&cir; <a class="toc" href="#LineEndings">Line endings</a></td>
 
           <td>&cir; <a class="toc" href="#Words">Words</a></td>
 
-          <td>&cir; <a class="toc" href="#Styling">Styling</a></td>
-
         </tr>
 
         <tr>
+          <td>&cir; <a class="toc" href="#Styling">Styling</a></td>
+
           <td>&cir; <a class="toc" href="#StyleDefinition">Style definition</a></td>
 
           <td>&cir; <a class="toc" href="#CaretAndSelectionStyles">Caret, selection, and hotspot styles</a></td>
 
-          <td>&cir; <a class="toc" href="#CharacterRepresentations">Character representations</a></td>
-
         </tr>
 
         <tr>
+          <td>&cir; <a class="toc" href="#CharacterRepresentations">Character representations</a></td>
+
           <td>&cir; <a class="toc" href="#Margins">Margins</a></td>
 
           <td>&cir; <a class="toc" href="#Annotations">Annotations</a></td>
 
-          <td>&cir; <a class="toc" href="#OtherSettings">Other settings</a></td>
-
         </tr>
 
         <tr>
+          <td>&cir; <a class="toc" href="#OtherSettings">Other settings</a></td>
+
           <td>&cir; <a class="toc" href="#BraceHighlighting">Brace highlighting</a></td>
 
           <td>&cir; <a class="toc" href="#TabsAndIndentationGuides">Tabs and Indentation
           Guides</a></td>
 
-          <td>&cir; <a class="toc" href="#Markers">Markers</a></td>
-
         </tr>
 
         <tr>
+          <td>&cir; <a class="toc" href="#Markers">Markers</a></td>
+
           <td>&cir; <a class="toc" href="#Indicators">Indicators</a></td>
 
           <td>&cir; <a class="toc" href="#Autocompletion">Autocompletion</a></td>
 
-          <td>&cir; <a class="toc" href="#UserLists">User lists</a></td>
-
         </tr>
 
         <tr>
+          <td>&cir; <a class="toc" href="#UserLists">User lists</a></td>
+
           <td>&cir; <a class="toc" href="#CallTips">Call tips</a></td>
 
           <td>&cir; <a class="toc" href="#KeyboardCommands">Keyboard commands</a></td>
 
-          <td>&cir; <a class="toc" href="#KeyBindings">Key bindings</a></td>
-
         </tr>
 
         <tr>
+          <td>&cir; <a class="toc" href="#KeyBindings">Key bindings</a></td>
+
           <td>&cir; <a class="toc" href="#PopupEditMenu">Popup edit menu</a></td>
 
           <td>&cir; <a class="toc" href="#MacroRecording">Macro recording</a></td>
 
-          <td>&cir; <a class="toc" href="#Printing">Printing</a></td>
-
         </tr>
 
         <tr>
+          <td>&cir; <a class="toc" href="#Printing">Printing</a></td>
+
           <td>&cir; <a class="toc" href="#DirectAccess">Direct access</a></td>
 
           <td>&cir; <a class="toc" href="#MultipleViews">Multiple views</a></td>
 
-          <td>&cir; <a class="toc" href="#BackgroundLoadSave">Background loading and saving</a></td>
-
         </tr>
 
         <tr>
+          <td>&cir; <a class="toc" href="#BackgroundLoadSave">Background loading and saving</a></td>
+
           <td>&cir; <a class="toc" href="#Folding">Folding</a></td>
 
           <td>&cir; <a class="toc" href="#LineWrapping">Line wrapping</a></td>
 
-          <td>&cir; <a class="toc" href="#Zooming">Zooming</a></td>
-
         </tr>
 
         <tr>
+          <td>&cir; <a class="toc" href="#Zooming">Zooming</a></td>
+
           <td>&cir; <a class="toc" href="#LongLines">Long lines</a></td>
 
           <td>&cir; <a class="toc" href="#Accessibility">Accessibility</a></td>
 
-          <td>&cir; <a class="toc" href="#Lexer">Lexer</a></td>
-
         </tr>
 
         <tr>
+          <td>&cir; <a class="toc" href="#Lexer">Lexer</a></td>
+
           <td>&cir; <a class="toc" href="#LexerObjects">Lexer objects</a></td>
 
           <td>&cir; <a class="toc" href="#Notifications">Notifications</a></td>
 
-          <td>&cir; <a class="toc" href="#Images">Images</a></td>
-
         </tr>
 
         <tr>
-          <td>&cir; <a class="toc" href="#GTK">GTK+</a></td>
+          <td>&cir; <a class="toc" href="#Images">Images</a></td>
+
+          <td>&cir; <a class="toc" href="#GTK">GTK</a></td>
 
           <td>&cir; <a class="toc" href="#ProvisionalMessages"><span class="provisional">Provisional messages</span></a></td>
 
-          <td>&cir; <a class="toc" href="#DeprecatedMessages">Deprecated messages</a></td>
-
         </tr>
         <tr>
+          <td>&cir; <a class="toc" href="#DeprecatedMessages">Deprecated messages</a></td>
+
           <td>&cir; <a class="toc" href="#EditMessagesNeverSupportedByScintilla">Edit messages never
           supported by Scintilla</a></td>
 
           <td>&cir; <a class="toc" href="#RemovedFeatures">Removed features</a></td>
 
+        </tr>
+        <tr>
           <td>&cir; <a class="toc" href="#BuildingScintilla">Building Scintilla</a></td>
 
         </tr>
@@ -462,8 +465,9 @@
     </code>
 
     <p><b id="SCI_GETTEXT">SCI_GETTEXT(int length, char *text NUL-terminated) &rarr; int</b><br />
-     This returns <code class="parameter">length</code>-1 characters of text from the start of the document plus one
-    terminating 0 character. To collect all the text in a document, use <code>SCI_GETLENGTH</code>
+     This returns at most <code class="parameter">length</code>-1 characters of text from the start of the document plus one
+    terminating 0 character. When <code class="parameter">length</code>-1 is beyond document length, it returns document length.
+    To collect all the text in a document, use <code>SCI_GETLENGTH</code>
     to get the number of characters in the document (<code>nLen</code>), allocate a character
     buffer of length <code>nLen+1</code> bytes, then call <code>SCI_GETTEXT(nLen+1, char
     *text)</code>. If the text argument is 0 then the length that should be allocated to store the
@@ -633,11 +637,11 @@ struct Sci_TextRange {
 };
 </pre>
 
-    <h3 id="EncodedAccess">Specific to GTK+, Cocoa and Windows only: Access to encoded text</h3>
+    <h3 id="EncodedAccess">Specific to GTK, Cocoa and Windows only: Access to encoded text</h3>
 
     <p><b id="SCI_TARGETASUTF8">SCI_TARGETASUTF8(&lt;unused&gt;, char *s) &rarr; int</b><br />
      This method retrieves the value of the target encoded as UTF-8 which is the default
-     encoding of GTK+ so is useful for retrieving text for use in other parts of the user interface,
+     encoding of GTK so is useful for retrieving text for use in other parts of the user interface,
      such as find and replace dialogs. The length of the encoded text in bytes is returned.
      Cocoa uses UTF-16 which is easily converted from UTF-8 so this method can be used to perform the
      more complex work of transcoding from the various encodings supported.
@@ -1016,7 +1020,7 @@ struct Sci_TextToFind {
     <code>SCI_GETSELECTIONEMPTY()</code>, which will be zero if there are any non-empty
     selection ranges implying that a copy or cut to the clipboard should work.</p>
 
-    <p>GTK+ does not really support <code>SCI_CANPASTE</code> and always returns <code>true</code>
+    <p>GTK does not really support <code>SCI_CANPASTE</code> and always returns <code>true</code>
     unless the document is read-only.</p>
 
     <p>On X, the clipboard is asynchronous and may require several messages between
@@ -1226,8 +1230,6 @@ struct Sci_TextToFind {
      <a class="message" href="#SCI_MOVECARETINSIDEVIEW">SCI_MOVECARETINSIDEVIEW</a><br />
      <a class="message" href="#SCI_POSITIONBEFORE">SCI_POSITIONBEFORE(int pos) &rarr; position</a><br />
      <a class="message" href="#SCI_POSITIONAFTER">SCI_POSITIONAFTER(int pos) &rarr; position</a><br />
-     <a class="message" href="#SCI_POSITIONRELATIVE">SCI_POSITIONRELATIVE(int pos, int relative) &rarr; position</a><br />
-     <a class="message" href="#SCI_COUNTCHARACTERS">SCI_COUNTCHARACTERS(int start, int end) &rarr; int</a><br />
      <a class="message" href="#SCI_TEXTWIDTH">SCI_TEXTWIDTH(int style, const char *text) &rarr; int</a><br />
      <a class="message" href="#SCI_TEXTHEIGHT">SCI_TEXTHEIGHT(int line) &rarr; int</a><br />
      <a class="message" href="#SCI_CHOOSECARETX">SCI_CHOOSECARETX</a><br />
@@ -1445,15 +1447,6 @@ struct Sci_TextToFind {
      If called with a position within a multi byte character will return the position
      of the start/end of that character.</p>
 
-    <p><b id="SCI_POSITIONRELATIVE">SCI_POSITIONRELATIVE(int pos, int relative) &rarr; position</b><br />
-     Count a number of whole characters before or after the argument position and return that position.
-     The minimum position returned is 0 and the maximum is the last position in the document.
-     If the position goes past the document end then 0 is returned.
-     </p>
-
-    <p><b id="SCI_COUNTCHARACTERS">SCI_COUNTCHARACTERS(int start, int end) &rarr; int</b><br />
-     Returns the number of whole characters between two positions..</p>
-
     <p><b id="SCI_TEXTWIDTH">SCI_TEXTWIDTH(int style, const char *text) &rarr; int</b><br />
      This returns the pixel width of a string drawn in the given <code class="parameter">style</code> which can
     be used, for example, to decide how wide to make the line number margin in order to display a
@@ -1523,6 +1516,61 @@ struct Sci_TextToFind {
      the corresponding modifier key. They then stick to rectangular mode even when the modifier key is released again.
      When this option is turned off, mouse selections will always stick to the mode the selection was started in. It
      is off by default.</p>
+
+    <h2 id="ByCharacterOrCodeUnit">By character or UTF-16 code unit</h2>
+
+    <p>Most Scintilla APIs use byte positions but some applications want to use positions based on counting
+    (UTF-32) characters or (UTF-16) code units
+    or need to communicate with other code written in terms of characters or code units.
+    With only byte positions, this may require examining many bytes to count characters or code units in the document
+    but this may be sped up in some cases by indexing the line starts by character or code unit.</p>
+
+    <code>
+     <a class="message" href="#SCI_POSITIONRELATIVE">SCI_POSITIONRELATIVE(int pos, int relative) &rarr; position</a><br />
+     <a class="message" href="#SCI_POSITIONRELATIVECODEUNITS">SCI_POSITIONRELATIVECODEUNITS(int pos, int relative) &rarr; position</a><br />
+     <a class="message" href="#SCI_COUNTCHARACTERS">SCI_COUNTCHARACTERS(int start, int end) &rarr; int</a><br />
+     <a class="message" href="#SCI_COUNTCODEUNITS">SCI_COUNTCODEUNITS(int start, int end) &rarr; int</a><br />
+     <a class="message" href="#SCI_GETLINECHARACTERINDEX">SCI_GETLINECHARACTERINDEX &rarr; int</a><br />
+     <a class="message" href="#SCI_ALLOCATELINECHARACTERINDEX">SCI_ALLOCATELINECHARACTERINDEX(int lineCharacterIndex)</a><br />
+     <a class="message" href="#SCI_RELEASELINECHARACTERINDEX">SCI_RELEASELINECHARACTERINDEX(int lineCharacterIndex)</a><br />
+     <a class="message" href="#SCI_LINEFROMINDEXPOSITION">SCI_LINEFROMINDEXPOSITION(int pos, int lineCharacterIndex) &rarr; int</a><br />
+     <a class="message" href="#SCI_INDEXPOSITIONFROMLINE">SCI_INDEXPOSITIONFROMLINE(int line, int lineCharacterIndex) &rarr; position</a><br />
+    </code>
+
+    <p><b id="SCI_POSITIONRELATIVE">SCI_POSITIONRELATIVE(int pos, int relative) &rarr; position</b><br />
+     Count a number of whole characters before or after the argument position and return that position.
+     The minimum position returned is 0 and the maximum is the last position in the document.
+     If the position goes past the document end then 0 is returned.
+     </p>
+
+    <p><b id="SCI_COUNTCHARACTERS">SCI_COUNTCHARACTERS(int start, int end) &rarr; int</b><br />
+     Returns the number of whole characters between two positions.</p>
+
+    <p><b id="SCI_POSITIONRELATIVECODEUNITS">SCI_POSITIONRELATIVECODEUNITS(int pos, int relative) &rarr; position</b><br />
+    <b id="SCI_COUNTCODEUNITS">SCI_COUNTCODEUNITS(int start, int end) &rarr; int</b><br />
+     These are the UTF-16 versions of <code>SCI_POSITIONRELATIVE</code> and <code>SCI_COUNTCHARACTERS</code>
+     working in terms of UTF-16 code units.</p>
+
+    <p><b id="SCI_GETLINECHARACTERINDEX">SCI_GETLINECHARACTERINDEX &rarr; int</b><br />
+     Returns which if any indexes are active. It may be <code>SC_LINECHARACTERINDEX_NONE(0)</code> or one or more
+     of <code>SC_LINECHARACTERINDEX_UTF32(1)</code> if whole characters are indexed or
+     <code>SC_LINECHARACTERINDEX_UTF16(2)</code> if UTF-16 code units are indexed.
+     Character indexes are currently only supported for UTF-8 documents.</p>
+
+    <p><b id="SCI_ALLOCATELINECHARACTERINDEX">SCI_ALLOCATELINECHARACTERINDEX(int lineCharacterIndex)</b><br />
+    <b id="SCI_RELEASELINECHARACTERINDEX">SCI_RELEASELINECHARACTERINDEX(int lineCharacterIndex)</b><br />
+     Allocate or release one or more indexes using same enumeration as <code>SCI_GETLINECHARACTERINDEX</code>.
+     Different aspects of an application may need indexes for different periods and should allocate for those periods.
+     Indexes use additional memory so releasing them can help minimize memory but they also take time to recalculate.
+     Scintilla may also allocate indexes to support features like accessibility or input method editors.
+     Only one index of each type is created for a document at a time.</p>
+
+    <p><b id="SCI_LINEFROMINDEXPOSITION">SCI_LINEFROMINDEXPOSITION(int pos, int lineCharacterIndex) &rarr; int</b><br />
+    <b id="SCI_INDEXPOSITIONFROMLINE">SCI_INDEXPOSITIONFROMLINE(int line, int lineCharacterIndex) &rarr; position</b><br />
+     The document line of a particular character or code unit may be found by calling <code>SCI_LINEFROMINDEXPOSITION</code> with one of
+     <code>SC_LINECHARACTERINDEX_UTF32(1)</code> or <code>SC_LINECHARACTERINDEX_UTF16(2)</code>.
+     The inverse action, finds the starting position of a document line either in characters or code units from the document start by calling
+     <code>SCI_INDEXPOSITIONFROMLINE</code> with the same <code class="parameter">lineCharacterIndex</code> argument.</p>
 
     <h2 id="MultipleSelectionAndVirtualSpace">Multiple Selection and Virtual Space</h2>
 
@@ -1654,7 +1702,7 @@ struct Sci_TextToFind {
     <p>
     <b id="SCI_SETRECTANGULARSELECTIONMODIFIER">SCI_SETRECTANGULARSELECTIONMODIFIER(int modifier)</b><br />
     <b id="SCI_GETRECTANGULARSELECTIONMODIFIER">SCI_GETRECTANGULARSELECTIONMODIFIER &rarr; int</b><br />
-     On GTK+ and Qt, the key used to indicate that a rectangular selection should be created when combined with a mouse drag can be set.
+     On GTK and Qt, the key used to indicate that a rectangular selection should be created when combined with a mouse drag can be set.
      The three possible values are <code>SCMOD_CTRL</code>=2, <code>SCMOD_ALT</code>=4 (default) or <code>SCMOD_SUPER</code>=8.
      Since <code>SCMOD_ALT</code> may already be used by a window manager, the window manager may need configuring to allow this choice.
      <code>SCMOD_SUPER</code> is often a system dependent modifier key such as the Left Windows key on a Windows keyboard or the
@@ -2419,6 +2467,8 @@ struct Sci_TextToFind {
      <a class="message" href="#SCI_SETPUNCTUATIONCHARS">SCI_SETPUNCTUATIONCHARS(&lt;unused&gt;, const char *characters)</a><br />
      <a class="message" href="#SCI_GETPUNCTUATIONCHARS">SCI_GETPUNCTUATIONCHARS(&lt;unused&gt;, char *characters) &rarr; int</a><br />
      <a class="message" href="#SCI_SETCHARSDEFAULT">SCI_SETCHARSDEFAULT</a><br />
+     <a class="message" href="#SCI_SETCHARACTERCATEGORYOPTIMIZATION">SCI_SETCHARACTERCATEGORYOPTIMIZATION(int countCharacters)</a><br />
+     <a class="message" href="#SCI_GETCHARACTERCATEGORYOPTIMIZATION">SCI_GETCHARACTERCATEGORYOPTIMIZATION &rarr; int</a><br />
 
     <p><b id="SCI_WORDENDPOSITION">SCI_WORDENDPOSITION(int pos, bool onlyWordCharacters) &rarr; int</b><br />
      <b id="SCI_WORDSTARTPOSITION">SCI_WORDSTARTPOSITION(int pos, bool onlyWordCharacters) &rarr; int</b><br />
@@ -2544,6 +2594,15 @@ struct Sci_TextToFind {
     <p><b id="SCI_SETCHARSDEFAULT">SCI_SETCHARSDEFAULT</b><br />
      Use the default sets of word and whitespace characters. This sets whitespace to space, tab and other
      characters with codes less than 0x20, with word characters set to alphanumeric and '_'.
+    </p>
+
+    <p><b id="SCI_SETCHARACTERCATEGORYOPTIMIZATION">SCI_SETCHARACTERCATEGORYOPTIMIZATION(int countCharacters)</b><br />
+    <b id="SCI_GETCHARACTERCATEGORYOPTIMIZATION">SCI_GETCHARACTERCATEGORYOPTIMIZATION &rarr; int</b><br />
+      Optimize speed of character category features like determining whether a character is a space or number at the expense of memory.
+      Mostly used for Unicode documents.
+      The countCharacters parameter determines how many character starting from 0 are added to a look-up table with one byte used for each character.
+      It is reasonable to cover the set of characters likely to be used in a document so 0x100 for simple Roman text,
+      0x1000 to cover most simple alphabets, 0x10000 to cover most of East Asian languages, and 0x110000 to cover all possible characters.
     </p>
 
     <p>Word keyboard commands are:</p>
@@ -2849,7 +2908,7 @@ struct Sci_TextToFind {
     only the first 32 characters of the name are used, the name is decoded as UTF-8, and the name is not case sensitive. For
     internal caching, Scintilla tracks fonts by name and does care about the casing of font names,
     so please be consistent.
-    On GTK+, Pango is used to display text and the name is sent directly to Pango without transformation.
+    On GTK, Pango is used to display text and the name is sent directly to Pango without transformation.
     On Qt, the name is decoded as UTF-8.
     On Cocoa, the name is decoded as MacRoman.</p>
     <p>Sizes can be set to a whole number of points with <code>SCI_STYLESETSIZE</code>
@@ -2901,7 +2960,7 @@ struct Sci_TextToFind {
     <code>SCI_STYLESETCHARACTERSET(SCE_C_STRING, SC_CHARSET_RUSSIAN)</code> would ensure that
     strings in Russian would display correctly in C and C++ (<code>SCE_C_STRING</code> is the style
     number used by the C and C++ lexer to display literal strings; it has the value 6). This
-    feature works differently on Windows and GTK+.<br />
+    feature works differently on Windows and GTK.<br />
     The default character set is <code>SC_CHARSET_DEFAULT</code>.</p>
     <p><code>SC_CHARSET_ANSI</code> and <code>SC_CHARSET_DEFAULT</code> specify European Windows code page 1252 unless the code page is set.</p>
 
@@ -2909,7 +2968,7 @@ struct Sci_TextToFind {
   <tr>
     <th>Character Set</th>
     <th>Windows</th>
-    <th>GTK+</th>
+    <th>GTK</th>
     <th>Cocoa</th></tr></tbody>
   <tbody>
   <tr>
@@ -3162,11 +3221,13 @@ struct Sci_TextToFind {
     <p><b id="SCI_SETCARETSTYLE">SCI_SETCARETSTYLE(int caretStyle)</b><br />
      <b id="SCI_GETCARETSTYLE">SCI_GETCARETSTYLE &rarr; int</b><br />
      The style of the caret can be set with <code>SCI_SETCARETSTYLE</code> to be a line caret
-    (CARETSTYLE_LINE=1), a block caret (CARETSTYLE_BLOCK=2) or to not draw at all
-    (CARETSTYLE_INVISIBLE=0). The default value is the line caret (CARETSTYLE_LINE=1).
+    (CARETSTYLE_LINE=1) or a block caret (CARETSTYLE_BLOCK=2) for insert mode (lower 4-bits, CARETSTYLE_INS_MASK) combined with
+    a bar caret (CARETSTYLE_OVERSTRIKE_BAR=0) or a block caret (CARETSTYLE_OVERSTRIKE_BLOCK=16) for overtype mode (bit 4),
+    or to not draw at all (CARETSTYLE_INVISIBLE=0). The default value for insert mode is the line caret (CARETSTYLE_LINE=1),
+    for overtype mode is the bar caret (CARETSTYLE_OVERSTRIKE_BAR=0).
     You can determine the current caret style setting using <code>SCI_GETCARETSTYLE</code>.</p>
 
-    <p>The block character draws most combining and multibyte character sequences successfully,
+    <p>The block caret draws most combining and multibyte character sequences successfully,
     though some fonts like Thai Fonts (and possibly others) can sometimes appear strange when
     the cursor is positioned at these characters, which may result in only drawing a part of the
     cursor character sequence. This is most notable on Windows platforms.</p>
@@ -3613,12 +3674,12 @@ struct Sci_TextToFind {
      These messages turn buffered drawing on or off and report the buffered drawing state. Buffered
     drawing draws each line into a bitmap rather than directly to the screen and then copies the
     bitmap to the screen. This avoids flickering although it does take longer. The default is for
-    drawing to be buffered on Win32 and GTK+ and to not be buffered on Cocoa and Qt.
+    drawing to be buffered on Win32 and GTK and to not be buffered on Cocoa and Qt.
     Buffered drawing is not supported on Cocoa.
     </p>
 
     <p>Current platforms perform window buffering so it is almost always better for this option to be turned off.
-    For Win32 and GTK+, client code should turn off buffering at initialisation.
+    For Win32 and GTK, client code should turn off buffering at initialisation.
     There are some older platforms and unusual modes where buffering may still be useful.
     </p>
 
@@ -3719,12 +3780,15 @@ struct Sci_TextToFind {
      <p>The windowed behaviour can be chosen with <code>SCI_SETIMEINTERACTION(SC_IME_WINDOWED)</code>
      and the inline behaviour with <code>SCI_SETIMEINTERACTION(SC_IME_INLINE)</code>.
      Scintilla may ignore this call in some cases. For example, the inline behaviour might only be supported for some languages.</p>
+     <p>When the inline IME mode is active, characters are added tentatively before being finalised and an
+     <a class="message" href="#SCN_CHARADDED">SCN_CHARADDED</a>
+     notification is sent for each character.</p>
 
     <p><b id="SCI_GRABFOCUS">SCI_GRABFOCUS</b><br />
      <b id="SCI_SETFOCUS">SCI_SETFOCUS(bool focus)</b><br />
      <b id="SCI_GETFOCUS">SCI_GETFOCUS &rarr; bool</b><br />
-     Scintilla can be told to grab the focus with this message. This is needed more on GTK+ where
-           focus handling is more complicated than on Windows.</p>
+     Scintilla can be told to grab the focus with <code>SCI_GRABFOCUS</code>.
+     This is needed more on GTK where focus handling is more complicated than on Windows.</p>
 
     <p>The internal focus flag can be set with <code>SCI_SETFOCUS</code>. This is used by clients
     that have complex focus requirements such as having their own window that gets the real focus
@@ -3980,7 +4044,8 @@ struct Sci_TextToFind {
     <code>SC_MARK_BACKGROUND</code>,
     <code>SC_MARK_LEFTRECT</code>,
     <code>SC_MARK_FULLRECT</code>,
-    <code>SC_MARK_BOOKMARK</code>, and
+    <code>SC_MARK_BOOKMARK</code>,
+    <code>SC_MARK_VERTICALBOOKMARK</code>, and
     <code>SC_MARK_UNDERLINE</code>.
     </p>
 
@@ -4447,13 +4512,30 @@ struct Sci_TextToFind {
         </tr>
 
         <tr>
+          <td align="left"><code>INDIC_GRADIENT</code></td>
+
+          <td align="center">20</td>
+
+          <td>A vertical gradient between a colour and alpha at top to fully transparent at bottom.</td>
+        </tr>
+
+        <tr>
+          <td align="left"><code>INDIC_GRADIENTCENTRE</code></td>
+
+          <td align="center">21</td>
+
+          <td>A vertical gradient with the specified colour and alpha in the middle
+          fading to fully transparent at top and bottom.</td>
+        </tr>
+
+        <tr>
           <td align="left"><code>INDIC_SQUIGGLEPIXMAP</code></td>
 
           <td align="center">13</td>
 
           <td>A version of <code>INDIC_SQUIGGLE</code> that draws using a pixmap instead of
 	  as a series of line segments for performance.
-	  Measured to be between 3 and 6 times faster than <code>INDIC_SQUIGGLE</code> on GTK+.
+	  Measured to be between 3 and 6 times faster than <code>INDIC_SQUIGGLE</code> on GTK.
 	  Appearance will not be as good as <code>INDIC_SQUIGGLE</code> on OS X in HiDPI mode.</td>
         </tr>
 
@@ -4907,8 +4989,6 @@ struct Sci_TextToFind {
     There is some interaction between call tips and autocompletion lists in that showing a
     call tip cancels any active autocompletion list, and vice versa.</p>
 
-    <p>Call tips are not implemented on Qt.</p>
-
     <p>Call tips can highlight part of the text within them. You could use this to highlight the
     current argument to a function by counting the number of commas (or whatever separator your
     language uses). See <code>SciTEBase::CharAdded()</code> in <code>SciTEBase.cxx</code> for an
@@ -5340,7 +5420,7 @@ struct Sci_TextToFind {
     <code>SCMOD_META</code>, and <code>SCMOD_SUPER</code>.
     On OS X, the Command key is mapped to <code>SCMOD_CTRL</code> and the Control key to
     <code>SCMOD_META</code>.
-    <code>SCMOD_SUPER</code> is only available on GTK+ which is commonly the Windows key.
+    <code>SCMOD_SUPER</code> is only available on GTK which is commonly the Windows key.
     If you are building a table, you might
     want to use <code>SCMOD_NORM</code>, which has the value 0, to mean no modifiers.</p>
 
@@ -5440,7 +5520,7 @@ struct Sci_TextToFind {
     removed and the selection and caret are hidden.</p>
 
     <p>Different platforms use different display surface ID types to print on. On Windows, these are
-    <code>HDC</code>s., on GTK+ 3.x <code>cairo_t *</code>,
+    <code>HDC</code>s., on GTK 3.x <code>cairo_t *</code>,
     and on Cocoa <code>CGContextRef</code> is used.</p>
 
     <code><a class="message" href="#SCI_FORMATRANGE">SCI_FORMATRANGE(bool draw, Sci_RangeToFormat *fr) &rarr; position</a><br />
@@ -5491,7 +5571,7 @@ struct Sci_RangeToFormat {
     The Surface IDs are not really used for measurement (<code>draw=0</code>) but can be set
     to a bitmap context (created with <code>CGBitmapContextCreate</code>) to avoid runtime warnings.</p>
 
-    <p>On GTK+, the surface IDs to use can be found from the printing context with
+    <p>On GTK, the surface IDs to use can be found from the printing context with
     <code>gtk_print_context_get_cairo_context(context)</code>.</p>
 
      <p><code>chrg.cpMin</code> and <code>chrg.cpMax</code> define the start position and maximum
@@ -5534,7 +5614,8 @@ struct Sci_RangeToFormat {
 
           <td align="center">0</td>
 
-          <td>Print using the current screen colours. This is the default.</td>
+          <td>Print using the current screen colours with the exception of line number margins which print on a white background.
+		  This is the default.</td>
         </tr>
 
         <tr>
@@ -5567,9 +5648,19 @@ struct Sci_RangeToFormat {
 
           <td align="center">4</td>
 
-          <td>Everything prints in its own colour on a white background except that line numbers
-          use their own background colour.</td>
+          <td>Everything prints in its own foreground colour but all styles up to and including STYLE_LINENUMBER will print
+		  on a white background.</td>
         </tr>
+
+        <tr>
+          <td align="left"><code>SC_PRINT_SCREENCOLOURS</code></td>
+
+          <td align="center">5</td>
+
+          <td>Print using the current screen colours for both foreground and background.
+		  This is the only mode that does not set the background colour of the line number margin to white.</td>
+        </tr>
+
       </tbody>
     </table>
 
@@ -5620,7 +5711,7 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
     to the native thread of the Scintilla window in which case <code>SendMessage(hSciWnd, SCI_*,
     wParam, lParam)</code> should be used to synchronize with the window's thread.</p>
 
-    <p>This feature also works on GTK+ but has no significant impact on speed.</p>
+    <p>This feature also works on GTK but has no significant impact on speed.</p>
 
     <p>From version 1.47 on Windows, Scintilla exports a function called
     <code>Scintilla_DirectFunction</code> that can be used the same as the function returned by
@@ -5688,11 +5779,12 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
     <code><a class="message" href="#SCI_GETDOCPOINTER">SCI_GETDOCPOINTER &rarr; document *</a><br />
      <a class="message" href="#SCI_SETDOCPOINTER">SCI_SETDOCPOINTER(&lt;unused&gt;, document
     *doc)</a><br />
-     <a class="message" href="#SCI_CREATEDOCUMENT">SCI_CREATEDOCUMENT(int bytes, int documentOption) &rarr; document *</a><br />
+     <a class="message" href="#SCI_CREATEDOCUMENT">SCI_CREATEDOCUMENT(int bytes, int documentOptions) &rarr; document *</a><br />
      <a class="message" href="#SCI_ADDREFDOCUMENT">SCI_ADDREFDOCUMENT(&lt;unused&gt;, document
     *doc)</a><br />
      <a class="message" href="#SCI_RELEASEDOCUMENT">SCI_RELEASEDOCUMENT(&lt;unused&gt;, document
     *doc)</a><br />
+     <a class="message" href="#SCI_GETDOCUMENTOPTIONS">SCI_GETDOCUMENTOPTIONS &rarr; int</a><br />
     </code>
 
     <p><b id="SCI_GETDOCPOINTER">SCI_GETDOCPOINTER &rarr; document *</b><br />
@@ -5709,7 +5801,7 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
     window.<br />
      6. If <code class="parameter">doc</code> was not 0, its reference count is increased by 1.</p>
 
-    <p><b id="SCI_CREATEDOCUMENT">SCI_CREATEDOCUMENT(int bytes, int documentOption) &rarr; document *</b><br />
+    <p><b id="SCI_CREATEDOCUMENT">SCI_CREATEDOCUMENT(int bytes, int documentOptions) &rarr; document *</b><br />
      This message creates a new, empty document and returns a pointer to it. This document is not
      selected into the editor and starts with a reference count of 1. This means that you have
      ownership of it and must either reduce its reference count by 1 after using
@@ -5720,12 +5812,29 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
      to allocate once rather than rely on the buffer growing as data is added.
      If <code>SCI_CREATEDOCUMENT</code> fails then 0 is returned.</p>
 
-    <p id="documentOption">The <code class="parameter">documentOption</code> argument
+    <p id="documentOptions">The <code class="parameter">documentOptions</code> argument
     chooses between different document capabilities which affect memory allocation and performance with
     <code>SC_DOCUMENTOPTION_DEFAULT</code> (0) choosing standard options.
-    <code>SC_DOCUMENTOPTION_STYLES_NONE</code> (1) stops allocation of memory to style characters
+    <code>SC_DOCUMENTOPTION_STYLES_NONE</code> (0x1) stops allocation of memory to style characters
     which saves significant memory, often 40% with the whole document treated as being style 0.
-    Lexers may still produce visual styling by using indicators.</p>
+    Lexers may still produce visual styling by using indicators.
+    <span class="provisional"><code>SC_DOCUMENTOPTION_TEXT_LARGE</code> (0x100) accomodates documents larger than 2 GigaBytes
+    in 64-bit executables.</span>
+    </p>
+
+    <p>With <code>SC_DOCUMENTOPTION_STYLES_NONE</code>, lexers are still active and may display
+    indicators. Some may produce folding information althoough most require lexical styles to correctly determine folding.
+    Its often more efficient to set the null lexer <code>SCLEX_NULL</code> so no lexer is run.
+    </p>
+
+    <p class="provisional">The <code>SC_DOCUMENTOPTION_TEXT_LARGE</code> option is experimental and has not been
+    thoroughly tested. Lexers may fail or hang when lexing past 2GB or 4GB.
+    Applications using this option should be tested to ensure the option works in their circumstances and each lexer
+    included should also be tested with documents larger than 4GB.
+    For many applications lexing documents larger than 4GB will be too sluggish so <code>SC_DOCUMENTOPTION_STYLES_NONE</code>
+    and the null lexer <code>SCLEX_NULL</code> can be used. Another approach is to turn on idle styling with
+    <a class="seealso" href="#SCI_SETIDLESTYLING"><code>SCI_SETIDLESTYLING</code></a>.
+    </p>
 
     <table class="standard" summary="Document options">
       <tbody>
@@ -5746,8 +5855,14 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
 
         <tr>
           <td align="left">SC_DOCUMENTOPTION_STYLES_NONE</td>
-          <td align="left">1</td>
+          <td align="left">0x1</td>
           <td align="left">Stop allocation of memory for styles and treat all text as style 0.</td>
+        </tr>
+
+        <tr>
+          <td align="left" class="provisional">SC_DOCUMENTOPTION_TEXT_LARGE</td>
+          <td align="left">0x100</td>
+          <td align="left">Allow document to be larger than 2 GB.</td>
         </tr>
 
       </tbody>
@@ -5771,6 +5886,9 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
     world spinning in its orbit you must balance each call to <code>SCI_CREATEDOCUMENT</code> or
     <code>SCI_ADDREFDOCUMENT</code> with a call to <code>SCI_RELEASEDOCUMENT</code>.</p>
 
+    <p><b id="SCI_GETDOCUMENTOPTIONS">SCI_GETDOCUMENTOPTIONS &rarr; int</b><br />
+     Returns the options that were used to create the document.</p>
+
     <h2 id="BackgroundLoadSave">Background loading and saving</h2>
 
     <p>To ensure a responsive user interface, applications may decide to load and save documents using a separate thread
@@ -5778,7 +5896,7 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
 
     <h3 id="BackgroundLoad">Loading in the background</h3>
 
-    <code><a class="message" href="#SCI_CREATELOADER">SCI_CREATELOADER(int bytes, int documentOption) &rarr; int</a><br />
+    <code><a class="message" href="#SCI_CREATELOADER">SCI_CREATELOADER(int bytes, int documentOptions) &rarr; int</a><br />
     </code>
 
     <p>An application can load all of a file into a buffer it allocates on a background thread and then add the data in that buffer
@@ -5787,15 +5905,15 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
 
     <p>To avoid these issues, a loader object may be created and used to load the file. The loader object supports the ILoader interface.</p>
 
-    <p><b id="SCI_CREATELOADER">SCI_CREATELOADER(int bytes, int documentOption) &rarr; int</b><br />
+    <p><b id="SCI_CREATELOADER">SCI_CREATELOADER(int bytes, int documentOptions) &rarr; int</b><br />
      Create an object that supports the <code>ILoader</code> interface which can be used to load data and then
      be turned into a Scintilla document object for attachment to a view object.
      The <code class="parameter">bytes</code> argument determines the initial memory allocation for the document as it is more efficient
      to allocate once rather than rely on the buffer growing as data is added.
      If <code>SCI_CREATELOADER</code> fails then 0 is returned.</p>
 
-    <p>The <code class="parameter">documentOption</code> argument
-    is described in the <a class="seealso" href="#documentOption"><code>SCI_CREATEDOCUMENT</code></a> section.</p>
+    <p>The <code class="parameter">documentOptions</code> argument
+    is described in the <a class="seealso" href="#documentOptions"><code>SCI_CREATEDOCUMENT</code></a> section.</p>
 
 <h4>ILoader</h4>
 
@@ -5868,6 +5986,9 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
      <a class="message" href="#SCI_TOGGLEFOLD">SCI_TOGGLEFOLD(int line)</a><br />
      <a class="message" href="#SCI_TOGGLEFOLDSHOWTEXT">SCI_TOGGLEFOLDSHOWTEXT(int line, const char *text)</a><br />
      <a class="message" href="#SCI_FOLDDISPLAYTEXTSETSTYLE">SCI_FOLDDISPLAYTEXTSETSTYLE(int style)</a><br />
+     <a class="message" href="#SCI_FOLDDISPLAYTEXTGETSTYLE">SCI_FOLDDISPLAYTEXTGETSTYLE &rarr; int</a><br />
+     <a class="message" href="#SCI_SETDEFAULTFOLDDISPLAYTEXT">SCI_SETDEFAULTFOLDDISPLAYTEXT(&lt;unused&gt;, const char *text)</a><br />
+     <a class="message" href="#SCI_GETDEFAULTFOLDDISPLAYTEXT">SCI_GETDEFAULTFOLDDISPLAYTEXT(&lt;unused&gt;, char *text) &rarr; int</a><br />
      <a class="message" href="#SCI_FOLDLINE">SCI_FOLDLINE(int line, int action)</a><br />
      <a class="message" href="#SCI_FOLDCHILDREN">SCI_FOLDCHILDREN(int line, int action)</a><br />
      <a class="message" href="#SCI_FOLDALL">SCI_FOLDALL(int action)</a><br />
@@ -6027,11 +6148,13 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
     <p>An optional text tag may be shown to the right of the folded text with the
     <code class="parameter">text</code> argument to
     <code>SCI_TOGGLEFOLDSHOWTEXT</code>.
+    The default text for all header lines can be set with <code><a class="seealso" href="#SCI_SETDEFAULTFOLDDISPLAYTEXT">SCI_SETDEFAULTFOLDDISPLAYTEXT</a></code>.
     The text is drawn with the
     <code><a class="message" href="#StyleDefinition">STYLE_FOLDDISPLAYTEXT</a></code> style.</p>
 
     <p><b id="SCI_FOLDDISPLAYTEXTSETSTYLE">SCI_FOLDDISPLAYTEXTSETSTYLE(int style)</b><br />
-    This message changes the appearance of fold text tags.</p>
+    <b id="SCI_FOLDDISPLAYTEXTGETSTYLE">SCI_FOLDDISPLAYTEXTGETSTYLE &rarr; int</b><br />
+    These message changes the appearance of fold text tags.</p>
     <table class="standard" summary="Fold flags">
       <tbody>
         <tr>
@@ -6062,6 +6185,10 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
 
       </tbody>
     </table>
+
+    <p><b id="SCI_SETDEFAULTFOLDDISPLAYTEXT">SCI_SETDEFAULTFOLDDISPLAYTEXT(&lt;unused&gt;, const char *text)</b><br />
+     <b id="SCI_GETDEFAULTFOLDDISPLAYTEXT">SCI_GETDEFAULTFOLDDISPLAYTEXT(&lt;unused&gt;, char *text) &rarr; int</b><br />
+     These messages set and get the default text displayed at the right of the folded text.</p>
 
     <p><b id="SCI_SETFOLDEXPANDED">SCI_SETFOLDEXPANDED(int line, bool expanded)</b><br />
      <b id="SCI_GETFOLDEXPANDED">SCI_GETFOLDEXPANDED(int line) &rarr; bool</b><br />
@@ -6347,8 +6474,10 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
         <tr>
           <td align="left"><code>SC_WRAPINDENT_FIXED</code></td>
           <td align="center">0</td>
-          <td>Wrapped sublines aligned to left of window plus amount set by
-	  <a class="seealso" href="#SCI_SETWRAPSTARTINDENT">SCI_SETWRAPSTARTINDENT</a></td>
+          <td>
+              Wrapped sublines aligned to left of window plus amount set by
+              <a class="seealso" href="#SCI_SETWRAPSTARTINDENT">SCI_SETWRAPSTARTINDENT</a>
+          </td>
         </tr>
 
         <tr>
@@ -6361,6 +6490,12 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
           <td align="left"><code>SC_WRAPINDENT_INDENT</code></td>
           <td align="center">2</td>
           <td>Wrapped sublines are aligned to first subline indent plus one more level of indentation</td>
+        </tr>
+
+        <tr>
+          <td align="left"><code>SC_WRAPINDENT_DEEPINDENT</code></td>
+          <td align="center">3</td>
+          <td>Wrapped sublines are aligned to first subline indent plus two more levels of indentation</td>
         </tr>
       </tbody>
     </table>
@@ -6570,7 +6705,7 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
 
     <p>Scintilla supports some platform accessibility features.
     This support differs between platforms.
-    On GTK+ and Cocoa the platform accessibility APIs are implemented sufficiently to
+    On GTK and Cocoa the platform accessibility APIs are implemented sufficiently to
     make screen readers work.
     On Win32, the system caret is manipulated to help screen readers.
     </p>
@@ -6586,7 +6721,7 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
     <p>On most platforms, accessibility is either implemented or not implemented and this can be
     discovered with <code>SCI_GETACCESSIBILITY</code> with
     <code>SCI_SETACCESSIBILITY</code> performing no action.
-    On GTK+, there are storage and performance costs to accessibility, so it can be disabled
+    On GTK, there are storage and performance costs to accessibility, so it can be disabled
     by calling <code>SCI_SETACCESSIBILITY</code>.
     </p>
 
@@ -6628,7 +6763,7 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
     styling and fold points for an unsupported language you can either do this in the container or
     better still, write your own lexer following the pattern of one of the existing ones.</p>
 
-    <p>Scintilla also supports external lexers. These are DLLs (on Windows) or .so modules (on GTK+/Linux) that export three
+    <p>Scintilla also supports external lexers. These are DLLs (on Windows) or .so modules (on GTK/Linux) that export three
     functions: <code>GetLexerCount</code>, <code>GetLexerName</code>, and
     <code>GetLexerFactory</code>. See <code>externalLexer.cxx</code> for more.</p>
      <a class="message" href="#SCI_SETLEXER">SCI_SETLEXER(int lexer)</a><br />
@@ -6693,7 +6828,7 @@ sptr_t CallScintilla(unsigned int iMessage, uptr_t wParam, sptr_t lParam){
     <p><code>SCI_GETLEXERLANGUAGE</code> retrieves the name of the lexer.</p>
 
     <p><b id="SCI_LOADLEXERLIBRARY">SCI_LOADLEXERLIBRARY(&lt;unused&gt;, const char *path)</b><br />
-     Load a lexer implemented in a shared library. This is a .so file on GTK+/Linux or a .DLL file on Windows.
+     Load a lexer implemented in a shared library. This is a .so file on GTK/Linux or a .DLL file on Windows.
      </p>
 
     <p><b id="SCI_COLOURISE">SCI_COLOURISE(int start, int end)</b><br />
@@ -7080,7 +7215,7 @@ implemented and thus which methods may be called.</p>
     occurred that may interest the container.</p>
     <p>Notifications are sent using the
     <code>WM_NOTIFY</code> message on Windows.</p>
-    <p>On GTK+, the "sci-notify" signal is sent and the signal handler should have the signature
+    <p>On GTK, the "sci-notify" signal is sent and the signal handler should have the signature
     <code>handler(GtkWidget *, gint, SCNotification *notification, gpointer  userData)</code>.</p>
     <p>On Cocoa, a delegate implementing the <code>ScintillaNotificationProtocol</code>
     may be set to receive notifications or the <code>ScintillaView</code> class may be subclassed and the
@@ -7176,6 +7311,8 @@ struct SCNotification {
     <p>The following <code>SCI_*</code> messages are associated with these notifications:</p>
     <code><a class="message" href="#SCI_SETMODEVENTMASK">SCI_SETMODEVENTMASK(int eventMask)</a><br />
      <a class="message" href="#SCI_GETMODEVENTMASK">SCI_GETMODEVENTMASK &rarr; int</a><br />
+     <a class="message" href="#SCI_SETCOMMANDEVENTS">SCI_SETCOMMANDEVENTS(bool commandEvents)</a><br />
+     <a class="message" href="#SCI_GETCOMMANDEVENTS">SCI_GETCOMMANDEVENTS &rarr; bool</a><br />
      <a class="message" href="#SCI_SETMOUSEDWELLTIME">SCI_SETMOUSEDWELLTIME(int periodMilliseconds)</a><br />
      <a class="message" href="#SCI_GETMOUSEDWELLTIME">SCI_GETMOUSEDWELLTIME &rarr; int</a><br />
      <a class="message" href="#SCI_SETIDENTIFIER">SCI_SETIDENTIFIER(int identifier)</a><br />
@@ -7188,7 +7325,7 @@ struct SCNotification {
     The <code>WM_COMMAND</code> message is used on Windows.
     This emulates the Windows Edit control. Only the lower
     16 bits of the control's ID is passed in these notifications.</p>
-    <p>On GTK+, the "command" signal is sent and the signal handler should have the signature
+    <p>On GTK, the "command" signal is sent and the signal handler should have the signature
     <code>handler(GtkWidget *, gint wParam, gpointer lParam, gpointer userData)</code>.</p>
     <code><a class="message" href="#SCEN_CHANGE">SCEN_CHANGE</a><br />
      <a class="message" href="#SCEN_SETFOCUS">SCEN_SETFOCUS</a><br />
@@ -7227,7 +7364,10 @@ href="#SCI_POSITIONFROMLINE">SCI_POSITIONFROMLINE</a>(lineNumber);
      This is sent when the user types an ordinary text character (as opposed to a command
     character) that is entered into the text. The container can use this to decide to display a <a
     class="jump" href="#CallTips">call tip</a> or an <a class="jump" href="#Autocompletion">auto
-    completion list</a>. The character is in <code>SCNotification.ch</code>.
+    completion list</a>. The character is in <code>SCNotification::ch</code>.
+        For single byte character sets, this is the byte value of the character;
+        for UTF-8, it is the Unicode code point;
+        for DBCS, it is (first byte * 256 + second byte) for 2 byte characters and the byte value for 1 byte characters.
         This notification is sent before the character has been styled so processing that depends on
         styling should instead be performed in the SCN_UPDATEUI notification.</p>
 
@@ -7245,8 +7385,8 @@ href="#SCI_POSITIONFROMLINE">SCI_POSITIONFROMLINE</a>(lineNumber);
     href="#SCI_SETREADONLY">SCI_SETREADONLY</a></code>.</p>
 
     <p><b id="SCN_KEY">SCN_KEY</b><br />
-     Reports all keys pressed but not consumed by Scintilla. Used on GTK+ because of
-     some problems with keyboard focus and is not sent by the Windows version. <code>SCNotification.ch</code> holds the key code and
+     Reports all keys pressed but not consumed by Scintilla. Used on GTK because of
+     some problems with keyboard focus and is not sent by the Windows version. <code>SCNotification::ch</code> holds the key code and
     <code>SCNotification.modifiers</code> holds the modifiers. This notification is sent if the
     modifiers include <code>SCMOD_ALT</code> or <code>SCMOD_CTRL</code> and the key code is less
     than 256.</p>
@@ -7258,8 +7398,10 @@ href="#SCI_POSITIONFROMLINE">SCI_POSITIONFROMLINE</a>(lineNumber);
     held down in a similar manner to <a class="message" href="#SCN_KEY">SCN_KEY</a>.</p>
 
     <p><b id="SCN_UPDATEUI">SCN_UPDATEUI</b><br />
-     Either the text or styling of the document has changed or the selection range or scroll position has changed.
+     Either the text or styling of the document has changed or the selection range or scroll position may have changed.
      Now would be a good time to update any container UI elements that depend on document or view state.
+     As it is sometimes difficult to determine whether a change has occurred, these events may also fire when there
+     has been no actual change.
      The <code>updated</code> field is set to the bit set of things changed since the previous notification.</p>
     <table class="standard" summary="Modify notification type flags">
       <tbody>
@@ -7279,7 +7421,7 @@ href="#SCI_POSITIONFROMLINE">SCI_POSITIONFROMLINE</a>(lineNumber);
 
           <td align="center">0x01</td>
 
-          <td>Contents, styling or markers have been changed.</td>
+          <td>Contents, styling or markers may have been changed.</td>
 
         </tr>
 
@@ -7288,7 +7430,7 @@ href="#SCI_POSITIONFROMLINE">SCI_POSITIONFROMLINE</a>(lineNumber);
 
           <td align="center">0x02</td>
 
-          <td>Selection has been changed.</td>
+          <td>Selection may have been changed.</td>
 
         </tr>
 
@@ -7297,7 +7439,7 @@ href="#SCI_POSITIONFROMLINE">SCI_POSITIONFROMLINE</a>(lineNumber);
 
           <td align="center">0x04</td>
 
-          <td>Scrolled vertically.</td>
+          <td>May have scrolled vertically.</td>
 
         </tr>
 
@@ -7306,7 +7448,7 @@ href="#SCI_POSITIONFROMLINE">SCI_POSITIONFROMLINE</a>(lineNumber);
 
           <td align="center">0x08</td>
 
-          <td>Scrolled horizontally.</td>
+          <td>May have scrolled horizontally.</td>
 
         </tr>
       </tbody>
@@ -7655,12 +7797,14 @@ href="#SCI_POSITIONFROMLINE">SCI_POSITIONFROMLINE</a>(lineNumber);
     <p><b id="SCEN_CHANGE">SCEN_CHANGE</b><br />
      <code>SCEN_CHANGE</code> (768) is fired when the text (not the style) of the document changes.
     This notification is sent using the <code>WM_COMMAND</code> message on Windows and the
-    "command" signal on GTK+ as this is the behaviour of the standard Edit control
+    "command" signal on GTK as this is the behaviour of the standard Edit control
     (<code>SCEN_CHANGE</code> has the same value as the Windows Edit control
     <code>EN_CHANGE</code>). No other information is sent. If you need more detailed information
     use <a class="message" href="#SCN_MODIFIED"><code>SCN_MODIFIED</code></a>. You can filter the
     types of changes you are notified about with <a class="message"
-    href="#SCI_SETMODEVENTMASK"><code>SCI_SETMODEVENTMASK</code></a>.</p>
+    href="#SCI_SETMODEVENTMASK"><code>SCI_SETMODEVENTMASK</code></a> and
+    <a class="message"
+    href="#SCI_SETCOMMANDEVENTS"><code>SCI_SETCOMMANDEVENTS</code></a>.</p>
 
     <p><b id="SCI_SETMODEVENTMASK">SCI_SETMODEVENTMASK(int eventMask)</b><br />
      <b id="SCI_GETMODEVENTMASK">SCI_GETMODEVENTMASK &rarr; int</b><br />
@@ -7680,11 +7824,19 @@ href="#SCI_POSITIONFROMLINE">SCI_POSITIONFROMLINE</a>(lineNumber);
     <code>SC_MOD_BEFOREINSERT</code>, <code>SC_MOD_BEFOREDELETE</code>,
     <code>SC_MULTILINEUNDOREDO</code>, and <code>SC_MODEVENTMASKALL</code>.</p>
 
+    <p><b id="SCI_SETCOMMANDEVENTS">SCI_SETCOMMANDEVENTS(bool commandEvents)</b><br />
+     <b id="SCI_GETCOMMANDEVENTS">SCI_GETCOMMANDEVENTS &rarr; bool</b><br />
+     These messages set and get whether <code>SCEN_*</code> command events are
+    sent to the container. For <code>SCEN_CHANGE</code> this acts as an additional filter over
+    <a class="message" href="#SCI_SETMODEVENTMASK"><code>SCI_SETMODEVENTMASK</code></a>.
+    Most applications should set this off to avoid overhead and only use
+    <a class="message" href="#SCN_MODIFIED"><code>SCN_MODIFIED</code></a>.</p>
+
     <p><b id="SCEN_SETFOCUS">SCEN_SETFOCUS</b><br />
      <b id="SCEN_KILLFOCUS">SCEN_KILLFOCUS</b><br />
      <code>SCEN_SETFOCUS</code> (512) is fired when Scintilla receives focus and
     <code>SCEN_KILLFOCUS</code> (256) when it loses focus. These notifications are sent using the
-    <code>WM_COMMAND</code> message on Windows and the "command" signal on GTK+ as this is the
+    <code>WM_COMMAND</code> message on Windows and the "command" signal on GTK as this is the
     behaviour of the standard Edit control. Unfortunately, these codes do not match the Windows Edit
     notification codes <code>EN_SETFOCUS</code> (256) and <code>EN_KILLFOCUS</code> (512). It is
     now too late to change the Scintilla codes as clients depend on the current values.</p>
@@ -7843,7 +7995,7 @@ for line = lineStart to lineEnd do SCI_ENSUREVISIBLE(line) next
      See the <code><a class="jump" href="#SCN_AUTOCCOMPLETED">SCN_AUTOCCOMPLETED</a></code> notification
     for the possible values for <code>listCompletionMethod.</code>
     <p><b id="SCN_URIDROPPED">SCN_URIDROPPED</b><br />
-     Only on the GTK+ version. Indicates that the user has dragged a URI such as a file name or Web
+     Only on the GTK version. Indicates that the user has dragged a URI such as a file name or Web
     address onto Scintilla. The container could interpret this as a request to open the file. The
     <code>text</code> field of <code>SCNotification</code> points at the URI text.</p>
 
@@ -8117,7 +8269,7 @@ for line = lineStart to lineEnd do SCI_ENSUREVISIBLE(line) next
     If there is no suitable platform support, the <a href="http://lodev.org/lodepng/">LodePNG and picoPNG</a> libraries are small libraries
     for loading and decoding PNG files available under a BSD-style license.</p>
 
-    <p>RGBA format is supported on Windows, GTK+ and OS X Cocoa.</p>
+    <p>RGBA format is supported on Windows, GTK and OS X Cocoa.</p>
 
     <h3 id="XPM">XPM</h3>
 
@@ -8137,8 +8289,8 @@ for line = lineStart to lineEnd do SCI_ENSUREVISIBLE(line) next
 
     <p>XPM format is supported on on all platforms.</p>
 
-    <h2 id="GTK">GTK+</h2>
-    <p>On GTK+, the following functions create a Scintilla widget, communicate with it and allow
+    <h2 id="GTK">GTK</h2>
+    <p>On GTK, the following functions create a Scintilla widget, communicate with it and allow
     resources to be released after all Scintilla widgets have been destroyed.</p>
     <code><a class="message" href="#scintilla_new">GtkWidget *scintilla_new()</a><br />
      <a class="message" href="#scintilla_set_id">void scintilla_set_id(ScintillaObject *sci, uptr_t id)</a><br />
@@ -8291,7 +8443,7 @@ EM_SETTARGETDEVICE
     <p>These features have now been removed completely.</p>
 
     <p><b id="SC_CP_DBCS">SC_CP_DBCS</b> Removed in 2016 with release 3.7.1<br />
-     This was used to set a DBCS (Double Byte Character Set) mode on GTK+.
+     This was used to set a DBCS (Double Byte Character Set) mode on GTK.
      An explicit DBCS code page should be used when calling <a class="seealso" href="#SCI_SETCODEPAGE">SCI_SETCODEPAGE</a></p>
 
     <p><b id="SCI_SETUSEPALETTE">SCI_SETUSEPALETTE(bool usePalette)</b> Removed in 2016 with release 3.7.1<br />
@@ -8309,21 +8461,23 @@ EM_SETTARGETDEVICE
     directories.
     The compiler must support C++11.
     For Windows, GCC 4.8 or Microsoft Visual C++ 2015 can be used
-    for building. For GTK+, GCC 4.8 or newer should be used. GTK+ 2.24+ and 3.x are
-    supported with glib 2.22+. The version of GTK+ installed should be detected automatically.
-    When both GTK+ 2 and GTK+ 3 are present, building for GTK+ 3.x requires defining GTK3
+    for building. For GTK, GCC 4.8 or newer should be used. GTK 2.24+ and 3.x are
+    supported with glib 2.22+. The version of GTK installed should be detected automatically.
+    When both GTK 2 and GTK 3 are present, building for GTK 3.x requires defining GTK3
     on the command line.</p>
+
+    <p>Adding and removing source files from Scintilla may require modifying build files.
+    This is addressed in <a class="jump" href="AddSource.txt">AddSource.txt</a>.</p>
 
     <h3>Static linking</h3>
 
     <p>On Windows, Scintilla is normally used as a dynamic library as a .DLL file. If you want to
     link Scintilla directly into your application .EXE or .DLL file, then you can link to the static library
-    bin/libscintilla.lib (or .a if using GCC) and call <code>Scintilla_RegisterClasses</code>. Otherwise, if using an IDE or other build system, then the
-    <code>STATIC_BUILD</code> preprocessor symbol should be defined and
-    <code>Scintilla_RegisterClasses</code> called. <code>STATIC_BUILD</code> prevents compiling the
-    <code>DllMain</code> function which will conflict with any <code>DllMain</code> defined in your
-    code. <code>Scintilla_RegisterClasses</code> takes the <code>HINSTANCE</code> of your
+    bin/libscintilla.lib (or .a if using GCC) and call <code>Scintilla_RegisterClasses</code>.
+    <code>Scintilla_RegisterClasses</code> takes the <code>HINSTANCE</code> of your
     application and ensures that the "Scintilla" window class is registered.</p>
+    <p>When producing a stand-alone Scintilla DLL, the ScintillaDLL.cxx file should be compiled and
+    linked in to provide <code>DllMain</code> and <code>Scintilla_RegisterClasses</code>.</p>
 
     <h3>Ensuring lexers are linked into Scintilla</h3>
 

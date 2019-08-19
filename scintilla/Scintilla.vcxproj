@@ -98,7 +98,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>include;lexlib;src;../onigmo;../onigmo/win32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -163,6 +163,7 @@
     <ClCompile Include="lexers\LexAU3.cxx" />
     <ClCompile Include="lexers\LexAVS.cxx" />
     <ClCompile Include="lexers\LexBash.cxx" />
+    <ClCompile Include="lexers\LexBasic.cxx" />
     <ClCompile Include="lexers\LexBatch.cxx" />
     <ClCompile Include="lexers\LexCmake.cxx" />
     <ClCompile Include="lexers\LexCoffeeScript.cxx" />
@@ -173,10 +174,12 @@
     <ClCompile Include="lexers\LexErrorList.cxx" />
     <ClCompile Include="lexers\LexHTML.cxx" />
     <ClCompile Include="lexers\LexInno.cxx" />
+    <ClCompile Include="lexers\LexJSON.cxx" />
     <ClCompile Include="lexers\LexLaTeX.cxx" />
     <ClCompile Include="lexers\LexLua.cxx" />
     <ClCompile Include="lexers\LexMake.cxx" />
     <ClCompile Include="lexers\LexMarkdown.cxx" />
+    <ClCompile Include="lexers\LexMatlab.cxx" />
     <ClCompile Include="lexers\LexMSSQL.cxx" />
     <ClCompile Include="lexers\LexMySQL.cxx" />
     <ClCompile Include="lexers\LexNsis.cxx" />
@@ -231,8 +234,10 @@
     <ClCompile Include="src\Selection.cxx" />
     <ClCompile Include="src\Style.cxx" />
     <ClCompile Include="src\UniConversion.cxx" />
+    <ClCompile Include="src\UniqueString.cxx" />
     <ClCompile Include="src\ViewStyle.cxx" />
     <ClCompile Include="src\XPM.cxx" />
+    <ClCompile Include="win32\CheckD2D.cxx" />
     <ClCompile Include="win32\HanjaDic.cxx" />
     <ClCompile Include="win32\PlatWin.cxx" />
     <ClCompile Include="win32\ScintillaWin.cxx" />
@@ -285,9 +290,11 @@
     <ClInclude Include="src\EditModel.h" />
     <ClInclude Include="src\Editor.h" />
     <ClInclude Include="src\EditView.h" />
+    <ClInclude Include="src\ElapsedPeriod.h" />
     <ClInclude Include="src\ExternalLexer.h" />
     <ClInclude Include="src\FontQuality.h" />
     <ClInclude Include="src\Indicator.h" />
+    <ClInclude Include="src\IntegerRectangle.h" />
     <ClInclude Include="src\KeyMap.h" />
     <ClInclude Include="src\LineMarker.h" />
     <ClInclude Include="src\MarginView.h" />
@@ -299,13 +306,16 @@
     <ClInclude Include="src\RunStyles.h" />
     <ClInclude Include="src\ScintillaBase.h" />
     <ClInclude Include="src\Selection.h" />
+    <ClInclude Include="src\SparseVector.h" />
     <ClInclude Include="src\SplitVector.h" />
     <ClInclude Include="src\Style.h" />
-    <ClInclude Include="src\UnicodeFromUTF8.h" />
     <ClInclude Include="src\UniConversion.h" />
+    <ClInclude Include="src\UniqueString.h" />
     <ClInclude Include="src\ViewStyle.h" />
     <ClInclude Include="src\XPM.h" />
+    <ClInclude Include="win32\HanjaDic.h" />
     <ClInclude Include="win32\PlatWin.h" />
+    <ClInclude Include="win32\ScintillaWin.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

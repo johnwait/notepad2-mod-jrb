@@ -6,9 +6,11 @@
 
 #include <cstddef>
 #include <cstdlib>
+#include <cstdint>
 #include <cstring>
 #include <cstdio>
 #include <cstdarg>
+#include <climits>
 
 #include <stdexcept>
 #include <vector>
@@ -27,7 +29,7 @@ using namespace Scintilla;
 
 // Find the first run at a position
 template <typename DISTANCE, typename STYLE>
-DISTANCE RunStyles<DISTANCE, STYLE>::RunFromPosition(DISTANCE position) const {
+DISTANCE RunStyles<DISTANCE, STYLE>::RunFromPosition(DISTANCE position) const noexcept {
 	DISTANCE run = starts->PartitionFromPosition(position);
 	// Go to first element with this position
 	while ((run > 0) && (position == starts->PositionFromPartition(run-1))) {
@@ -86,17 +88,17 @@ RunStyles<DISTANCE, STYLE>::~RunStyles() {
 }
 
 template <typename DISTANCE, typename STYLE>
-DISTANCE RunStyles<DISTANCE, STYLE>::Length() const {
+DISTANCE RunStyles<DISTANCE, STYLE>::Length() const noexcept {
 	return starts->PositionFromPartition(starts->Partitions());
 }
 
 template <typename DISTANCE, typename STYLE>
-STYLE RunStyles<DISTANCE, STYLE>::ValueAt(DISTANCE position) const {
+STYLE RunStyles<DISTANCE, STYLE>::ValueAt(DISTANCE position) const noexcept {
 	return styles->ValueAt(starts->PartitionFromPosition(position));
 }
 
 template <typename DISTANCE, typename STYLE>
-DISTANCE RunStyles<DISTANCE, STYLE>::FindNextChange(DISTANCE position, DISTANCE end) const {
+DISTANCE RunStyles<DISTANCE, STYLE>::FindNextChange(DISTANCE position, DISTANCE end) const noexcept {
 	const DISTANCE run = starts->PartitionFromPosition(position);
 	if (run < starts->Partitions()) {
 		const DISTANCE runChange = starts->PositionFromPartition(run);
@@ -116,23 +118,24 @@ DISTANCE RunStyles<DISTANCE, STYLE>::FindNextChange(DISTANCE position, DISTANCE 
 }
 
 template <typename DISTANCE, typename STYLE>
-DISTANCE RunStyles<DISTANCE, STYLE>::StartRun(DISTANCE position) const {
+DISTANCE RunStyles<DISTANCE, STYLE>::StartRun(DISTANCE position) const noexcept {
 	return starts->PositionFromPartition(starts->PartitionFromPosition(position));
 }
 
 template <typename DISTANCE, typename STYLE>
-DISTANCE RunStyles<DISTANCE, STYLE>::EndRun(DISTANCE position) const {
+DISTANCE RunStyles<DISTANCE, STYLE>::EndRun(DISTANCE position) const noexcept {
 	return starts->PositionFromPartition(starts->PartitionFromPosition(position) + 1);
 }
 
 template <typename DISTANCE, typename STYLE>
-bool RunStyles<DISTANCE, STYLE>::FillRange(DISTANCE &position, STYLE value, DISTANCE &fillLength) {
+FillResult<DISTANCE> RunStyles<DISTANCE, STYLE>::FillRange(DISTANCE position, STYLE value, DISTANCE fillLength) {
+	const FillResult<DISTANCE> resultNoChange{false, position, fillLength};
 	if (fillLength <= 0) {
-		return false;
+		return resultNoChange;
 	}
 	DISTANCE end = position + fillLength;
 	if (end > Length()) {
-		return false;
+		return resultNoChange;
 	}
 	DISTANCE runEnd = RunFromPosition(end);
 	if (styles->ValueAt(runEnd) == value) {
@@ -140,7 +143,7 @@ bool RunStyles<DISTANCE, STYLE>::FillRange(DISTANCE &position, STYLE value, DIST
 		end = starts->PositionFromPartition(runEnd);
 		if (position >= end) {
 			// Whole range is already same as value so no action
-			return false;
+			return resultNoChange;
 		}
 		fillLength = end - position;
 	} else {
@@ -159,6 +162,7 @@ bool RunStyles<DISTANCE, STYLE>::FillRange(DISTANCE &position, STYLE value, DIST
 		}
 	}
 	if (runStart < runEnd) {
+		const FillResult<DISTANCE> result{ true, position, fillLength };
 		styles->SetValueAt(runStart, value);
 		// Remove each old run over the range
 		for (DISTANCE run=runStart+1; run<runEnd; run++) {
@@ -169,16 +173,15 @@ bool RunStyles<DISTANCE, STYLE>::FillRange(DISTANCE &position, STYLE value, DIST
 		RemoveRunIfSameAsPrevious(runStart);
 		runEnd = RunFromPosition(end);
 		RemoveRunIfEmpty(runEnd);
-		return true;
+		return result;
 	} else {
-		return false;
+		return resultNoChange;
 	}
 }
 
 template <typename DISTANCE, typename STYLE>
 void RunStyles<DISTANCE, STYLE>::SetValueAt(DISTANCE position, STYLE value) {
-	DISTANCE len = 1;
-	FillRange(position, value, len);
+	FillRange(position, value, 1);
 }
 
 template <typename DISTANCE, typename STYLE>
@@ -240,13 +243,13 @@ void RunStyles<DISTANCE, STYLE>::DeleteRange(DISTANCE position, DISTANCE deleteL
 }
 
 template <typename DISTANCE, typename STYLE>
-DISTANCE RunStyles<DISTANCE, STYLE>::Runs() const {
+DISTANCE RunStyles<DISTANCE, STYLE>::Runs() const noexcept {
 	return starts->Partitions();
 }
 
 template <typename DISTANCE, typename STYLE>
-bool RunStyles<DISTANCE, STYLE>::AllSame() const {
-	for (int run = 1; run < starts->Partitions(); run++) {
+bool RunStyles<DISTANCE, STYLE>::AllSame() const noexcept {
+	for (DISTANCE run = 1; run < starts->Partitions(); run++) {
 		if (styles->ValueAt(run) != styles->ValueAt(run - 1))
 			return false;
 	}
@@ -254,12 +257,12 @@ bool RunStyles<DISTANCE, STYLE>::AllSame() const {
 }
 
 template <typename DISTANCE, typename STYLE>
-bool RunStyles<DISTANCE, STYLE>::AllSameAs(STYLE value) const {
+bool RunStyles<DISTANCE, STYLE>::AllSameAs(STYLE value) const noexcept {
 	return AllSame() && (styles->ValueAt(0) == value);
 }
 
 template <typename DISTANCE, typename STYLE>
-DISTANCE RunStyles<DISTANCE, STYLE>::Find(STYLE value, DISTANCE start) const {
+DISTANCE RunStyles<DISTANCE, STYLE>::Find(STYLE value, DISTANCE start) const noexcept {
 	if (start < Length()) {
 		DISTANCE run = start ? RunFromPosition(start) : 0;
 		if (styles->ValueAt(run) == value)
@@ -296,7 +299,7 @@ void RunStyles<DISTANCE, STYLE>::Check() const {
 	if (styles->ValueAt(styles->Length()-1) != 0) {
 		throw std::runtime_error("RunStyles: Unused style at end changed.");
 	}
-	for (int j=1; j<styles->Length()-1; j++) {
+	for (ptrdiff_t j=1; j<styles->Length()-1; j++) {
 		if (styles->ValueAt(j) == styles->ValueAt(j-1)) {
 			throw std::runtime_error("RunStyles: Style of a partition same as previous.");
 		}
@@ -305,3 +308,7 @@ void RunStyles<DISTANCE, STYLE>::Check() const {
 
 template class Scintilla::RunStyles<int, int>;
 template class Scintilla::RunStyles<int, char>;
+#if (PTRDIFF_MAX != INT_MAX) || PLAT_HAIKU
+template class Scintilla::RunStyles<ptrdiff_t, int>;
+template class Scintilla::RunStyles<ptrdiff_t, char>;
+#endif

@@ -47,6 +47,7 @@
 
 #include "Platform.h"
 #include "Scintilla.h"
+#include "ILoader.h"
 #include "ILexer.h"
 #include "SplitVector.h"
 #include "Partitioning.h"

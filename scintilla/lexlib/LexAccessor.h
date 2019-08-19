@@ -109,7 +109,7 @@ public:
 		return true;
 	}
 	char StyleAt(Sci_Position position) const {
-		return static_cast<char>(pAccess->StyleAt(position));
+		return pAccess->StyleAt(position);
 	}
 	Sci_Position GetLine(Sci_Position position) const {
 		return pAccess->LineFromPosition(position);
@@ -170,13 +170,14 @@ public:
 
 			if (validLen + (pos - startSeg + 1) >= bufferSize)
 				Flush();
+			const char attr = static_cast<char>(chAttr);
 			if (validLen + (pos - startSeg + 1) >= bufferSize) {
 				// Too big for buffer so send directly
-				pAccess->SetStyleFor(pos - startSeg + 1, static_cast<char>(chAttr));
+				pAccess->SetStyleFor(pos - startSeg + 1, attr);
 			} else {
 				for (Sci_PositionU i = startSeg; i <= pos; i++) {
 					assert((startPosStyling + validLen) < Length());
-					styleBuf[validLen++] = static_cast<char>(chAttr);
+					styleBuf[validLen++] = attr;
 				}
 			}
 		}

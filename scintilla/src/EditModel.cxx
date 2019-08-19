@@ -24,7 +24,8 @@
 #include "ILexer.h"
 #include "Scintilla.h"
 
-#include "StringCopy.h"
+#include "CharacterCategory.h"
+
 #include "Position.h"
 #include "UniqueString.h"
 #include "SplitVector.h"
@@ -51,7 +52,7 @@ using namespace Scintilla;
 Caret::Caret() :
 	active(false), on(false), period(500) {}
 
-EditModel::EditModel() {
+EditModel::EditModel() : braces{} {
 	inOverstrike = false;
 	xOffset = 0;
 	trackLineWidth = false;
@@ -69,9 +70,28 @@ EditModel::EditModel() {
 	wrapWidth = LineLayout::wrapWidthInfinite;
 	pdoc = new Document(SC_DOCUMENTOPTION_DEFAULT);
 	pdoc->AddRef();
+	pcs = ContractionStateCreate(pdoc->IsLarge());
 }
 
 EditModel::~EditModel() {
 	pdoc->Release();
-	pdoc = 0;
+	pdoc = nullptr;
 }
+
+void EditModel::SetDefaultFoldDisplayText(const char *text) {
+	defaultFoldDisplayText = IsNullOrEmpty(text) ? UniqueString() : UniqueStringCopy(text);
+}
+
+const char *EditModel::GetDefaultFoldDisplayText() const noexcept {
+	return defaultFoldDisplayText.get();
+}
+
+const char *EditModel::GetFoldDisplayText(Sci::Line lineDoc) const {
+	if (foldDisplayTextStyle == SC_FOLDDISPLAYTEXT_HIDDEN || pcs->GetExpanded(lineDoc)) {
+		return nullptr;
+	}
+
+	const char *text = pcs->GetFoldDisplayText(lineDoc);
+	return text ? text : defaultFoldDisplayText.get();
+}
+

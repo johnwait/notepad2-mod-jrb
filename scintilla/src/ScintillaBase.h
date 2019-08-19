@@ -53,9 +53,11 @@ protected:
 
 	ScintillaBase();
 	// Deleted so ScintillaBase objects can not be copied.
-	explicit ScintillaBase(const ScintillaBase &) = delete;
+	ScintillaBase(const ScintillaBase &) = delete;
+	ScintillaBase(ScintillaBase &&) = delete;
 	ScintillaBase &operator=(const ScintillaBase &) = delete;
-	virtual ~ScintillaBase();
+	ScintillaBase &operator=(ScintillaBase &&) = delete;
+	// ~ScintillaBase() in public section
 	void Initialise() override {}
 	void Finalise() override;
 
@@ -92,6 +94,8 @@ protected:
 	void NotifyLexerChanged(Document *doc, void *userData) override;
 
 public:
+	~ScintillaBase() override;
+
 	// Public so scintilla_send_message can use it
 	sptr_t WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) override;
 };

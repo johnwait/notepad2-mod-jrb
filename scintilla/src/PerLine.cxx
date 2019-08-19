@@ -33,11 +33,11 @@ MarkerHandleSet::~MarkerHandleSet() {
 	mhList.clear();
 }
 
-bool MarkerHandleSet::Empty() const {
+bool MarkerHandleSet::Empty() const noexcept {
 	return mhList.empty();
 }
 
-int MarkerHandleSet::MarkValue() const {
+int MarkerHandleSet::MarkValue() const noexcept {
 	unsigned int m = 0;
 	for (const MarkerHandleNumber &mhn : mhList) {
 		m |= (1 << mhn.number);
@@ -45,7 +45,7 @@ int MarkerHandleSet::MarkValue() const {
 	return m;
 }
 
-bool MarkerHandleSet::Contains(int handle) const {
+bool MarkerHandleSet::Contains(int handle) const noexcept {
 	for (const MarkerHandleNumber &mhn : mhList) {
 		if (mhn.handle == handle) {
 			return true;
@@ -60,7 +60,7 @@ bool MarkerHandleSet::InsertHandle(int handle, int markerNum) {
 }
 
 void MarkerHandleSet::RemoveHandle(int handle) {
-	mhList.remove_if([=](const MarkerHandleNumber &mhn) { return mhn.handle == handle; });
+	mhList.remove_if([handle](const MarkerHandleNumber &mhn) { return mhn.handle == handle; });
 }
 
 bool MarkerHandleSet::RemoveNumber(int markerNum, bool all) {
@@ -125,7 +125,7 @@ void LineMarkers::MergeMarkers(Sci::Line line) {
 	}
 }
 
-int LineMarkers::MarkValue(Sci::Line line) {
+int LineMarkers::MarkValue(Sci::Line line) noexcept {
 	if (markers.Length() && (line >= 0) && (line < markers.Length()) && markers[line])
 		return markers[line]->MarkValue();
 	else
@@ -284,7 +284,7 @@ Sci::Line LineState::GetMaxLineState() const {
 	return static_cast<Sci::Line>(lineStates.Length());
 }
 
-static int NumberLines(const char *text) {
+static int NumberLines(const char *text) noexcept {
 	if (text) {
 		int newLines = 0;
 		while (*text) {
@@ -349,14 +349,14 @@ const char *LineAnnotation::Text(Sci::Line line) const {
 	if (annotations.Length() && (line >= 0) && (line < annotations.Length()) && annotations[line])
 		return annotations[line].get()+sizeof(AnnotationHeader);
 	else
-		return 0;
+		return nullptr;
 }
 
 const unsigned char *LineAnnotation::Styles(Sci::Line line) const {
 	if (annotations.Length() && (line >= 0) && (line < annotations.Length()) && annotations[line] && MultipleStyles(line))
 		return reinterpret_cast<unsigned char *>(annotations[line].get() + sizeof(AnnotationHeader) + Length(line));
 	else
-		return 0;
+		return nullptr;
 }
 
 static char *AllocateAnnotation(int length, int style) {
