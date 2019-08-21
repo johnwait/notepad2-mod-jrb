@@ -2394,8 +2394,8 @@ BEGIN
     63381                   "Verbatim"
     63382                   "Media"
     63383                   "MATLAB"
-    63384                   "Double-quoted String"
 /*
+    63384                   ""
     63385                   ""
     63386                   ""
     63387                   ""

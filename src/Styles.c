@@ -2786,10 +2786,9 @@ EDITLEXER lexMATLAB = { SCLEX_MATLAB, 63383, L"MATLAB", L"m", L"", &KeyWords_MAT
                       { SCE_MATLAB_COMMAND, 63236, L"Command", L"fore:#FF8000", L"" },
                       { SCE_MATLAB_NUMBER, 63130, L"Number", L"fore:#FF0000", L"" },
                       { SCE_MATLAB_KEYWORD, 63128, L"Keyword", L"bold; fore:#0A246A", L"" },
-                      { SCE_MATLAB_STRING, 63131, L"String", L"fore:#008000", L"" },
+                      { MULTI_STYLE(SCE_MATLAB_STRING, SCE_MATLAB_DOUBLEQUOTESTRING, 0, 0), 63131, L"String", L"fore:#008000", L"" },
                       { SCE_MATLAB_OPERATOR, 63132, L"Operator", L"fore:#B000B0", L"" },
                       { SCE_MATLAB_IDENTIFIER, 63129, L"Identifier", L"", L"" },
-                      { SCE_MATLAB_DOUBLEQUOTESTRING, 63384, L"Double-quoted String", L"fore:#008000", L"" },
                       { -1, 00000, L"", L"", L"" } } };
 
 KEYWORDLIST KeyWords_REGISTRY = {
