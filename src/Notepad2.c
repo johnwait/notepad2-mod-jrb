@@ -21,6 +21,7 @@
 #define _WIN32_WINNT 0x501
 #endif
 // clang-format off
+#pragma comment(lib, "rpcrt4")
 #include "StdAfx.h" // platform includes
 #include "Scintilla.h"
 #include "SciLexer.h"
@@ -162,6 +163,7 @@ BOOL bTransparentMode;
 BOOL bTransparentModeAvailable;
 BOOL bShowToolbar;
 BOOL bShowStatusbar;
+BOOL bCheckWritePermission;
 
 typedef struct _wi {
     int x;
@@ -2208,6 +2210,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
     EnableCmd(hmenu, IDM_VIEW_NOSAVEFINDREPL, i);
     EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS, i);
 
+    CheckCmd(hmenu,IDM_VIEW_CHECKWRITEPERMISSION,bCheckWritePermission);
+
     i = (lstrlen(szIniFile) > 0 || lstrlen(szIniFile2) > 0);
     EnableCmd(hmenu, IDM_VIEW_SAVESETTINGSNOW, i);
 }
@@ -4030,6 +4034,10 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         iEscFunction = 2;
         break;
 
+    case IDM_VIEW_CHECKWRITEPERMISSION:
+        bCheckWritePermission = (bCheckWritePermission) ? FALSE : TRUE;
+        break;
+
     case IDM_VIEW_SAVESETTINGS:
         bSaveSettings = (bSaveSettings) ? FALSE : TRUE;
         break;
@@ -5081,6 +5089,10 @@ void LoadSettings()
 
     LoadIniSection(L"Settings", pIniSection, cchIniSection);
 
+    bCheckWritePermission = IniSectionGetInt(pIniSection, L"CheckWritePermission",0);
+    if (bCheckWritePermission)
+        bCheckWritePermission = 1;
+
     bSaveSettings = IniSectionGetInt(pIniSection, L"SaveSettings", 1);
     if (bSaveSettings)
         bSaveSettings = 1;
@@ -5446,6 +5458,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
     pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
     cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
 
+    IniSectionSetInt(pIniSection, L"CheckWritePermission", bCheckWritePermission);
     IniSectionSetInt(pIniSection, L"SaveSettings", bSaveSettings);
     IniSectionSetInt(pIniSection, L"SaveRecentFiles", bSaveRecentFiles);
     IniSectionSetInt(pIniSection, L"SaveFindReplace", bSaveFindReplace);
@@ -6502,6 +6515,53 @@ BOOL FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWST
 
     if (PathIsLnkFile(szFileName))
         PathGetLnkPath(szFileName, szFileName, COUNTOF(szFileName));
+
+    if (bCheckWritePermission) {
+        UUID uuid;
+        UuidCreate(&uuid);
+
+        WCHAR* pszUuid = NULL;
+        UuidToString(&uuid, &pszUuid);
+
+        WCHAR szUuid[MAX_PATH] = L"";
+        lstrcpy(szUuid, pszUuid);
+
+        WCHAR szTestFile[MAX_PATH] = L"";
+
+        lstrcpy(szTestFile, szFileName);
+        PathRemoveFileSpec(szTestFile);
+        PathAppend(szTestFile, szUuid);
+
+        HANDLE hTestFile = CreateFile(szTestFile,
+                GENERIC_WRITE, FILE_SHARE_WRITE,
+                NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hTestFile != INVALID_HANDLE_VALUE) {
+            CloseHandle(hTestFile);
+            DeleteFile(szTestFile);
+        } else if (!fIsElevated) {
+            WCHAR szExePath[MAX_PATH] = L"";
+            GetModuleFileName(NULL, szExePath, COUNTOF(szExePath));
+
+            WCHAR* exeName = PathFindFileName(szExePath);
+
+            SHELLEXECUTEINFO shExecInfo;
+
+            shExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+            shExecInfo.fMask = NULL;
+            shExecInfo.hwnd = NULL;
+            shExecInfo.lpVerb = L"runas";
+            shExecInfo.lpFile = exeName;
+            shExecInfo.lpParameters = szFileName;
+            shExecInfo.lpDirectory = NULL;
+            shExecInfo.nShow = SW_NORMAL;
+            shExecInfo.hInstApp = NULL;
+
+            if(ShellExecuteEx(&shExecInfo)) {
+                SendMessage(hwndMain, WM_DESTROY, 0, 0);
+                return FALSE;
+            }
+        }
+    }
 
     // Ask to create a new file...
     if (!bReload && !PathFileExists(szFileName)) {
