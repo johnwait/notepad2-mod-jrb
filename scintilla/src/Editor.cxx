@@ -5964,8 +5964,19 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 			UndoGroup ug(pdoc);
 			ClearSelection();
 			const char *replacement = CharPtrFromSPtr(lParam);
+#ifdef JRB_BUILD
+			/*
+			 * 2019-08-20: Custom patch to support insertion of null chars through
+			 *             SCI_REPLACESEL (see method EditInsertCtlCharDlgProcW()
+			 *             in Notepad2's "Edit.c")
+			 */
+			size_t replLen = strlen(replacement);
+			const Sci::Position lengthInserted = pdoc->InsertString(
+				sel.MainCaret(), replacement, (replLen == 0 && wParam != 0 ? (size_t)wParam : replLen));
+#else
 			const Sci::Position lengthInserted = pdoc->InsertString(
 				sel.MainCaret(), replacement, strlen(replacement));
+#endif
 			SetEmptySelection(sel.MainCaret() + lengthInserted);
 			SetLastXChosen();
 			EnsureCaretVisible();

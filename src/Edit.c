@@ -66,6 +66,10 @@ extern int iWeakSrcEncoding;
 
 int g_DOSEncoding;
 
+#ifdef JRB_BUILD
+HWND hwndCtlCharToolTips[32] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+#endif
+
 // Supported Encodings
 WCHAR wchANSI[8] = L"";
 WCHAR wchOEM[8] = L"";
@@ -4656,7 +4660,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
     BOOL bCloseDlg;
     BOOL bIsFindDlg;
 #ifdef JRB_BUILD
-    WCHAR tchFindStrLbl[1024];
+    WCHAR tchFindStrLbl[255];
 #endif
 
     static UINT uCPEdit;
@@ -6471,40 +6475,40 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
         {
             piSortFlags = (int*)lParam;
             if (*piSortFlags & SORT_DESCENDING)
-                CheckRadioButton(hwnd, 100, 102, 101);
+                CheckRadioButton(hwnd, IDC_SORTASCENDING, IDC_SHUFFLELINES, IDC_SORTDESCENDING);
             else if (*piSortFlags & SORT_SHUFFLE) {
-                CheckRadioButton(hwnd, 100, 102, 102);
-                EnableWindow(GetDlgItem(hwnd, 103), FALSE);
-                EnableWindow(GetDlgItem(hwnd, 104), FALSE);
-                EnableWindow(GetDlgItem(hwnd, 105), FALSE);
-                EnableWindow(GetDlgItem(hwnd, 106), FALSE);
-                EnableWindow(GetDlgItem(hwnd, 107), FALSE);
+                CheckRadioButton(hwnd, IDC_SORTASCENDING, IDC_SHUFFLELINES, IDC_SHUFFLELINES);
+                EnableWindow(GetDlgItem(hwnd, IDC_MERGEDUPELINES), FALSE);
+                EnableWindow(GetDlgItem(hwnd, IDC_REMOVEDUPELINES), FALSE);
+                EnableWindow(GetDlgItem(hwnd, IDC_REMOVEUNIQUELINES), FALSE);
+                EnableWindow(GetDlgItem(hwnd, IDC_CASEINSENSITIVE), FALSE);
+                EnableWindow(GetDlgItem(hwnd, IDC_LOGICALNUMCOMPARE), FALSE);
             } else
-                CheckRadioButton(hwnd, 100, 102, 100);
+                CheckRadioButton(hwnd, IDC_SORTASCENDING, IDC_SHUFFLELINES, IDC_SORTASCENDING);
             if (*piSortFlags & SORT_MERGEDUP)
-                CheckDlgButton(hwnd, 103, BST_CHECKED);
+                CheckDlgButton(hwnd, IDC_MERGEDUPELINES, BST_CHECKED);
             if (*piSortFlags & SORT_UNIQDUP) {
-                CheckDlgButton(hwnd, 104, BST_CHECKED);
-                EnableWindow(GetDlgItem(hwnd, 103), FALSE);
+                CheckDlgButton(hwnd, IDC_REMOVEDUPELINES, BST_CHECKED);
+                EnableWindow(GetDlgItem(hwnd, IDC_MERGEDUPELINES), FALSE);
             }
             if (*piSortFlags & SORT_UNIQUNIQ)
-                CheckDlgButton(hwnd, 105, BST_CHECKED);
+                CheckDlgButton(hwnd, IDC_REMOVEUNIQUELINES, BST_CHECKED);
             if (*piSortFlags & SORT_NOCASE)
-                CheckDlgButton(hwnd, 106, BST_CHECKED);
+                CheckDlgButton(hwnd, IDC_CASEINSENSITIVE, BST_CHECKED);
             if (GetProcAddress(GetModuleHandle(L"shlwapi"), "StrCmpLogicalW")) {
                 if (*piSortFlags & SORT_LOGICAL)
-                    CheckDlgButton(hwnd, 107, BST_CHECKED);
+                    CheckDlgButton(hwnd, IDC_LOGICALNUMCOMPARE, BST_CHECKED);
                 bEnableLogicalSort = TRUE;
             } else {
-                EnableWindow(GetDlgItem(hwnd, 107), FALSE);
+                EnableWindow(GetDlgItem(hwnd, IDC_LOGICALNUMCOMPARE), FALSE);
                 bEnableLogicalSort = FALSE;
             }
             if (SC_SEL_RECTANGLE != SendMessage(hwndEdit, SCI_GETSELECTIONMODE, 0, 0)) {
                 *piSortFlags &= ~SORT_COLUMN;
-                EnableWindow(GetDlgItem(hwnd, 108), FALSE);
+                EnableWindow(GetDlgItem(hwnd, IDC_COLUMNSORT), FALSE);
             } else {
                 *piSortFlags |= SORT_COLUMN;
-                CheckDlgButton(hwnd, 108, BST_CHECKED);
+                CheckDlgButton(hwnd, IDC_COLUMNSORT, BST_CHECKED);
             }
             CenterDlgInParent(hwnd);
         }
@@ -6514,44 +6518,44 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
                 case IDOK:
                 {
                     *piSortFlags = 0;
-                    if (IsDlgButtonChecked(hwnd, 101) == BST_CHECKED)
+                    if (IsDlgButtonChecked(hwnd, IDC_SORTDESCENDING) == BST_CHECKED)
                         *piSortFlags |= SORT_DESCENDING;
-                    if (IsDlgButtonChecked(hwnd, 102) == BST_CHECKED)
+                    if (IsDlgButtonChecked(hwnd, IDC_SHUFFLELINES) == BST_CHECKED)
                         *piSortFlags |= SORT_SHUFFLE;
-                    if (IsDlgButtonChecked(hwnd, 103) == BST_CHECKED)
+                    if (IsDlgButtonChecked(hwnd, IDC_MERGEDUPELINES) == BST_CHECKED)
                         *piSortFlags |= SORT_MERGEDUP;
-                    if (IsDlgButtonChecked(hwnd, 104) == BST_CHECKED)
+                    if (IsDlgButtonChecked(hwnd, IDC_REMOVEDUPELINES) == BST_CHECKED)
                         *piSortFlags |= SORT_UNIQDUP;
-                    if (IsDlgButtonChecked(hwnd, 105) == BST_CHECKED)
+                    if (IsDlgButtonChecked(hwnd, IDC_REMOVEUNIQUELINES) == BST_CHECKED)
                         *piSortFlags |= SORT_UNIQUNIQ;
-                    if (IsDlgButtonChecked(hwnd, 106) == BST_CHECKED)
+                    if (IsDlgButtonChecked(hwnd, IDC_CASEINSENSITIVE) == BST_CHECKED)
                         *piSortFlags |= SORT_NOCASE;
-                    if (IsDlgButtonChecked(hwnd, 107) == BST_CHECKED)
+                    if (IsDlgButtonChecked(hwnd, IDC_LOGICALNUMCOMPARE) == BST_CHECKED)
                         *piSortFlags |= SORT_LOGICAL;
-                    if (IsDlgButtonChecked(hwnd, 108) == BST_CHECKED)
+                    if (IsDlgButtonChecked(hwnd, IDC_COLUMNSORT) == BST_CHECKED)
                         *piSortFlags |= SORT_COLUMN;
                     EndDialog(hwnd, IDOK);
                 } break;
                 case IDCANCEL:
                     EndDialog(hwnd, IDCANCEL);
                     break;
-                case 100:
-                case 101:
-                    EnableWindow(GetDlgItem(hwnd, 103), IsDlgButtonChecked(hwnd, 105) != BST_CHECKED);
-                    EnableWindow(GetDlgItem(hwnd, 104), TRUE);
-                    EnableWindow(GetDlgItem(hwnd, 105), TRUE);
-                    EnableWindow(GetDlgItem(hwnd, 106), TRUE);
-                    EnableWindow(GetDlgItem(hwnd, 107), bEnableLogicalSort);
+                case IDC_SORTASCENDING:
+                case IDC_SORTDESCENDING:
+                    EnableWindow(GetDlgItem(hwnd, IDC_MERGEDUPELINES), IsDlgButtonChecked(hwnd, IDC_REMOVEUNIQUELINES) != BST_CHECKED);
+                    EnableWindow(GetDlgItem(hwnd, IDC_REMOVEDUPELINES), TRUE);
+                    EnableWindow(GetDlgItem(hwnd, IDC_REMOVEUNIQUELINES), TRUE);
+                    EnableWindow(GetDlgItem(hwnd, IDC_CASEINSENSITIVE), TRUE);
+                    EnableWindow(GetDlgItem(hwnd, IDC_LOGICALNUMCOMPARE), bEnableLogicalSort);
                     break;
-                case 102:
-                    EnableWindow(GetDlgItem(hwnd, 103), FALSE);
-                    EnableWindow(GetDlgItem(hwnd, 104), FALSE);
-                    EnableWindow(GetDlgItem(hwnd, 105), FALSE);
-                    EnableWindow(GetDlgItem(hwnd, 106), FALSE);
-                    EnableWindow(GetDlgItem(hwnd, 107), FALSE);
+                case IDC_SHUFFLELINES:
+                    EnableWindow(GetDlgItem(hwnd, IDC_MERGEDUPELINES), FALSE);
+                    EnableWindow(GetDlgItem(hwnd, IDC_REMOVEDUPELINES), FALSE);
+                    EnableWindow(GetDlgItem(hwnd, IDC_REMOVEUNIQUELINES), FALSE);
+                    EnableWindow(GetDlgItem(hwnd, IDC_CASEINSENSITIVE), FALSE);
+                    EnableWindow(GetDlgItem(hwnd, IDC_LOGICALNUMCOMPARE), FALSE);
                     break;
-                case 104:
-                    EnableWindow(GetDlgItem(hwnd, 103), IsDlgButtonChecked(hwnd, 104) != BST_CHECKED);
+                case IDC_REMOVEDUPELINES:
+                    EnableWindow(GetDlgItem(hwnd, IDC_MERGEDUPELINES), IsDlgButtonChecked(hwnd, IDC_REMOVEDUPELINES) != BST_CHECKED);
                     break;
             }
             return TRUE;
@@ -6577,6 +6581,118 @@ BOOL EditSortDlg(HWND hwnd, int* piSortFlags)
 
     return (iResult == IDOK) ? TRUE : FALSE;
 }
+
+#ifdef JRB_BUILD
+
+//=============================================================================
+//
+//  EditInsertCtlCharDlgProcW()
+//
+INT_PTR CALLBACK EditInsertCtlCharDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam) {
+
+	switch (umsg) {
+
+		case WM_INITDIALOG:
+		{
+			// Center dialog
+			CenterDlgInParent(hwnd);
+			// Create tooltips for fialog buttons
+			WCHAR wchTooltip[MAX_PATH];
+			for (int i = 0; i < 32; i++) {
+				if (hwndCtlCharToolTips[i] && IsWindow(hwndCtlCharToolTips[i])) {
+					DestroyWindow(hwndCtlCharToolTips[i]);
+					hwndCtlCharToolTips[i] = 0;
+				}
+				if (GetString(IDS_CTLCHAR_00_TOOLTIP + i, wchTooltip, COUNTOF(wchTooltip)))
+					hwndCtlCharToolTips[i] = CreateToolTipW(IDC_CTLCHAR_00 + i, hwnd, (PWSTR)&wchTooltip);
+			}
+			// Force-show whitespaces & line endings while using the dialog
+			SendMessage(hwndEdit, SCI_SETVIEWWS, (/*g_bViewWhiteSpace*/ TRUE) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
+			SendMessage(hwndEdit, SCI_SETVIEWEOL, /*g_bViewEOLs*/ TRUE, 0);
+		} return TRUE; // case WM_INITDIALOG
+
+		case WM_COMMAND:
+		{
+
+			WORD wCtlId = LOWORD(wParam);
+
+			switch (wCtlId) {
+
+				case IDC_CTLCHAR_00:  case  IDC_CTLCHAR_01:  case  IDC_CTLCHAR_02:  case  IDC_CTLCHAR_03:
+				case IDC_CTLCHAR_04:  case  IDC_CTLCHAR_05:  case  IDC_CTLCHAR_06:  case  IDC_CTLCHAR_07:
+				case IDC_CTLCHAR_08:  case  IDC_CTLCHAR_09:  case  IDC_CTLCHAR_0A:  case  IDC_CTLCHAR_0B:
+				case IDC_CTLCHAR_0C:  case  IDC_CTLCHAR_0D:  case  IDC_CTLCHAR_0E:  case  IDC_CTLCHAR_0F:
+				case IDC_CTLCHAR_10:  case  IDC_CTLCHAR_11:  case  IDC_CTLCHAR_12:  case  IDC_CTLCHAR_13:
+				case IDC_CTLCHAR_14:  case  IDC_CTLCHAR_15:  case  IDC_CTLCHAR_16:  case  IDC_CTLCHAR_17:
+				case IDC_CTLCHAR_18:  case  IDC_CTLCHAR_19:  case  IDC_CTLCHAR_1A:  case  IDC_CTLCHAR_1B:
+				case IDC_CTLCHAR_1C:  case  IDC_CTLCHAR_1D:  case  IDC_CTLCHAR_1E:  case  IDC_CTLCHAR_1F:
+				{
+					WORD wCtlChar = wCtlId - (WORD)IDC_CTLCHAR_00;
+					char chCtlChar[2] = { LOBYTE(wCtlChar), 0 };
+					wchar_t  wchInsert[2] = { 0, 0 };
+					if (chCtlChar[0] != '\0')
+						swprintf((wchar_t *const)&wchInsert, 2, L"%hs", &chCtlChar);
+
+					char mszBuf[MAX_PATH];
+					UINT uCP = (SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0) == SC_CP_UTF8) ? CP_UTF8 : CP_ACP;
+					WideCharToMultiByte(uCP, 0, wchInsert, 2, mszBuf, COUNTOF(mszBuf), NULL, NULL);
+					int cchLen = mblen(mszBuf, COUNTOF(mszBuf)) || 1;
+					// Below: Using a modification in the handling of SCI_REPLACESEL within
+					//        Scintilla's Editor::WndProc() (look for JRB_BUILD in "Editor.cxx")
+					SendMessage(hwndEdit, SCI_REPLACESEL, cchLen, (LPARAM)mszBuf);
+
+				} break;
+
+				case IDCANCEL:
+					// Destroy dialog
+					DestroyWindow(hwnd);
+					// Destroy tooltips
+					for (int i = 0; i < 32; i++) {
+						if (hwndCtlCharToolTips[i] && IsWindow(hwndCtlCharToolTips[i])) {
+							DestroyWindow(hwndCtlCharToolTips[i]);
+							hwndCtlCharToolTips[i] = 0;
+						}
+					}
+					// Restore "Show Whitespace" & "Show Line Endings" states per user's settings
+					SendMessage(hwndEdit, SCI_SETVIEWWS, (g_bViewWhiteSpace) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
+					SendMessage(hwndEdit, SCI_SETVIEWEOL, g_bViewEOLs, 0);
+
+					break;
+			} return TRUE; // switch (LOWORD(wParam))
+
+		} break;
+
+#if defined(_DEBUG) && FALSE
+		default: {
+			Debug_OutputMsg(umsg);
+		}
+#endif
+
+	} // switch (umsg)
+
+	return FALSE;
+}
+
+//=============================================================================
+//
+//  EditInsertCtlCharDlg()
+//
+HWND EditInsertCtlCharDlg(HWND hwnd)
+{
+
+	HWND hDlg;
+
+	hDlg = CreateThemedDialogParam(g_hInstance,
+								   MAKEINTRESOURCEW(IDD_INSERTCTLCHAR),
+								   GetParent(hwnd),
+								   EditInsertCtlCharDlgProcW,
+								   (LPARAM)NULL);
+
+	ShowWindow(hDlg, SW_SHOW);
+
+	return hDlg;
+}
+#endif
 
 //=============================================================================
 //
@@ -7071,5 +7187,245 @@ int FileVars_GetEncoding(LPFILEVARS lpfv)
 //
 //    return CallWindowProcW(pfnSciWndProc, hwnd, umsg, wParam, lParam);
 //}
+
+#if defined(_DEBUG) && defined(JRB_BUILD)
+
+void Debug_OutputMsg(UINT umsg) {
+	WCHAR output[200], buffer[64];
+	switch (umsg) {
+		case 0x0: swprintf(buffer, 64, L"WM_%ls", L"NULL"); break;
+		case 0x1: swprintf(buffer, 64, L"WM_%ls", L"CREATE"); break;
+		case 0x2: swprintf(buffer, 64, L"WM_%ls", L"DESTROY"); break;
+		case 0x3: swprintf(buffer, 64, L"WM_%ls", L"MOVE"); break;
+		case 0x5: swprintf(buffer, 64, L"WM_%ls", L"SIZE"); break;
+		case 0x6: swprintf(buffer, 64, L"WM_%ls", L"ACTIVATE"); break;
+		case 0x7: swprintf(buffer, 64, L"WM_%ls", L"SETFOCUS"); break;
+		case 0x8: swprintf(buffer, 64, L"WM_%ls", L"KILLFOCUS"); break;
+		case 0xA: swprintf(buffer, 64, L"WM_%ls", L"ENABLE"); break;
+		case 0xB: swprintf(buffer, 64, L"WM_%ls", L"SETREDRAW"); break;
+		case 0xC: swprintf(buffer, 64, L"WM_%ls", L"SETTEXT"); break;
+		case 0xD: swprintf(buffer, 64, L"WM_%ls", L"GETTEXT"); break;
+		case 0xE: swprintf(buffer, 64, L"WM_%ls", L"GETTEXTLENGTH"); break;
+		case 0xF: swprintf(buffer, 64, L"WM_%ls", L"PAINT"); break;
+		case 0x10: swprintf(buffer, 64, L"WM_%ls", L"CLOSE"); break;
+		case 0x11: swprintf(buffer, 64, L"WM_%ls", L"QUERYENDSESSION"); break;
+		case 0x13: swprintf(buffer, 64, L"WM_%ls", L"QUERYOPEN"); break;
+		case 0x16: swprintf(buffer, 64, L"WM_%ls", L"ENDSESSION"); break;
+		case 0x12: swprintf(buffer, 64, L"WM_%ls", L"QUIT"); break;
+		case 0x14: swprintf(buffer, 64, L"WM_%ls", L"ERASEBKGND"); break;
+		case 0x15: swprintf(buffer, 64, L"WM_%ls", L"SYSCOLORCHANGE"); break;
+		case 0x18: swprintf(buffer, 64, L"WM_%ls", L"SHOWWINDOW"); break;
+		case 0x1A: swprintf(buffer, 64, L"WM_%ls", L"WININICHANGE"); break;
+		case 0x1B: swprintf(buffer, 64, L"WM_%ls", L"DEVMODECHANGE"); break;
+		case 0x1C: swprintf(buffer, 64, L"WM_%ls", L"ACTIVATEAPP"); break;
+		case 0x1D: swprintf(buffer, 64, L"WM_%ls", L"FONTCHANGE"); break;
+		case 0x1E: swprintf(buffer, 64, L"WM_%ls", L"TIMECHANGE"); break;
+		case 0x1F: swprintf(buffer, 64, L"WM_%ls", L"CANCELMODE"); break;
+		case 0x20: swprintf(buffer, 64, L"WM_%ls", L"SETCURSOR"); break;
+		case 0x21: swprintf(buffer, 64, L"WM_%ls", L"MOUSEACTIVATE"); break;
+		case 0x22: swprintf(buffer, 64, L"WM_%ls", L"CHILDACTIVATE"); break;
+		case 0x23: swprintf(buffer, 64, L"WM_%ls", L"QUEUESYNC"); break;
+		case 0x24: swprintf(buffer, 64, L"WM_%ls", L"GETMINMAXINFO"); break;
+		case 0x26: swprintf(buffer, 64, L"WM_%ls", L"PAINTICON"); break;
+		case 0x27: swprintf(buffer, 64, L"WM_%ls", L"ICONERASEBKGND"); break;
+		case 0x28: swprintf(buffer, 64, L"WM_%ls", L"NEXTDLGCTL"); break;
+		case 0x2A: swprintf(buffer, 64, L"WM_%ls", L"SPOOLERSTATUS"); break;
+		case 0x2B: swprintf(buffer, 64, L"WM_%ls", L"DRAWITEM"); break;
+		case 0x2C: swprintf(buffer, 64, L"WM_%ls", L"MEASUREITEM"); break;
+		case 0x2D: swprintf(buffer, 64, L"WM_%ls", L"DELETEITEM"); break;
+		case 0x2E: swprintf(buffer, 64, L"WM_%ls", L"VKEYTOITEM"); break;
+		case 0x2F: swprintf(buffer, 64, L"WM_%ls", L"CHARTOITEM"); break;
+		case 0x30: swprintf(buffer, 64, L"WM_%ls", L"SETFONT"); break;
+		case 0x31: swprintf(buffer, 64, L"WM_%ls", L"GETFONT"); break;
+		case 0x32: swprintf(buffer, 64, L"WM_%ls", L"SETHOTKEY"); break;
+		case 0x33: swprintf(buffer, 64, L"WM_%ls", L"GETHOTKEY"); break;
+		case 0x37: swprintf(buffer, 64, L"WM_%ls", L"QUERYDRAGICON"); break;
+		case 0x39: swprintf(buffer, 64, L"WM_%ls", L"COMPAREITEM"); break;
+		case 0x3D: swprintf(buffer, 64, L"WM_%ls", L"GETOBJECT"); break;
+		case 0x41: swprintf(buffer, 64, L"WM_%ls", L"COMPACTING"); break;
+		case 0x44: swprintf(buffer, 64, L"WM_%ls", L"COMMNOTIFY"); break;
+		case 0x46: swprintf(buffer, 64, L"WM_%ls", L"WINDOWPOSCHANGING"); break;
+		case 0x47: swprintf(buffer, 64, L"WM_%ls", L"WINDOWPOSCHANGED"); break;
+		case 0x48: swprintf(buffer, 64, L"WM_%ls", L"POWER"); break;
+		case 0x4A: swprintf(buffer, 64, L"WM_%ls", L"COPYDATA"); break;
+		case 0x4B: swprintf(buffer, 64, L"WM_%ls", L"CANCELJOURNAL"); break;
+		case 0x4E: swprintf(buffer, 64, L"WM_%ls", L"NOTIFY"); break;
+		case 0x50: swprintf(buffer, 64, L"WM_%ls", L"INPUTLANGCHANGEREQUEST"); break;
+		case 0x51: swprintf(buffer, 64, L"WM_%ls", L"INPUTLANGCHANGE"); break;
+		case 0x52: swprintf(buffer, 64, L"WM_%ls", L"TCARD"); break;
+		case 0x53: swprintf(buffer, 64, L"WM_%ls", L"HELP"); break;
+		case 0x54: swprintf(buffer, 64, L"WM_%ls", L"USERCHANGED"); break;
+		case 0x55: swprintf(buffer, 64, L"WM_%ls", L"NOTIFYFORMAT"); break;
+		case 0x7B: swprintf(buffer, 64, L"WM_%ls", L"CONTEXTMENU"); break;
+		case 0x7C: swprintf(buffer, 64, L"WM_%ls", L"STYLECHANGING"); break;
+		case 0x7D: swprintf(buffer, 64, L"WM_%ls", L"STYLECHANGED"); break;
+		case 0x7E: swprintf(buffer, 64, L"WM_%ls", L"DISPLAYCHANGE"); break;
+		case 0x7F: swprintf(buffer, 64, L"WM_%ls", L"GETICON"); break;
+		case 0x80: swprintf(buffer, 64, L"WM_%ls", L"SETICON"); break;
+		case 0x81: swprintf(buffer, 64, L"WM_%ls", L"NCCREATE"); break;
+		case 0x82: swprintf(buffer, 64, L"WM_%ls", L"NCDESTROY"); break;
+		case 0x83: swprintf(buffer, 64, L"WM_%ls", L"NCCALCSIZE"); break;
+		case 0x84: swprintf(buffer, 64, L"WM_%ls", L"NCHITTEST"); break;
+		case 0x85: swprintf(buffer, 64, L"WM_%ls", L"NCPAINT"); break;
+		case 0x86: swprintf(buffer, 64, L"WM_%ls", L"NCACTIVATE"); break;
+		case 0x87: swprintf(buffer, 64, L"WM_%ls", L"GETDLGCODE"); break;
+		case 0x88: swprintf(buffer, 64, L"WM_%ls", L"SYNCPAINT"); break;
+		case 0xA0: swprintf(buffer, 64, L"WM_%ls", L"NCMOUSEMOVE"); break;
+		case 0xA1: swprintf(buffer, 64, L"WM_%ls", L"NCLBUTTONDOWN"); break;
+		case 0xA2: swprintf(buffer, 64, L"WM_%ls", L"NCLBUTTONUP"); break;
+		case 0xA3: swprintf(buffer, 64, L"WM_%ls", L"NCLBUTTONDBLCLK"); break;
+		case 0xA4: swprintf(buffer, 64, L"WM_%ls", L"NCRBUTTONDOWN"); break;
+		case 0xA5: swprintf(buffer, 64, L"WM_%ls", L"NCRBUTTONUP"); break;
+		case 0xA6: swprintf(buffer, 64, L"WM_%ls", L"NCRBUTTONDBLCLK"); break;
+		case 0xA7: swprintf(buffer, 64, L"WM_%ls", L"NCMBUTTONDOWN"); break;
+		case 0xA8: swprintf(buffer, 64, L"WM_%ls", L"NCMBUTTONUP"); break;
+		case 0xA9: swprintf(buffer, 64, L"WM_%ls", L"NCMBUTTONDBLCLK"); break;
+		case 0xAB: swprintf(buffer, 64, L"WM_%ls", L"NCXBUTTONDOWN"); break;
+		case 0xAC: swprintf(buffer, 64, L"WM_%ls", L"NCXBUTTONUP"); break;
+		case 0xAD: swprintf(buffer, 64, L"WM_%ls", L"NCXBUTTONDBLCLK"); break;
+		case 0xFE: swprintf(buffer, 64, L"WM_%ls", L"INPUT_DEVICE_CHANGE"); break;
+		case 0xFF: swprintf(buffer, 64, L"WM_%ls", L"INPUT"); break;
+		case 0x100: swprintf(buffer, 64, L"WM_%ls", L"KEYDOWN"); break;
+		case 0x101: swprintf(buffer, 64, L"WM_%ls", L"KEYUP"); break;
+		case 0x102: swprintf(buffer, 64, L"WM_%ls", L"CHAR"); break;
+		case 0x103: swprintf(buffer, 64, L"WM_%ls", L"DEADCHAR"); break;
+		case 0x104: swprintf(buffer, 64, L"WM_%ls", L"SYSKEYDOWN"); break;
+		case 0x105: swprintf(buffer, 64, L"WM_%ls", L"SYSKEYUP"); break;
+		case 0x106: swprintf(buffer, 64, L"WM_%ls", L"SYSCHAR"); break;
+		case 0x107: swprintf(buffer, 64, L"WM_%ls", L"SYSDEADCHAR"); break;
+		case 0x109: swprintf(buffer, 64, L"WM_%ls", L"UNICHAR"); break;
+		case 0x10D: swprintf(buffer, 64, L"WM_%ls", L"IME_STARTCOMPOSITION"); break;
+		case 0x10E: swprintf(buffer, 64, L"WM_%ls", L"IME_ENDCOMPOSITION"); break;
+		case 0x10F: swprintf(buffer, 64, L"WM_%ls", L"IME_COMPOSITION"); break;
+			///case 0x10F: swprintf(buffer, 64, L"WM_%ls", L"IME_KEYLAST"); break;
+		case 0x110: swprintf(buffer, 64, L"WM_%ls", L"INITDIALOG"); break;
+		case 0x111: swprintf(buffer, 64, L"WM_%ls", L"COMMAND"); break;
+		case 0x112: swprintf(buffer, 64, L"WM_%ls", L"SYSCOMMAND"); break;
+		case 0x113: swprintf(buffer, 64, L"WM_%ls", L"TIMER"); break;
+		case 0x114: swprintf(buffer, 64, L"WM_%ls", L"HSCROLL"); break;
+		case 0x115: swprintf(buffer, 64, L"WM_%ls", L"VSCROLL"); break;
+		case 0x116: swprintf(buffer, 64, L"WM_%ls", L"INITMENU"); break;
+		case 0x117: swprintf(buffer, 64, L"WM_%ls", L"INITMENUPOPUP"); break;
+		case 0x119: swprintf(buffer, 64, L"WM_%ls", L"GESTURE"); break;
+		case 0x11A: swprintf(buffer, 64, L"WM_%ls", L"GESTURENOTIFY"); break;
+		case 0x11F: swprintf(buffer, 64, L"WM_%ls", L"MENUSELECT"); break;
+		case 0x120: swprintf(buffer, 64, L"WM_%ls", L"MENUCHAR"); break;
+		case 0x121: swprintf(buffer, 64, L"WM_%ls", L"ENTERIDLE"); break;
+		case 0x122: swprintf(buffer, 64, L"WM_%ls", L"MENURBUTTONUP"); break;
+		case 0x123: swprintf(buffer, 64, L"WM_%ls", L"MENUDRAG"); break;
+		case 0x124: swprintf(buffer, 64, L"WM_%ls", L"MENUGETOBJECT"); break;
+		case 0x125: swprintf(buffer, 64, L"WM_%ls", L"UNINITMENUPOPUP"); break;
+		case 0x126: swprintf(buffer, 64, L"WM_%ls", L"MENUCOMMAND"); break;
+		case 0x127: swprintf(buffer, 64, L"WM_%ls", L"CHANGEUISTATE"); break;
+		case 0x128: swprintf(buffer, 64, L"WM_%ls", L"UPDATEUISTATE"); break;
+		case 0x129: swprintf(buffer, 64, L"WM_%ls", L"QUERYUISTATE"); break;
+		case 0x132: swprintf(buffer, 64, L"WM_%ls", L"CTLCOLORMSGBOX"); break;
+		case 0x133: swprintf(buffer, 64, L"WM_%ls", L"CTLCOLOREDIT"); break;
+		case 0x134: swprintf(buffer, 64, L"WM_%ls", L"CTLCOLORLISTBOX"); break;
+		case 0x135: swprintf(buffer, 64, L"WM_%ls", L"CTLCOLORBTN"); break;
+		case 0x136: swprintf(buffer, 64, L"WM_%ls", L"CTLCOLORDLG"); break;
+		case 0x137: swprintf(buffer, 64, L"WM_%ls", L"CTLCOLORSCROLLBAR"); break;
+		case 0x138: swprintf(buffer, 64, L"WM_%ls", L"CTLCOLORSTATIC"); break;
+		case 0x200: swprintf(buffer, 64, L"WM_%ls", L"MOUSEMOVE"); break;
+		case 0x201: swprintf(buffer, 64, L"WM_%ls", L"LBUTTONDOWN"); break;
+		case 0x202: swprintf(buffer, 64, L"WM_%ls", L"LBUTTONUP"); break;
+		case 0x203: swprintf(buffer, 64, L"WM_%ls", L"LBUTTONDBLCLK"); break;
+		case 0x204: swprintf(buffer, 64, L"WM_%ls", L"RBUTTONDOWN"); break;
+		case 0x205: swprintf(buffer, 64, L"WM_%ls", L"RBUTTONUP"); break;
+		case 0x206: swprintf(buffer, 64, L"WM_%ls", L"RBUTTONDBLCLK"); break;
+		case 0x207: swprintf(buffer, 64, L"WM_%ls", L"MBUTTONDOWN"); break;
+		case 0x208: swprintf(buffer, 64, L"WM_%ls", L"MBUTTONUP"); break;
+		case 0x209: swprintf(buffer, 64, L"WM_%ls", L"MBUTTONDBLCLK"); break;
+		case 0x20A: swprintf(buffer, 64, L"WM_%ls", L"MOUSEWHEEL"); break;
+		case 0x20B: swprintf(buffer, 64, L"WM_%ls", L"XBUTTONDOWN"); break;
+		case 0x20C: swprintf(buffer, 64, L"WM_%ls", L"XBUTTONUP"); break;
+		case 0x20D: swprintf(buffer, 64, L"WM_%ls", L"XBUTTONDBLCLK"); break;
+		case 0x20E: swprintf(buffer, 64, L"WM_%ls", L"MOUSEHWHEEL"); break;
+		case 0x210: swprintf(buffer, 64, L"WM_%ls", L"PARENTNOTIFY"); break;
+		case 0x211: swprintf(buffer, 64, L"WM_%ls", L"ENTERMENULOOP"); break;
+		case 0x212: swprintf(buffer, 64, L"WM_%ls", L"EXITMENULOOP"); break;
+		case 0x213: swprintf(buffer, 64, L"WM_%ls", L"NEXTMENU"); break;
+		case 0x214: swprintf(buffer, 64, L"WM_%ls", L"SIZING"); break;
+		case 0x215: swprintf(buffer, 64, L"WM_%ls", L"CAPTURECHANGED"); break;
+		case 0x216: swprintf(buffer, 64, L"WM_%ls", L"MOVING"); break;
+		case 0x218: swprintf(buffer, 64, L"WM_%ls", L"POWERBROADCAST"); break;
+		case 0x219: swprintf(buffer, 64, L"WM_%ls", L"DEVICECHANGE"); break;
+		case 0x220: swprintf(buffer, 64, L"WM_%ls", L"MDICREATE"); break;
+		case 0x221: swprintf(buffer, 64, L"WM_%ls", L"MDIDESTROY"); break;
+		case 0x222: swprintf(buffer, 64, L"WM_%ls", L"MDIACTIVATE"); break;
+		case 0x223: swprintf(buffer, 64, L"WM_%ls", L"MDIRESTORE"); break;
+		case 0x224: swprintf(buffer, 64, L"WM_%ls", L"MDINEXT"); break;
+		case 0x225: swprintf(buffer, 64, L"WM_%ls", L"MDIMAXIMIZE"); break;
+		case 0x226: swprintf(buffer, 64, L"WM_%ls", L"MDITILE"); break;
+		case 0x227: swprintf(buffer, 64, L"WM_%ls", L"MDICASCADE"); break;
+		case 0x228: swprintf(buffer, 64, L"WM_%ls", L"MDIICONARRANGE"); break;
+		case 0x229: swprintf(buffer, 64, L"WM_%ls", L"MDIGETACTIVE"); break;
+		case 0x230: swprintf(buffer, 64, L"WM_%ls", L"MDISETMENU"); break;
+		case 0x231: swprintf(buffer, 64, L"WM_%ls", L"ENTERSIZEMOVE"); break;
+		case 0x232: swprintf(buffer, 64, L"WM_%ls", L"EXITSIZEMOVE"); break;
+		case 0x233: swprintf(buffer, 64, L"WM_%ls", L"DROPFILES"); break;
+		case 0x234: swprintf(buffer, 64, L"WM_%ls", L"MDIREFRESHMENU"); break;
+		case 0x240: swprintf(buffer, 64, L"WM_%ls", L"TOUCH"); break;
+		case 0x281: swprintf(buffer, 64, L"WM_%ls", L"IME_SETCONTEXT"); break;
+		case 0x282: swprintf(buffer, 64, L"WM_%ls", L"IME_NOTIFY"); break;
+		case 0x283: swprintf(buffer, 64, L"WM_%ls", L"IME_CONTROL"); break;
+		case 0x284: swprintf(buffer, 64, L"WM_%ls", L"IME_COMPOSITIONFULL"); break;
+		case 0x285: swprintf(buffer, 64, L"WM_%ls", L"IME_SELECT"); break;
+		case 0x286: swprintf(buffer, 64, L"WM_%ls", L"IME_CHAR"); break;
+		case 0x288: swprintf(buffer, 64, L"WM_%ls", L"IME_REQUEST"); break;
+		case 0x290: swprintf(buffer, 64, L"WM_%ls", L"IME_KEYDOWN"); break;
+		case 0x291: swprintf(buffer, 64, L"WM_%ls", L"IME_KEYUP"); break;
+		case 0x2A1: swprintf(buffer, 64, L"WM_%ls", L"MOUSEHOVER"); break;
+		case 0x2A3: swprintf(buffer, 64, L"WM_%ls", L"MOUSELEAVE"); break;
+		case 0x2A0: swprintf(buffer, 64, L"WM_%ls", L"NCMOUSEHOVER"); break;
+		case 0x2A2: swprintf(buffer, 64, L"WM_%ls", L"NCMOUSELEAVE"); break;
+		case 0x2B1: swprintf(buffer, 64, L"WM_%ls", L"WTSSESSION_CHANGE"); break;
+		case 0x2C0: swprintf(buffer, 64, L"WM_%ls", L"TABLET_FIRST"); break;
+		case 0x2DF: swprintf(buffer, 64, L"WM_%ls", L"TABLET_LAST"); break;
+		case 0x300: swprintf(buffer, 64, L"WM_%ls", L"CUT"); break;
+		case 0x301: swprintf(buffer, 64, L"WM_%ls", L"COPY"); break;
+		case 0x302: swprintf(buffer, 64, L"WM_%ls", L"PASTE"); break;
+		case 0x303: swprintf(buffer, 64, L"WM_%ls", L"CLEAR"); break;
+		case 0x304: swprintf(buffer, 64, L"WM_%ls", L"UNDO"); break;
+		case 0x305: swprintf(buffer, 64, L"WM_%ls", L"RENDERFORMAT"); break;
+		case 0x306: swprintf(buffer, 64, L"WM_%ls", L"RENDERALLFORMATS"); break;
+		case 0x307: swprintf(buffer, 64, L"WM_%ls", L"DESTROYCLIPBOARD"); break;
+		case 0x308: swprintf(buffer, 64, L"WM_%ls", L"DRAWCLIPBOARD"); break;
+		case 0x309: swprintf(buffer, 64, L"WM_%ls", L"PAINTCLIPBOARD"); break;
+		case 0x30A: swprintf(buffer, 64, L"WM_%ls", L"VSCROLLCLIPBOARD"); break;
+		case 0x30B: swprintf(buffer, 64, L"WM_%ls", L"SIZECLIPBOARD"); break;
+		case 0x30C: swprintf(buffer, 64, L"WM_%ls", L"ASKCBFORMATNAME"); break;
+		case 0x30D: swprintf(buffer, 64, L"WM_%ls", L"CHANGECBCHAIN"); break;
+		case 0x30E: swprintf(buffer, 64, L"WM_%ls", L"HSCROLLCLIPBOARD"); break;
+		case 0x30F: swprintf(buffer, 64, L"WM_%ls", L"QUERYNEWPALETTE"); break;
+		case 0x310: swprintf(buffer, 64, L"WM_%ls", L"PALETTEISCHANGING"); break;
+		case 0x311: swprintf(buffer, 64, L"WM_%ls", L"PALETTECHANGED"); break;
+		case 0x312: swprintf(buffer, 64, L"WM_%ls", L"HOTKEY"); break;
+		case 0x317: swprintf(buffer, 64, L"WM_%ls", L"PRINT"); break;
+		case 0x318: swprintf(buffer, 64, L"WM_%ls", L"PRINTCLIENT"); break;
+		case 0x319: swprintf(buffer, 64, L"WM_%ls", L"APPCOMMAND"); break;
+		case 0x31A: swprintf(buffer, 64, L"WM_%ls", L"THEMECHANGED"); break;
+		case 0x31D: swprintf(buffer, 64, L"WM_%ls", L"CLIPBOARDUPDATE"); break;
+		case 0x31E: swprintf(buffer, 64, L"WM_%ls", L"DWMCOMPOSITIONCHANGED"); break;
+		case 0x31F: swprintf(buffer, 64, L"WM_%ls", L"DWMNCRENDERINGCHANGED"); break;
+		case 0x320: swprintf(buffer, 64, L"WM_%ls", L"DWMCOLORIZATIONCOLORCHANGED"); break;
+		case 0x321: swprintf(buffer, 64, L"WM_%ls", L"DWMWINDOWMAXIMIZEDCHANGE"); break;
+		case 0x323: swprintf(buffer, 64, L"WM_%ls", L"DWMSENDICONICTHUMBNAIL"); break;
+		case 0x326: swprintf(buffer, 64, L"WM_%ls", L"DWMSENDICONICLIVEPREVIEWBITMAP"); break;
+		case 0x33F: swprintf(buffer, 64, L"WM_%ls", L"GETTITLEBARINFOEX"); break;
+		case 0x358: swprintf(buffer, 64, L"WM_%ls", L"HANDHELDFIRST"); break;
+		case 0x35F: swprintf(buffer, 64, L"WM_%ls", L"HANDHELDLAST"); break;
+		case 0x360: swprintf(buffer, 64, L"WM_%ls", L"AFXFIRST"); break;
+		case 0x37F: swprintf(buffer, 64, L"WM_%ls", L"AFXLAST"); break;
+		case 0x380: swprintf(buffer, 64, L"WM_%ls", L"PENWINFIRST"); break;
+		case 0x38F: swprintf(buffer, 64, L"WM_%ls", L"PENWINLAST"); break;
+		case 0x400: swprintf(buffer, 64, L"WM_%ls", L"USER"); break;
+		case 0x8000: swprintf(buffer, 64, L"WM_%ls", L"APP"); break;
+	}
+	swprintf(output, 200, L"%ls (0x%04X)\n", buffer, umsg);
+	OutputDebugStringW(output);
+}
+
+#endif
 
 ///   End of Edit.c   \\\

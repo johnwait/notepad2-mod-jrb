@@ -1964,6 +1964,42 @@ HWND CreateThemedDialogParam(
     return (hwnd);
 }
 
+#ifdef JRB_BUILD
+HWND CreateToolTipW(int toolID, HWND hDlg, PWSTR pwszText)
+{
+	if (!toolID || !hDlg || !pwszText)
+	{
+		return FALSE;
+	}
+	// Get the window of the tool.
+	HWND hwndTool = GetDlgItem(hDlg, toolID);
+
+	if (!hwndTool) return (HWND)NULL;
+
+	// Create the tooltip. g_hInst is the global instance handle.
+	HWND hwndTip = CreateWindowExW(0, TOOLTIPS_CLASSW, NULL,
+								   WS_POPUP |TTS_ALWAYSTIP,
+								   CW_USEDEFAULT, CW_USEDEFAULT,
+								   CW_USEDEFAULT, CW_USEDEFAULT,
+								   hDlg, NULL, 
+								   g_hInstance, NULL);
+
+	if (!hwndTip) return (HWND)NULL;
+
+	// Associate the tooltip with the tool.
+	TOOLINFOW toolInfo = { 0 };
+	toolInfo.cbSize = sizeof(toolInfo);
+	toolInfo.hwnd = hDlg;
+	toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+	toolInfo.uId = (UINT_PTR)hwndTool;
+	toolInfo.lpszText = pwszText;
+	SendMessageW(hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+
+	return hwndTip;
+}
+#endif
+
+
 /******************************************************************************
 *
 *  UnSlash functions

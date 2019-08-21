@@ -129,6 +129,10 @@ void EditPrintInit();
 void EditMarkAll(HWND, int, BOOL, BOOL);
 void CompleteWord(HWND, BOOL);
 
+#ifdef JRB_BUILD
+HWND EditInsertCtlCharDlg(HWND);
+#endif
+
 extern int g_DOSEncoding;
 
 #define NCP_DEFAULT 1

@@ -20,3 +20,9 @@
 #include <time.h>       // Notepad2.c
 #include <limits.h>     // Edit.c
 #include <uxtheme.h>    // Helpers.c
+
+#define lstrcpynW(dst, src, ccount_inc_tz) \
+    (StringCchCopyW(dst, ccount_inc_tz, src) == S_OK ? dst : NULL)
+
+#define lstrcpynA(dst, src, ccount_inc_tz) \
+    (StringCchCopyA(dst, ccount_inc_tz, src) == S_OK ? dst : NULL)

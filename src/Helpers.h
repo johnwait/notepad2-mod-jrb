@@ -232,6 +232,10 @@ DLGTEMPLATE* LoadThemedDialogTemplate(LPCTSTR,HINSTANCE);
 INT_PTR ThemedDialogBoxParam(HINSTANCE,LPCTSTR,HWND,DLGPROC,LPARAM);
 HWND    CreateThemedDialogParam(HINSTANCE,LPCTSTR,HWND,DLGPROC,LPARAM);
 
+#ifdef JRB_BUILD
+HWND CreateToolTipW(int toolID, HWND hDlg, PWSTR pwszText);
+#endif
+
 
 //==== UnSlash Functions ======================================================
 void TransformBackslashes(char*,BOOL,UINT);

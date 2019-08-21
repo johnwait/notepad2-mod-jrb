@@ -17,6 +17,7 @@
 #define IDC_INFOBOXICON                 100
 #define IDC_COPY                        100
 #define IDC_ENCODINGLIST                100
+#define IDC_SORTASCENDING               100 // Added on 2019-08-20
 #define IDC_SEARCHEXE                   101
 #define IDR_POPUPMENU                   101
 #define IDC_GETOPENWITHDIR              101
@@ -33,8 +34,8 @@
 #define IDC_STYLELABEL                  101
 #define IDC_RESIZEGRIP4                 101
 #define IDC_NOUNICODEDETECTION          101
+#define IDC_SORTDESCENDING              101 // Added on 2019-08-20
 #define IDC_COPYRIGHT                   101
-#define IDC_MOD_PAGE                    112
 #define IDC_STYLEEDIT                   102
 #define IDC_FINDCASE                    102
 #define IDC_OPENWITHDESCR               102
@@ -47,6 +48,7 @@
 #define IDB_PREV                        102
 #define IDI_STYLES                      102
 #define IDC_ASCIIASUTF8                 102
+#define IDC_SHUFFLELINES                102 // Added on 2019-08-20
 #define IDC_WEBPAGE                     102
 #define IDD_DEFENCODING                 103
 #define IDC_FINDWORD                    103
@@ -55,42 +57,57 @@
 #define IDC_STYLEFORE                   103
 #define IDC_AUTOSTRIPBLANKS             103
 #define IDC_ENCODINGFROMFILEVARS        103
+#define IDC_MERGEDUPELINES              103 // Added on 2019-08-20
 #define IDC_WEBPAGE2                    103
 #define IDD_ENCODING                    104
 #define IDC_MOD_PAGE2                   104
 #define IDC_FINDSTART                   104
 #define IDB_PICK                        104
 #define IDC_STYLEBACK                   104
+#define IDC_REMOVEDUPELINES             104 // Added on 2019-08-20
 #define IDC_AUTHORNAME                  104
 #define IDD_RECODE                      105
 #define IDC_FINDREGEXP                  105
 #define IDC_STYLEFONT                   105
 #define IDB_ENCODING                    105
+#define IDC_REMOVEUNIQUELINES           105 // Added on 2019-08-20
 #define IDC_EMAIL                       105
 #define IDD_DEFEOLMODE                  106
 #define IDC_FINDTRANSFORMBS             106
 #define IDC_PREVIEW                     106
+#define IDC_CASEINSENSITIVE             106 // Added on 2019-08-20
 #define IDC_EMAIL2                      106
 #define IDD_FAVORITES                   107
 #define IDC_NOWRAP                      107
 #define IDC_STYLEDEFAULT                107
+#define IDC_LOGICALNUMCOMPARE           107 // Added on 2019-08-20
+#ifdef JRB_BUILD
 #define IDC_JRB_SCINTILLA_VER           107
+#endif // JRB_BUILD
 #define IDD_ADDTOFAV                    108
 #define IDC_PREVSTYLE                   108
 #define IDC_FINDCLOSE                   108
+#define IDC_COLUMNSORT                  108 // Added on 2019-08-20
+#ifdef JRB_BUILD
 #define IDC_JRB_ONIGMO_VER              108
+#endif // JRB_BUILD
 #define IDD_FILEMRU                     109
 #define IDC_FINDPREV                    109
 #define IDC_NEXTSTYLE                   109
+#ifdef JRB_BUILD
 #define IDC_JRB_ABOUT_LN1               109
+#endif // JRB_BUILD
 #define IDD_CHANGENOTIFY                110
 #define IDC_IMPORT                      110
+#ifdef JRB_BUILD
 #define IDC_DOTMATCHALL                 110
 #define IDC_JRB_ABOUT_LN2               110
+#endif // JRB_BUILD
 #define IDD_MODIFYLINES                 111
 #define IDC_EXPORT                      111
 #define IDC_FINDTEXTLABEL               111
 #define IDC_REPLACE                     112
+#define IDC_MOD_PAGE                    112
 #define IDC_TITLE                       112
 #define IDD_ALIGN                       112
 #define IDD_ENCLOSESELECTION            113
@@ -117,6 +134,41 @@
 #define IDC_REGEXPHELP                  152
 #define IDC_WILDCARDHELP                153
 #define IDC_WILDCARDSEARCH              154
+#ifdef JRB_BUILD
+#define IDD_INSERTCTLCHAR               129
+#define IDC_CTLCHAR_00                  101
+#define IDC_CTLCHAR_01                  102
+#define IDC_CTLCHAR_02                  103
+#define IDC_CTLCHAR_03                  104
+#define IDC_CTLCHAR_04                  105
+#define IDC_CTLCHAR_05                  106
+#define IDC_CTLCHAR_06                  107
+#define IDC_CTLCHAR_07                  108
+#define IDC_CTLCHAR_08                  109
+#define IDC_CTLCHAR_09                  110
+#define IDC_CTLCHAR_0A                  111
+#define IDC_CTLCHAR_0B                  112
+#define IDC_CTLCHAR_0C                  113
+#define IDC_CTLCHAR_0D                  114
+#define IDC_CTLCHAR_0E                  115
+#define IDC_CTLCHAR_0F                  116
+#define IDC_CTLCHAR_10                  117
+#define IDC_CTLCHAR_11                  118
+#define IDC_CTLCHAR_12                  119
+#define IDC_CTLCHAR_13                  120
+#define IDC_CTLCHAR_14                  121
+#define IDC_CTLCHAR_15                  122
+#define IDC_CTLCHAR_16                  123
+#define IDC_CTLCHAR_17                  124
+#define IDC_CTLCHAR_18                  125
+#define IDC_CTLCHAR_19                  126
+#define IDC_CTLCHAR_1A                  127
+#define IDC_CTLCHAR_1B                  128
+#define IDC_CTLCHAR_1C                  129
+#define IDC_CTLCHAR_1D                  130
+#define IDC_CTLCHAR_1E                  131
+#define IDC_CTLCHAR_1F                  132
+#endif // JRB_BUILD
 #define IDACC_FIND                      200
 #define IDACC_REPLACE                   201
 #define IDACC_SAVEPOS                   202
@@ -153,8 +205,10 @@
 #define IDS_REGEXPHELP                  10020
 #define IDS_WILDCARDHELP                10021
 #define IDS_REGEXPHELP_DOTALL           10022
+#ifdef JRB_BUILD
 #define IDS_FINDTEXTLABEL_SEARCHSTR     10023
 #define IDS_FINDTEXTLABEL_SEARCHPTRN    10024
+#endif // JRB_BUILD
 #define CMD_ESCAPE                      20000
 #define CMD_SHIFTESC                    20001
 #define CMD_CTRLENTER                   20002
@@ -307,6 +361,9 @@
 #define IDM_EDIT_SELTONEXT              40371
 #define IDM_EDIT_SELTOPREV              40372
 #define IDM_EDIT_COMPLETEWORD           40373
+#ifdef JRB_BUILD
+#define IDM_EDIT_INSERT_CTLCHAR         40374
+#endif // JRB_BUILD
 #define IDM_VIEW_SCHEME                 40400
 #define IDM_VIEW_USE2NDDEFAULT          40401
 #define IDM_VIEW_SCHEMECONFIG           40402
@@ -433,6 +490,40 @@
 #define IDS_WRITEINI_FAIL               50038
 #define IDS_SETTINGSNOTSAVED            50039
 #define IDS_EXPORT_FAIL                 50040
+#ifdef JRB_BUILD
+#define IDS_CTLCHAR_00_TOOLTIP          50100
+#define IDS_CTLCHAR_01_TOOLTIP          50101
+#define IDS_CTLCHAR_02_TOOLTIP          50102
+#define IDS_CTLCHAR_03_TOOLTIP          50103
+#define IDS_CTLCHAR_04_TOOLTIP          50104
+#define IDS_CTLCHAR_05_TOOLTIP          50105
+#define IDS_CTLCHAR_06_TOOLTIP          50106
+#define IDS_CTLCHAR_07_TOOLTIP          50107
+#define IDS_CTLCHAR_08_TOOLTIP          50108
+#define IDS_CTLCHAR_09_TOOLTIP          50109
+#define IDS_CTLCHAR_0A_TOOLTIP          50110
+#define IDS_CTLCHAR_0B_TOOLTIP          50111
+#define IDS_CTLCHAR_0C_TOOLTIP          50112
+#define IDS_CTLCHAR_0D_TOOLTIP          50113
+#define IDS_CTLCHAR_0E_TOOLTIP          50114
+#define IDS_CTLCHAR_0F_TOOLTIP          50115
+#define IDS_CTLCHAR_10_TOOLTIP          50116
+#define IDS_CTLCHAR_11_TOOLTIP          50117
+#define IDS_CTLCHAR_12_TOOLTIP          50118
+#define IDS_CTLCHAR_13_TOOLTIP          50119
+#define IDS_CTLCHAR_14_TOOLTIP          50120
+#define IDS_CTLCHAR_15_TOOLTIP          50121
+#define IDS_CTLCHAR_16_TOOLTIP          50122
+#define IDS_CTLCHAR_17_TOOLTIP          50123
+#define IDS_CTLCHAR_18_TOOLTIP          50124
+#define IDS_CTLCHAR_19_TOOLTIP          50125
+#define IDS_CTLCHAR_1A_TOOLTIP          50126
+#define IDS_CTLCHAR_1B_TOOLTIP          50127
+#define IDS_CTLCHAR_1C_TOOLTIP          50128
+#define IDS_CTLCHAR_1D_TOOLTIP          50129
+#define IDS_CTLCHAR_1E_TOOLTIP          50130
+#define IDS_CTLCHAR_1F_TOOLTIP          50131
+#endif // JRB_BUILD
 #define IDS_CMDLINEHELP                 60000
 
 // Next default values for new objects

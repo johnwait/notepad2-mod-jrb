@@ -142,6 +142,7 @@ void    MsgInitMenu(HWND,WPARAM,LPARAM);
 LRESULT MsgCommand(HWND,WPARAM,LPARAM);
 LRESULT MsgNotify(HWND,WPARAM,LPARAM);
 
-
+BOOL g_bViewWhiteSpace;
+BOOL g_bViewEOLs;
 
 ///   End of Notepad2.h   \\\

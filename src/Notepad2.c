@@ -46,6 +46,9 @@ HWND hwndEditFrame;
 HWND hwndMain;
 HWND hwndNextCBChain = NULL;
 HWND hDlgFindReplace = NULL;
+#ifdef JRB_BUILD
+HWND hDlgInsertCtlChar = NULL;
+#endif
 
 #define NUMTOOLBITMAPS 25
 #define NUMINITIALTOOLS 24
@@ -132,8 +135,6 @@ BOOL bMarkOccurrencesMatchCase;
 BOOL bMarkOccurrencesMatchWords;
 BOOL bAutoCompleteWords;
 BOOL bShowCodeFolding;
-BOOL bViewWhiteSpace;
-BOOL bViewEOLs;
 int iDefaultEncoding;
 BOOL bSkipUnicodeDetection;
 BOOL bLoadASCIIasUTF8;
@@ -565,7 +566,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
             0,
             NULL);
 #ifdef JRB_BUILD
-        MessageBox(NULL, (LPCWSTR)lpMsgBuf, L"Notepad2-jrb", MB_OK | MB_ICONEXCLAMATION);
+        MessageBox(NULL, (LPCWSTR)lpMsgBuf, L"Notepad2-mod-jrb", MB_OK | MB_ICONEXCLAMATION);
 #else
         MessageBox(NULL, (LPCWSTR)lpMsgBuf, L"Notepad2-mod", MB_OK | MB_ICONEXCLAMATION);
 #endif
@@ -641,6 +642,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
     while (GetMessage(&msg, NULL, 0, 0)) {
         if (IsWindow(hDlgFindReplace) && (msg.hwnd == hDlgFindReplace || IsChild(hDlgFindReplace, msg.hwnd)))
             if (TranslateAccelerator(hDlgFindReplace, hAccFindReplace, &msg) || IsDialogMessage(hDlgFindReplace, &msg))
+                continue;
+
+        if (IsWindow(hDlgInsertCtlChar) && (msg.hwnd == hDlgInsertCtlChar || IsChild(hDlgInsertCtlChar, msg.hwnd)))
+            if (IsDialogMessage(hDlgInsertCtlChar, &msg))
                 continue;
 
         if (!TranslateAccelerator(hwnd, hAccMain, &msg)) {
@@ -1551,8 +1556,8 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
     SciCall_SetFoldFlags(16);
 
     // Nonprinting characters
-    SendMessage(hwndEdit, SCI_SETVIEWWS, (bViewWhiteSpace) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
-    SendMessage(hwndEdit, SCI_SETVIEWEOL, bViewEOLs, 0);
+    SendMessage(hwndEdit, SCI_SETVIEWWS, (g_bViewWhiteSpace) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
+    SendMessage(hwndEdit, SCI_SETVIEWEOL, g_bViewEOLs, 0);
 
     hwndEditFrame = CreateWindowEx(
         WS_EX_CLIENTEDGE,
@@ -2145,8 +2150,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
     EnableCmd(hmenu, IDM_VIEW_MARKOCCURRENCES_CASE, iMarkOccurrences != 0);
     EnableCmd(hmenu, IDM_VIEW_MARKOCCURRENCES_WORD, iMarkOccurrences != 0);
 
-    CheckCmd(hmenu, IDM_VIEW_SHOWWHITESPACE, bViewWhiteSpace);
-    CheckCmd(hmenu, IDM_VIEW_SHOWEOLS, bViewEOLs);
+    CheckCmd(hmenu, IDM_VIEW_SHOWWHITESPACE, g_bViewWhiteSpace);
+    CheckCmd(hmenu, IDM_VIEW_SHOWEOLS, g_bViewEOLs);
     CheckCmd(hmenu, IDM_VIEW_WORDWRAPSYMBOLS, bShowWordWrapSymbols);
     CheckCmd(hmenu, IDM_VIEW_MATCHBRACES, bMatchBraces);
     CheckCmd(hmenu, IDM_VIEW_TOOLBAR, bShowToolbar);
@@ -3075,6 +3080,18 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             EditEncloseSelection(hwndEdit, wszOpen, wszClose);
     } break;
 
+#ifdef JRB_BUILD
+    case IDM_EDIT_INSERT_CTLCHAR:
+    {
+        if (!IsWindow(hDlgInsertCtlChar))
+            hDlgInsertCtlChar = EditInsertCtlCharDlg(hwndEdit);
+        else {
+            SetForegroundWindow(hDlgInsertCtlChar);
+            PostMessage(hDlgInsertCtlChar, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hDlgInsertCtlChar, IDC_CTLCHAR_00)), 1);
+        }
+    } break;
+#endif
+
     case IDM_EDIT_INSERT_ENCODING: {
         if (*mEncoding[iEncoding].pszParseNames) {
             char msz[32];
@@ -3771,13 +3788,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         break;
 
     case IDM_VIEW_SHOWWHITESPACE:
-        bViewWhiteSpace = (bViewWhiteSpace) ? FALSE : TRUE;
-        SendMessage(hwndEdit, SCI_SETVIEWWS, (bViewWhiteSpace) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
+        g_bViewWhiteSpace = (g_bViewWhiteSpace) ? FALSE : TRUE;
+        SendMessage(hwndEdit, SCI_SETVIEWWS, (g_bViewWhiteSpace) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
         break;
 
     case IDM_VIEW_SHOWEOLS:
-        bViewEOLs = (bViewEOLs) ? FALSE : TRUE;
-        SendMessage(hwndEdit, SCI_SETVIEWEOL, bViewEOLs, 0);
+        g_bViewEOLs = (g_bViewEOLs) ? FALSE : TRUE;
+        SendMessage(hwndEdit, SCI_SETVIEWEOL, g_bViewEOLs, 0);
         break;
 
     case IDM_VIEW_WORDWRAPSYMBOLS:
@@ -5194,13 +5211,13 @@ void LoadSettings()
     bMarkOccurrencesMatchCase = IniSectionGetInt(pIniSection, L"MarkOccurrencesMatchCase", 0);
     bMarkOccurrencesMatchWords = IniSectionGetInt(pIniSection, L"MarkOccurrencesMatchWholeWords", 1);
 
-    bViewWhiteSpace = IniSectionGetInt(pIniSection, L"ViewWhiteSpace", 0);
-    if (bViewWhiteSpace)
-        bViewWhiteSpace = 1;
+    g_bViewWhiteSpace = IniSectionGetInt(pIniSection, L"ViewWhiteSpace", 0);
+    if (g_bViewWhiteSpace)
+        g_bViewWhiteSpace = 1;
 
-    bViewEOLs = IniSectionGetInt(pIniSection, L"ViewEOLs", 0);
-    if (bViewEOLs)
-        bViewEOLs = 1;
+    g_bViewEOLs = IniSectionGetInt(pIniSection, L"ViewEOLs", 0);
+    if (g_bViewEOLs)
+        g_bViewEOLs = 1;
 
     iDefaultEncoding = IniSectionGetInt(pIniSection, L"DefaultEncoding", 0);
     iDefaultEncoding = Encoding_MapIniSetting(TRUE, iDefaultEncoding);
@@ -5465,8 +5482,8 @@ void SaveSettings(BOOL bSaveSettingsNow)
     IniSectionSetInt(pIniSection, L"MarkOccurrences", iMarkOccurrences);
     IniSectionSetInt(pIniSection, L"MarkOccurrencesMatchCase", bMarkOccurrencesMatchCase);
     IniSectionSetInt(pIniSection, L"MarkOccurrencesMatchWholeWords", bMarkOccurrencesMatchWords);
-    IniSectionSetInt(pIniSection, L"ViewWhiteSpace", bViewWhiteSpace);
-    IniSectionSetInt(pIniSection, L"ViewEOLs", bViewEOLs);
+    IniSectionSetInt(pIniSection, L"ViewWhiteSpace", g_bViewWhiteSpace);
+    IniSectionSetInt(pIniSection, L"ViewEOLs", g_bViewEOLs);
     IniSectionSetInt(pIniSection, L"DefaultEncoding", Encoding_MapIniSetting(FALSE, iDefaultEncoding));
     IniSectionSetInt(pIniSection, L"SkipUnicodeDetection", bSkipUnicodeDetection);
     IniSectionSetInt(pIniSection, L"LoadASCIIasUTF8", bLoadASCIIasUTF8);
