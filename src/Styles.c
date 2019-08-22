@@ -17,9 +17,8 @@
 *
 *
 ******************************************************************************/
-#if !defined(_WIN32_WINNT)
-#define _WIN32_WINNT 0x501
-#endif
+
+// clang-format off
 #include "StdAfx.h" // platform includes
 #define INCLUDE_DEPRECATED_FEATURES // As of Scintilla v3.8.0 (see end of file "\scintilla\include\scintilla.h")
 #include "Scintilla.h"
@@ -31,6 +30,7 @@
 #include "Helpers.h"
 #include "resource.h"
 #include "SciCall.h"
+// clang-format on
 
 extern int iEncoding;
 

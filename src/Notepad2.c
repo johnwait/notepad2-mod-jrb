@@ -17,9 +17,7 @@
 *
 *
 ******************************************************************************/
-#if !defined(_WIN32_WINNT)
-#define _WIN32_WINNT 0x501
-#endif
+
 // clang-format off
 #pragma comment(lib, "rpcrt4")
 #include "StdAfx.h" // platform includes
