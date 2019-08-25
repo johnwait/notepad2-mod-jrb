@@ -407,7 +407,7 @@
 #define IDM_VIEW_TOOLBAR                40440
 #define IDM_VIEW_CUSTOMIZETB            40441
 #define IDM_VIEW_STATUSBAR              40442
-#define IDM_VIEW_SAVESETTINGS           40443
+#define IDM_VIEW_SAVESETTINGSONEXIT    40443
 #define IDM_VIEW_SAVESETTINGSNOW        40444
 #define IDM_VIEW_FOLDING                40445
 #define IDM_VIEW_TOGGLEFOLDS            40446

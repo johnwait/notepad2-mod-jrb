@@ -88,7 +88,7 @@ TBBUTTON tbbMainWnd[] = { { 0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0,
 
 WCHAR szIniFile[MAX_PATH] = L"";
 WCHAR szIniFile2[MAX_PATH] = L"";
-BOOL bSaveSettings;
+BOOL bSaveSettingsOnExit;
 BOOL bSaveRecentFiles;
 BOOL bSaveFindReplace;
 WCHAR tchLastSaveCopyDir[MAX_PATH] = L"";
@@ -2225,14 +2225,14 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
     CheckMenuRadioItem(hmenu, IDM_VIEW_NOESCFUNC, IDM_VIEW_ESCEXIT, i, MF_BYCOMMAND);
 
     i = lstrlen(szIniFile);
-    CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS, bSaveSettings && i);
+    CheckCmd(hmenu, IDM_VIEW_SAVESETTINGSONEXIT, bSaveSettingsOnExit && i);
 
     EnableCmd(hmenu, IDM_VIEW_REUSEWINDOW, i);
     EnableCmd(hmenu, IDM_VIEW_STICKYWINPOS, i);
     EnableCmd(hmenu, IDM_VIEW_SINGLEFILEINSTANCE, i);
     EnableCmd(hmenu, IDM_VIEW_NOSAVERECENT, i);
     EnableCmd(hmenu, IDM_VIEW_NOSAVEFINDREPL, i);
-    EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS, i);
+    EnableCmd(hmenu, IDM_VIEW_SAVESETTINGSONEXIT, i);
 
     CheckCmd(hmenu,IDM_VIEW_CHECKWRITEPERMISSION,bCheckWritePermission);
 
@@ -4221,8 +4221,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         bCheckWritePermission = (bCheckWritePermission) ? FALSE : TRUE;
         break;
 
-    case IDM_VIEW_SAVESETTINGS:
-        bSaveSettings = (bSaveSettings) ? FALSE : TRUE;
+    case IDM_VIEW_SAVESETTINGSONEXIT:
+        bSaveSettingsOnExit = (bSaveSettingsOnExit) ? FALSE : TRUE;
         break;
 
     case IDM_VIEW_SAVESETTINGSNOW: {
@@ -4254,13 +4254,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 SaveSettings(TRUE);
                 StatusSetSimple(hwndStatus, FALSE);
                 EndWaitCursor();
-                MsgBox(MBINFO, IDS_SAVEDSETTINGS);
+                MsgBox(MBINFO, IDS_SAVEDSETTINGS, szIniFile);
             } else {
                 dwLastIOError = GetLastError();
-                MsgBox(MBWARN, IDS_WRITEINI_FAIL);
+                MsgBox(MBWARN, IDS_WRITEINI_FAIL, szIniFile);
             }
         } else
-            MsgBox(MBWARN, IDS_CREATEINI_FAIL);
+            MsgBox(MBWARN, IDS_CREATEINI_FAIL, szIniFile);
     } break;
 
     case IDM_HELP_ABOUT:
@@ -5276,9 +5276,9 @@ void LoadSettings()
     if (bCheckWritePermission)
         bCheckWritePermission = 1;
 
-    bSaveSettings = IniSectionGetInt(pIniSection, L"SaveSettings", 1);
-    if (bSaveSettings)
-        bSaveSettings = 1;
+    bSaveSettingsOnExit = IniSectionGetInt(pIniSection, L"SaveSettings", 1);
+    if (bSaveSettingsOnExit)
+        bSaveSettingsOnExit = 1;
 
     bSaveRecentFiles = IniSectionGetInt(pIniSection, L"SaveRecentFiles", 0);
     if (bSaveRecentFiles)
@@ -5621,7 +5621,7 @@ void LoadSettings()
 //  SaveSettings()
 //
 //
-void SaveSettings(BOOL bSaveSettingsNow)
+BOOL SaveSettings(BOOL bSaveSettingsNow)
 {
     WCHAR* pIniSection = NULL;
     int cchIniSection = 0;
@@ -5629,20 +5629,20 @@ void SaveSettings(BOOL bSaveSettingsNow)
     WCHAR wchTmp[MAX_PATH];
 
     if (lstrlen(szIniFile) == 0)
-        return;
+        return FALSE;
 
     CreateIniFile();
 
-    if (!bSaveSettings && !bSaveSettingsNow) {
-        IniSetInt(L"Settings", L"SaveSettings", bSaveSettings);
-        return;
+    if (!bSaveSettingsOnExit && !bSaveSettingsNow) {
+        IniSetInt(L"Settings", L"SaveSettings", bSaveSettingsOnExit);
+        return TRUE;
     }
 
     pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
     cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
 
     IniSectionSetInt(pIniSection, L"CheckWritePermission", bCheckWritePermission);
-    IniSectionSetInt(pIniSection, L"SaveSettings", bSaveSettings);
+    IniSectionSetInt(pIniSection, L"SaveSettings", bSaveSettingsOnExit);
     IniSectionSetInt(pIniSection, L"SaveRecentFiles", bSaveRecentFiles);
     IniSectionSetInt(pIniSection, L"SaveFindReplace", bSaveFindReplace);
     IniSectionSetInt(pIniSection, L"CloseFind", efrData.bFindClose);
@@ -5725,7 +5725,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
 
     /*
     SaveSettingsNow(): query Window Dimensions
-  */
+    */
 
     if (bSaveSettingsNow) {
         WINDOWPLACEMENT wndpl;
@@ -5763,6 +5763,8 @@ void SaveSettings(BOOL bSaveSettingsNow)
 
     // Scintilla Styles
     Style_Save();
+
+	return TRUE;
 }
 
 //=============================================================================

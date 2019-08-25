@@ -418,7 +418,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Check Write Permission",      IDM_VIEW_CHECKWRITEPERMISSION
         MENUITEM SEPARATOR
-        MENUITEM "Save Settings On E&xit",      IDM_VIEW_SAVESETTINGS
+        MENUITEM "Save Settings On E&xit",      IDM_VIEW_SAVESETTINGSONEXIT
         MENUITEM "Save Settings &Now\tF7",      IDM_VIEW_SAVESETTINGSNOW
         MENUITEM "&Open Notepad2.ini\tCtrl+F7", CMD_OPENINIFILE
     END
@@ -1840,9 +1840,9 @@ BEGIN
 #else // !JRB_BUILD
     IDS_STICKYWINPOS        "Sticky Window Position is enabled. Any new Notepad2 windows will use the current window placement settings."
 #endif // JRB_BUILD
-    IDS_SAVEDSETTINGS       "The current program settings have been saved."
-    IDS_CREATEINI_FAIL      "Error creating configuration file."
-    IDS_WRITEINI_FAIL       "Error writing settings to configuration file."
+    IDS_SAVEDSETTINGS       "The current program settings have successfully been saved to ""%s""."
+    IDS_CREATEINI_FAIL      "Error creating the configuration file at ""%s""."
+    IDS_WRITEINI_FAIL       "Error writing settings to configuration file ""%s""."
     IDS_SETTINGSNOTSAVED    "No existing configuration file was found.\nTo keep your style modifications, save settings now (F7) or go back to scheme configuration (Ctrl+F12) and export your styles."
     IDS_EXPORT_FAIL         "Error exporting style settings to ""%s""."
 #ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
