@@ -9,30 +9,42 @@
 ; Requirements:
 ;   Inno Setup: http://www.jrsoftware.org/isdl.php
 
+; Config
+#define ProjectName              "Notepad2-mod-jrb"
+#define ProjectHead              "Jonathan R.-Brochu"
+#define ProjectRepo              "https://github.com/johnwait/notepad2-mod"
+#define CopyrightNotice          "Copyright © 2004-2017, Florian Balmer et al.; Copyright © 2010-2017 XhmikosR; Copyright © 2019 " + ProjectHead + " et al."
+#define AppTaskbarGrpId          "Notepad2"
+;
+#define Files_MainBinary         "Notepad2-jrb.exe"
+#define Files_Config             "Notepad2.ini"
+#define Files_License            "license.txt"
+#define Files_Readme             "Readme-mod-jrb.txt"
+#define Files_Info               "Notepad2.txt"
+;
+#define SrcDirs_MainBinary_x86   "..\bin\Release_x86\"
+#define SrcDirs_MainBinary_x64   "..\bin\Release_x64\"
+#define SrcDirs_Config           ""
+#define SrcDirs_License          "..\"
+#define SrcDirs_Readme           "..\"
+#define SrcDirs_Info             "..\"
+;
+#define InstSubDirs_PFiles       "Notepad2-jrb"
+#define InstSubDirs_AppData      "Notepad2"
+#define InstallerOutputPath      "."
 
-#define VS2017
 
 ; Preprocessor related stuff
 #if VER < EncodeVer(5,5,9)
   #error Update your Inno Setup version (5.5.9 or newer)
 #endif
 
-#if !defined(VS2017)
-  #error You need to define the compiler used; VS2017
+#ifnexist SrcDirs_MainBinary_x86 + Files_MainBinary
+  #pragma error "Compile " + ProjectName + " x86 first"
 #endif
 
-#if defined(VS2017)
-  #define compiler "VS2017"
-#endif
-
-#define bindir "..\bin\" + compiler
-
-#ifnexist bindir + "\Release_x86\Notepad2-jrb.exe"
-  #error Compile Notepad2 x86 first
-#endif
-
-#ifnexist bindir + "\Release_x64\Notepad2-jrb.exe"
-  #error Compile Notepad2 x64 first
+#ifnexist SrcDirs_MainBinary_x64 + Files_MainBinary
+  #pragma error "Compile " + ProjectName + " x64 first"
 #endif
 
 #define VerMajor
@@ -40,39 +52,38 @@
 #define VerBuild
 #define VerRevision
 
-#expr ParseVersion(bindir + "\Release_x86\Notepad2-jrb.exe", VerMajor, VerMinor, VerBuild, VerRevision)
-#define app_version   str(VerMajor) + "." + str(VerMinor) + "." + str(VerBuild) + "." + str(VerRevision)
-#define app_name      "Notepad2-mod-jrb"
-#define app_copyright "Copyright © 2004-2017, Florian Balmer et al."
-#define quick_launch  "{userappdata}\Microsoft\Internet Explorer\Quick Launch"
+#expr ParseVersion(SrcDirs_MainBinary_x86 + Files_MainBinary, VerMajor, VerMinor, VerBuild, VerRevision)
 
+#define app_version   str(VerMajor) + "." + str(VerMinor) + "." + str(VerBuild) + "." + str(VerRevision)
+#define app_name      ProjectName
+#define app_copyright CopyrightNotice
 
 [Setup]
 AppId={#app_name}
 AppName={#app_name}
 AppVersion={#app_version}
 AppVerName={#app_name} {#app_version}
-AppPublisher=Jonathan R.-Brochu
-AppPublisherURL=https://github.com/johnwait/notepad2-mod
-AppSupportURL=https://github.com/johnwait/notepad2-mod
-AppUpdatesURL=https://github.com/johnwait/notepad2-mod
-AppContact=https://github.com/johnwait/notepad2-mod
+AppPublisher={#ProjectHead}
+AppPublisherURL={#ProjectRepo}
+AppSupportURL={#ProjectRepo}
+AppUpdatesURL={#ProjectRepo}
+AppContact={#ProjectRepo}
 AppCopyright={#app_copyright}
 VersionInfoVersion={#app_version}
-UninstallDisplayIcon={app}\Notepad2-jrb.exe
-#if defined(VS2017)
+UninstallDisplayIcon={app}\{#Files_MainBinary}
+;;#if defined(VS2017)
 UninstallDisplayName={#app_name} {#app_version}
-#else
-UninstallDisplayName={#app_name} {#app_version} ({#compiler})
-#endif
-DefaultDirName={pf}\Notepad2
-LicenseFile=license.txt
-OutputDir=.
-#if defined(VS2017)
+;;#else
+;;UninstallDisplayName={#app_name} {#app_version} ({#compiler})
+;;#endif
+DefaultDirName={pf}\{#InstSubDirs_PFiles}
+LicenseFile={#Files_License}
+OutputDir={#InstallerOutputPath}
+;;#if defined(VS2017)
 OutputBaseFilename={#app_name}.{#app_version}
-#else
-OutputBaseFilename={#app_name}.{#app_version}_{#compiler}
-#endif
+;;#else
+;;OutputBaseFilename={#app_name}.{#app_version}_{#compiler}
+;;#endif
 SetupIconFile=Setup.ico
 WizardImageFile=compiler:WizModernImage-IS.bmp
 WizardSmallImageFile=WizardSmallImageFile.bmp
@@ -87,7 +98,7 @@ DisableProgramGroupPage=yes
 DisableReadyPage=yes
 DisableWelcomePage=yes
 AllowCancelDuringInstall=no
-MinVersion=5.1sp3
+MinVersion=6.1
 ArchitecturesAllowed=x86 x64
 ArchitecturesInstallIn64BitMode=x64
 #ifexist "..\signinfo.txt"
@@ -102,7 +113,8 @@ Name: en; MessagesFile: compiler:Default.isl
 
 
 [Messages]
-BeveledLabel     ={#app_name} {#app_version}  -  Compiled with {#compiler}
+;;BeveledLabel     ={#app_name} {#app_version} - Compiled with {#compiler}
+BeveledLabel     ={#app_name} {#app_version}
 SetupAppTitle    =Setup - {#app_name}
 SetupWindowTitle =Setup - {#app_name}
 
@@ -137,40 +149,40 @@ Name: remove_default;     Description: {cm:tsk_RemoveDefault};     GroupDescript
 
 
 [Files]
-Source: {#bindir}\Release_x64\Notepad2-jrb.exe; DestDir: {app};                  Flags: ignoreversion;                         Check: Is64BitInstallMode()
-Source: {#bindir}\Release_x86\Notepad2-jrb.exe; DestDir: {app};                  Flags: ignoreversion;                         Check: not Is64BitInstallMode()
-Source: ..\License.txt;                         DestDir: {app};                  Flags: ignoreversion
-Source: ..\Notepad2.txt;                        DestDir: {app};                  Flags: ignoreversion
-Source: ..\Readme-mod-jrb.txt;                  DestDir: {app};                  Flags: ignoreversion
-Source: Notepad2.ini;                           DestDir: {userappdata}\Notepad2; Flags: onlyifdoesntexist uninsneveruninstall
+Source: {#SrcDirs_MainBinary_x64}{#Files_MainBinary};  DestDir: {app};                                Flags: ignoreversion;                         Check: Is64BitInstallMode()
+Source: {#SrcDirs_MainBinary_x86}{#Files_MainBinary};  DestDir: {app};                                Flags: ignoreversion;                         Check: not Is64BitInstallMode()
+Source: {#SrcDirs_License}{#Files_License};            DestDir: {app};                                Flags: ignoreversion
+Source: {#SrcDirs_Info}{#Files_Info};                  DestDir: {app};                                Flags: ignoreversion
+Source: {#SrcDirs_Readme}{#Files_Readme};              DestDir: {app};                                Flags: ignoreversion
+Source: {#SrcDirs_Config}{#Files_Config};              DestDir: {userappdata}\{#InstSubDirs_AppData}; Flags: onlyifdoesntexist uninsneveruninstall
 
 
 [Icons]
-Name: {commondesktop}\{#app_name}; Filename: {app}\Notepad2-jrb.exe; Tasks: desktopicon\common; Comment: {#app_name} {#app_version}; WorkingDir: {app}; AppUserModelID: Notepad2; IconFilename: {app}\Notepad2-jrb.exe; IconIndex: 0
-Name: {userdesktop}\{#app_name};   Filename: {app}\Notepad2-jrb.exe; Tasks: desktopicon\user;   Comment: {#app_name} {#app_version}; WorkingDir: {app}; AppUserModelID: Notepad2; IconFilename: {app}\Notepad2-jrb.exe; IconIndex: 0
-Name: {userstartmenu}\{#app_name}; Filename: {app}\Notepad2-jrb.exe; Tasks: startup_icon;       Comment: {#app_name} {#app_version}; WorkingDir: {app}; AppUserModelID: Notepad2; IconFilename: {app}\Notepad2-jrb.exe; IconIndex: 0
-Name: {#quick_launch}\{#app_name}; Filename: {app}\Notepad2-jrb.exe; Tasks: quicklaunchicon;    Comment: {#app_name} {#app_version}; WorkingDir: {app};                           IconFilename: {app}\Notepad2-jrb.exe; IconIndex: 0
+;;Name: {commondesktop}\{#app_name}; Filename: {app}\{#Files_MainBinary}; Tasks: desktopicon\common; Comment: {#app_name} {#app_version}; WorkingDir: {app}; AppUserModelID: {#AppTaskbarGrpId}; IconFilename: {app}\{#Files_MainBinary}; IconIndex: 0
+;;Name: {userdesktop}\{#app_name};   Filename: {app}\{#Files_MainBinary}; Tasks: desktopicon\user;   Comment: {#app_name} {#app_version}; WorkingDir: {app}; AppUserModelID: {#AppTaskbarGrpId}; IconFilename: {app}\{#Files_MainBinary}; IconIndex: 0
+;;Name: {userstartmenu}\{#app_name}; Filename: {app}\{#Files_MainBinary}; Tasks: startup_icon;       Comment: {#app_name} {#app_version}; WorkingDir: {app}; AppUserModelID: {#AppTaskbarGrpId}; IconFilename: {app}\{#Files_MainBinary}; IconIndex: 0
+;;Name: {#quick_launch}\{#app_name}; Filename: {app}\{#Files_MainBinary}; Tasks: quicklaunchicon;    Comment: {#app_name} {#app_version}; WorkingDir: {app};                                     IconFilename: {app}\{#Files_MainBinary}; IconIndex: 0
 
 
 [INI]
-Filename: {app}\Notepad2.ini; Section: Notepad2; Key: Notepad2.ini; String: %APPDATA%\Notepad2\Notepad2.ini
+Filename: {app}\{#Files_Config}; Section: Notepad2; Key: {#Files_Config}; String: %APPDATA%\{#InstSubDirs_AppData}\{#Files_Config}
 
 
 [Run]
-Filename: {app}\Notepad2-jrb.exe; Description: {cm:LaunchProgram,{#app_name}}; WorkingDir: {app}; Flags: nowait postinstall skipifsilent unchecked
+Filename: {app}\{#Files_MainBinary}; Description: {cm:LaunchProgram,{#app_name}}; WorkingDir: {app}; Flags: nowait postinstall skipifsilent unchecked
 
 
 [InstallDelete]
-Type: files;      Name: {userdesktop}\{#app_name}.lnk;   Check: not IsTaskSelected('desktopicon\user')   and IsUpgrade()
-Type: files;      Name: {commondesktop}\{#app_name}.lnk; Check: not IsTaskSelected('desktopicon\common') and IsUpgrade()
-Type: files;      Name: {userstartmenu}\{#app_name}.lnk; Check: not IsTaskSelected('startup_icon')       and IsUpgrade()
-Type: files;      Name: {#quick_launch}\{#app_name}.lnk; Check: not IsTaskSelected('quicklaunchicon')    and IsUpgrade(); OnlyBelowVersion: 6.01
-Type: files;      Name: {app}\Notepad2.ini
-Type: files;      Name: {app}\Readme-mod-jrb.txt
+;;Type: files;      Name: {userdesktop}\{#app_name}.lnk;   Check: not IsTaskSelected('desktopicon\user')   and IsUpgrade()
+;;Type: files;      Name: {commondesktop}\{#app_name}.lnk; Check: not IsTaskSelected('desktopicon\common') and IsUpgrade()
+;;Type: files;      Name: {userstartmenu}\{#app_name}.lnk; Check: not IsTaskSelected('startup_icon')       and IsUpgrade()
+;;Type: files;      Name: {#quick_launch}\{#app_name}.lnk; Check: not IsTaskSelected('quicklaunchicon')    and IsUpgrade(); OnlyBelowVersion: 6.01
+Type: files;      Name: {app}\{#Files_Config}
+Type: files;      Name: {app}\{#Files_Readme}
 
 
 [UninstallDelete]
-Type: files;      Name: {app}\Notepad2.ini
+Type: files;      Name: {app}\{#Files_Config}
 Type: dirifempty; Name: {app}
 
 
@@ -189,7 +201,7 @@ var
   sDebugger: String;
 begin
   if RegQueryStringValue(HKLM, IFEO, 'Debugger', sDebugger) and
-  (sDebugger = (ExpandConstant('"{app}\Notepad2-jrb.exe" /z'))) then begin
+  (sDebugger = (ExpandConstant('"{app}\{#Files_MainBinary}" /z'))) then begin
     Log('Custom Code: {#app_name} is set as the default notepad');
     Result := True;
   end
@@ -221,7 +233,7 @@ end;
 function IsOldBuildInstalled(sInfFile: String): Boolean;
 begin
   if RegKeyExists(HKLM, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Notepad2') and
-  FileExists(ExpandConstant('{pf}\Notepad2\' + sInfFile)) then
+      FileExists(ExpandConstant('{pf}\{#InstSubDirs_PFiles}\' + sInfFile)) then
     Result := True
   else
     Result := False;
@@ -240,7 +252,7 @@ end;
 // Check if Notepad2's settings exist
 function SettingsExistCheck(): Boolean;
 begin
-  if FileExists(ExpandConstant('{userappdata}\Notepad2\Notepad2.ini')) then begin
+  if FileExists(ExpandConstant('{userappdata}\{#InstSubDirs_AppData}\{#Files_Config}')) then begin
     Log('Custom Code: Settings are present');
     Result := True;
   end
@@ -263,7 +275,7 @@ begin
   // default return value
   Result := 0;
   // TODO: use RegQueryStringValue
-  if not Exec('rundll32.exe', ExpandConstant('advpack.dll,LaunchINFSectionEx ' + '"{pf}\Notepad2\' + sInfFile +'",DefaultUninstall,,8,N'), '', SW_HIDE, ewWaitUntilTerminated, iResultCode) then begin
+  if not Exec('rundll32.exe', ExpandConstant('advpack.dll,LaunchINFSectionEx ' + '"{pf}\{#InstSubDirs_PFiles}\' + sInfFile +'",DefaultUninstall,,8,N'), '', SW_HIDE, ewWaitUntilTerminated, iResultCode) then begin
     Result := 1;
   end
   else begin
@@ -283,23 +295,23 @@ end;
 
 procedure AddReg();
 begin
-  RegWriteStringValue(HKCR, 'Applications\Notepad2-jrb.exe', 'AppUserModelID', 'Notepad2');
-  RegWriteStringValue(HKCR, 'Applications\Notepad2-jrb.exe\shell\open\command', '', ExpandConstant('"{app}\Notepad2-jrb.exe" %1'));
-  RegWriteStringValue(HKCR, '*\OpenWithList\Notepad2-jrb.exe', '', '');
+  RegWriteStringValue(HKCR, 'Applications\{#Files_MainBinary}', 'AppUserModelID', '{#AppTaskbarGrpId}');
+  RegWriteStringValue(HKCR, 'Applications\{#Files_MainBinary}\shell\open\command', '', ExpandConstant('"{app}\{#Files_MainBinary}" %1'));
+  RegWriteStringValue(HKCR, '*\OpenWithList\{#Files_MainBinary}', '', '');
 end;
 
 
 procedure CleanUpSettings();
 begin
-  DeleteFile(ExpandConstant('{userappdata}\Notepad2\Notepad2.ini'));
-  RemoveDir(ExpandConstant('{userappdata}\Notepad2'));
+  DeleteFile(ExpandConstant('{userappdata}\{#InstSubDirs_AppData}\{#Files_Config}'));
+  RemoveDir(ExpandConstant('{userappdata}\{#InstSubDirs_AppData}'));
 end;
 
 
 procedure RemoveReg();
 begin
-  RegDeleteKeyIncludingSubkeys(HKCR, 'Applications\Notepad2-jrb.exe');
-  RegDeleteKeyIncludingSubkeys(HKCR, '*\OpenWithList\Notepad2-jrb.exe');
+  RegDeleteKeyIncludingSubkeys(HKCR, 'Applications\{#Files_MainBinary}');
+  RegDeleteKeyIncludingSubkeys(HKCR, '*\OpenWithList\{#Files_MainBinary}');
 end;
 
 
@@ -338,14 +350,14 @@ begin
       // This is the case where the old build is installed; the DefaulNotepadCheck() returns true
       // and the set_default task isn't selected
       if not IsTaskSelected('remove_default') then
-        RegWriteStringValue(HKLM, IFEO, 'Debugger', ExpandConstant('"{app}\Notepad2-jrb.exe" /z'));
+        RegWriteStringValue(HKLM, IFEO, 'Debugger', ExpandConstant('"{app}\{#Files_MainBinary}" /z'));
 
     end;
   end;
 
   if CurStep = ssPostInstall then begin
     if IsTaskSelected('set_default') then
-      RegWriteStringValue(HKLM, IFEO, 'Debugger', ExpandConstant('"{app}\Notepad2-jrb.exe" /z'));
+      RegWriteStringValue(HKLM, IFEO, 'Debugger', ExpandConstant('"{app}\{#Files_MainBinary}" /z'));
     if IsTaskSelected('remove_default') then begin
       RegDeleteValue(HKLM, IFEO, 'Debugger');
       RegDeleteKeyIfEmpty(HKLM, IFEO);
