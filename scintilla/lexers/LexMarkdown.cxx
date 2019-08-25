@@ -135,7 +135,7 @@ static bool IsValidHrule(const Sci_PositionU endPos, StyleContext &sc) {
             }
             else {
                 sc.SetState(SCE_MARKDOWN_DEFAULT);
-		return false;
+                return false;
             }
         }
     }
@@ -150,13 +150,17 @@ static void ColorizeMarkdownDoc(Sci_PositionU startPos, Sci_Position length, int
     // Useful in the corner case of having to start at the beginning file position
     // in the default state.
     bool freezeCursor = false;
+    int curState = 0;
 
     StyleContext sc(startPos, length, initStyle, styler);
 
     while (sc.More()) {
         // Skip past escaped characters
         if (sc.ch == '\\') {
-            sc.Forward();
+            curState = sc.state;
+            sc.SetState(SCE_MARKDOWN_ESCAPED);
+            sc.Forward(2);
+            sc.SetState(curState);
             continue;
         }
 
@@ -165,14 +169,18 @@ static void ColorizeMarkdownDoc(Sci_PositionU startPos, Sci_Position length, int
             sc.SetState(SCE_MARKDOWN_LINE_BEGIN);
 
         // Conditional state-based actions
+        // 2019-08-24: Now using Github-flavour Markdown syntax
+        //             [```] => Block code start/end
+        //             [``]  => Escaped backtick
+        //             [`]   => Inline code start/end
         if (sc.state == SCE_MARKDOWN_CODE2) {
-            if (sc.Match("``") && sc.GetRelative(-2) != ' ') {
-                sc.Forward(2);
+            if (sc.Match("```") && sc.GetRelative(-2) != ' ') {
+                sc.Forward(3);
                 sc.SetState(SCE_MARKDOWN_DEFAULT);
             }
         }
         else if (sc.state == SCE_MARKDOWN_CODE) {
-            if (sc.ch == '`' && sc.chPrev != ' ')
+            if (sc.ch == '`' && sc.chNext != '`' && sc.chPrev != ' ')
                 sc.ForwardSetState(SCE_MARKDOWN_DEFAULT);
         }
         /* De-activated because it gets in the way of other valid indentation
@@ -374,10 +382,21 @@ static void ColorizeMarkdownDoc(Sci_PositionU startPos, Sci_Position length, int
               sc.SetState(SCE_MARKDOWN_LINK);
               sc.Forward();
             }
+            // 2019-08-24: Now using Github-flavour Markdown syntax
+            //             [```] => Block code start/end
+            //             [``]  => Escaped backtick
+            //             [`]   => Inline code start/end
             // Code - also a special case for alternate inside spacing
-            else if (sc.Match("``") && sc.GetRelative(3) != ' ' && AtTermStart(sc)) {
+            else if (sc.Match("```") && sc.GetRelative(4) != ' ' && AtTermStart(sc)) {
                 sc.SetState(SCE_MARKDOWN_CODE2);
+                sc.Forward(3);
+            }
+            // Code - also a special case for alternate inside spacing
+            else if (sc.Match("``") && sc.GetRelative(3) != '`') {
+                curState = sc.state;
+                sc.SetState(SCE_MARKDOWN_ESCAPED);
                 sc.Forward();
+                sc.SetState(curState);
             }
             else if (sc.ch == '`' && sc.chNext != ' ' && AtTermStart(sc)) {
                 sc.SetState(SCE_MARKDOWN_CODE);
@@ -386,7 +405,7 @@ static void ColorizeMarkdownDoc(Sci_PositionU startPos, Sci_Position length, int
             else if (sc.Match("**") && sc.GetRelative(2) != ' ' && AtTermStart(sc)) {
                 sc.SetState(SCE_MARKDOWN_STRONG1);
                 sc.Forward();
-           }
+            }
             else if (sc.Match("__") && sc.GetRelative(2) != ' ' && AtTermStart(sc)) {
                 sc.SetState(SCE_MARKDOWN_STRONG2);
                 sc.Forward();

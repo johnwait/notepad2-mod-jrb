@@ -2365,8 +2365,8 @@ BEGIN
     63360                   "User-Defined Function"
     63361                   "Pseudo-element"
     63362                   "Coffeescript"
+    63363                   "Escaped"  // 2019-08-24: Added for SCE_MARKDOWN_ESCAPED
 /*
-    63363                   ""
     63364                   ""
     63365                   ""
     63366                   ""

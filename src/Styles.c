@@ -2699,6 +2699,7 @@ EDITLEXER lexMARKDOWN = { SCLEX_MARKDOWN, 63336, L"Markdown", L"md; markdown; md
                           { SCE_MARKDOWN_HRULE, 63352, L"Horizontal rule", L"bold", L"" },
                           { SCE_MARKDOWN_LINK, 63353, L"Link", L"fore:#0000FF", L"" },
                           { MULTI_STYLE(SCE_MARKDOWN_CODE,SCE_MARKDOWN_CODE2,SCE_MARKDOWN_CODEBK,0), 63354, L"Code", L"fore:#00007F; back:#EBEBEB", L"" },
+                          { SCE_MARKDOWN_ESCAPED, 63363, L"Escaped", L"back:#EBEBEB", L"" },
                           { -1, 00000, L"", L"", L"" } } };
 
 
