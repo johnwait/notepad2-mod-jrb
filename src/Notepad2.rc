@@ -1847,12 +1847,14 @@ BEGIN
     IDS_EXPORT_FAIL         "Error exporting style settings to ""%s""."
 #ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
     IDS_UNSAVEDCHANGENOTIFY "The current file was modified by an external program while you were making changes to it.\n\nDo you wish to discard your changes and reload the file from disk?\n\nBe warned that in doing so unsaved changes will forever be lost."
+#endif // FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+#ifdef FEAT_REPLACE_MSGBOX_BY_TASKDLG
     IDS_UCN_ACTION_RELOAD   "Reload and discard my unsaved work"
     IDS_UCN_ACTION_SAVECOPY "Save this copy elsewhere"
     IDS_UCN_ACTION_NONE     "Don't do anything"
     IDS_FCN_ACTION_RELOAD   "Reload to the latest version"
     IDS_FCN_ACTION_NONE     "Leave it as is"
-#endif // FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+#endif // FEAT_REPLACE_MSGBOX_BY_TASKDLG
 END
 
 #ifdef JRB_BUILD
