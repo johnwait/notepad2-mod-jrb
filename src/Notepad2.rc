@@ -81,7 +81,7 @@ BEGIN
         MENUITEM "Re&vert\tF5",                 IDM_FILE_REVERT
         MENUITEM "&Save\tCtrl+S",               IDM_FILE_SAVE
         MENUITEM "Save &As...\tF6",             IDM_FILE_SAVEAS
-        MENUITEM "Save &Copy...\tCtrl+F6",      IDM_FILE_SAVECOPY
+        MENUITEM "Save a &Copy...\tCtrl+F6",    IDM_FILE_SAVECOPY
         MENUITEM "&Read Only",                  IDM_FILE_READONLY
         MENUITEM SEPARATOR
         POPUP "&Reload"
