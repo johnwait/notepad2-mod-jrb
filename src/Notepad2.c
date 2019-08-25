@@ -1104,16 +1104,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         UpdateToolbar();
         UpdateStatusbar();
 
-        //if (bPendingChangeNotify)
-        //  PostMessage(hwnd,WM_CHANGENOTIFY,0,0);
+        ///if (g_bPendingChangeNotify)
+        ///  PostMessage(hwnd,WM_CHANGENOTIFY,0,0);
         break;
 
     case WM_DROPFILES: {
         WCHAR szBuf[MAX_PATH + 40];
         HDROP hDrop = (HDROP)wParam;
 
-        // Reset Change Notify
-        //bPendingChangeNotify = FALSE;
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+		// Reset Change Notify
+        g_bPendingChangeNotify = FALSE;
+#endif
 
         if (IsIconic(hwnd))
             ShowWindow(hwnd, SW_RESTORE);
@@ -1140,8 +1142,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     case WM_COPYDATA: {
         PCOPYDATASTRUCT pcds = (PCOPYDATASTRUCT)lParam;
 
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
         // Reset Change Notify
-        //bPendingChangeNotify = FALSE;
+        g_bPendingChangeNotify = FALSE;
+#endif
 
         SetDlgItemInt(hwnd, IDC_REUSELOCK, GetTickCount(), FALSE);
 
@@ -1321,6 +1325,25 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hwnd, umsg, wParam, lParam);
 
     case WM_CHANGENOTIFY:
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+		// Check if we're currently the active window
+		if (GetActiveWindow() != hwnd) {
+			// Report notification to a later time (next activation)
+			g_bPendingChangeNotify = TRUE;
+		} else {
+			// Process it now
+			MsgChangeNotify(hwnd, wParam, lParam);
+		}
+		break;
+
+	case WM_ACTIVATE:
+		// Make sure this is an activation (i.e. wParam == (WA_ACTIVE || WA_CLICKACTIVE) )
+		if (!wParam) break;
+
+		// Process any pending file-change notification
+		if (g_bPendingChangeNotify) MsgChangeNotify(hwnd, wParam, lParam);
+
+#else
         if (iFileWatchingMode == 1 || bModified || iEncoding != iOriginalEncoding)
             SetForegroundWindow(hwnd);
 
@@ -1362,15 +1385,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             if (MsgBox(MBYESNO, IDS_FILECHANGENOTIFY2) == IDYES)
                 FileSave(TRUE, FALSE, FALSE, FALSE);
         }
-
+        // Re-establish file change monitoring
         if (!bRunningWatch)
             InstallFileWatching(szCurFile);
         break;
+#endif
 
-        //// This message is posted before Notepad2 reactivates itself
-        //case WM_CHANGENOTIFYCLEAR:
-        //  bPendingChangeNotify = FALSE;
-        //  break;
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+	// This message is posted before Notepad2 reactivates itself
+    case WM_CHANGENOTIFYCLEAR:
+        g_bPendingChangeNotify = FALSE;
+        break;
+#endif
 
     case WM_DRAWCLIPBOARD:
         if (!bLastCopyFromMe)
@@ -2214,6 +2240,125 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
     EnableCmd(hmenu, IDM_VIEW_SAVESETTINGSNOW, i);
 }
 
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+//=============================================================================
+//
+//  MsgChangeNofity() - Handles WM_CHANGENOTIFY
+//
+//
+void MsgChangeNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
+{
+	///if (iFileWatchingMode == 1 || bModified || iEncoding != iOriginalEncoding)
+	///	   SetForegroundWindow(hwnd);
+
+	if (PathFileExists(szCurFile)) {
+
+		// Auto-reload if (1) we're allowed to, per the "File Change Notification" setting;
+		//            and (2) there aren't any unsaved changes we risk losing;
+		//            and (3) the encoding hasn't been changed either.
+		BOOL bReloadFile = (iFileWatchingMode == 2 && !bModified && iEncoding == iOriginalEncoding);
+		// If we can't go through an auto-reload (i.e. silently reloading the file without the user
+		// noticing), then we must query the user for the action to take:
+		if (!bReloadFile) {
+			UINT uIdMsg = 0;
+			int nResult = 0;
+			const int ID_RELOAD = 2, ID_SAVECOPY = 3, ID_NOACTION = 1;
+#ifdef FEAT_REPLACE_MSGBOX_BY_TASKDLG
+			TASKDIALOGBOX_BTN_ARRAY tdbaButtons;
+			WCHAR szReload[64]; // 64 chars should be enough for button captions
+			WCHAR szSaveCopy[64];
+			WCHAR szNoAction[64];
+#endif
+			// Check if reloading implies discarding unsaved changes
+			if (bModified) {
+				// Will be using message IDS_UNSAVEDCHANGENOTIFY
+				uIdMsg = IDS_UNSAVEDCHANGENOTIFY;
+#ifdef FEAT_REPLACE_MSGBOX_BY_TASKDLG
+				GetString(IDS_UCN_ACTION_RELOAD, szReload, COUNTOF(szReload));
+				GetString(IDS_UCN_ACTION_SAVECOPY, szSaveCopy, COUNTOF(szSaveCopy));
+				GetString(IDS_UCN_ACTION_NONE, szNoAction, COUNTOF(szNoAction));
+				const TASKDIALOG_BUTTON buttons[] = TASKDLGBOX_3BTNS_WITHIDS(
+					szReload,   ID_RELOAD,
+					szSaveCopy, ID_SAVECOPY,
+					szNoAction, ID_NOACTION
+				);
+				tdbaButtons = TASKDLGBOX_BTNARRAY(ID_NOACTION, &buttons);
+#endif
+			} else {
+				// Will be using message IDS_FILECHANGENOTIFY
+				uIdMsg = IDS_FILECHANGENOTIFY;
+#ifdef FEAT_REPLACE_MSGBOX_BY_TASKDLG
+				GetString(IDS_FCN_ACTION_RELOAD, szReload, COUNTOF(szReload));
+				GetString(IDS_FCN_ACTION_NONE, szNoAction, COUNTOF(szNoAction));
+				const TASKDIALOG_BUTTON buttons[] = TASKDLGBOX_2BTNS_WITHIDS(
+					szReload,  ID_RELOAD,
+					szNoAction, ID_NOACTION
+				);
+				tdbaButtons = TASKDLGBOX_BTNARRAY(ID_RELOAD, &buttons);
+#endif
+			}
+#ifdef FEAT_REPLACE_MSGBOX_BY_TASKDLG
+			// Show task dialog
+			nResult = SimpleTaskDlg(MAKEINTRESOURCE(TD_WARNING_ICON), 0, MAKEINTRESOURCE(uIdMsg), &tdbaButtons, 0, 0);
+#endif
+			if (nResult <= 0) {
+				// Error; Revet back to using the _MsgBox() helper
+				switch (_MsgBox(MBYESNO, uIdMsg)) {
+					case IDYES: nResult = ID_RELOAD; break;
+					case IDNO:  nResult = ID_NOACTION; break;
+				}
+			};
+			if (nResult == ID_SAVECOPY) {
+				// Initiate a "Save a Copy" action
+				PostMessage(hwnd, WM_COMMAND, IDM_FILE_SAVECOPY, 0);
+			} else
+				bReloadFile = (nResult == ID_RELOAD);
+		}
+		// Check if we still reload the file as per user's answer (or if it's an auto reload)
+		if (bReloadFile) {
+			int iCurPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+			int iAnchorPos = (int)SendMessage(hwndEdit, SCI_GETANCHOR, 0, 0);
+			int iVisTopLine = (int)SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
+			int iDocTopLine = (int)SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, (WPARAM)iVisTopLine, 0);
+			int iXOffset = (int)SendMessage(hwndEdit, SCI_GETXOFFSET, 0, 0);
+			BOOL bIsTail = (iCurPos == iAnchorPos) && (iCurPos == SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0));
+
+			iWeakSrcEncoding = iEncoding;
+			if (FileLoad(TRUE, FALSE, TRUE, FALSE, szCurFile)) {
+
+				if (bIsTail && iFileWatchingMode == 2) {
+					EditJumpTo(hwndEdit, -1, 0);
+					EditEnsureSelectionVisible(hwndEdit);
+				}
+
+				else if (SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0) >= 4) {
+					char tch[5] = "";
+					SendMessage(hwndEdit, SCI_GETTEXT, 5, (LPARAM)tch);
+					if (lstrcmpiA(tch, ".LOG") != 0) {
+						int iNewTopLine;
+						SendMessage(hwndEdit, SCI_SETSEL, iAnchorPos, iCurPos);
+						SendMessage(hwndEdit, SCI_ENSUREVISIBLE, (WPARAM)iDocTopLine, 0);
+						iNewTopLine = (int)SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
+						SendMessage(hwndEdit, SCI_LINESCROLL, 0, (LPARAM)iVisTopLine - iNewTopLine);
+						SendMessage(hwndEdit, SCI_SETXOFFSET, (WPARAM)iXOffset, 0);
+					}
+				}
+			}
+		}
+	} else {
+
+		if (MsgBox(MBYESNO, IDS_FILEDELETENOTIFY) == IDYES)
+			FileSave(TRUE, FALSE, FALSE, FALSE);
+	}
+	// Reset PendingChangeNotify no matter what (i.e. being handled or dismissed)
+	g_bPendingChangeNotify = FALSE;
+
+	// Re-establish file change monitoring
+	if (!bRunningWatch)
+		InstallFileWatching(szCurFile);
+}
+#endif
+
 //=============================================================================
 //
 //  MsgCommand() - Handles WM_COMMAND
@@ -2225,12 +2370,30 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     switch (LOWORD(wParam)) {
 
     case IDM_FILE_NEW:
-        FileLoad(FALSE, TRUE, FALSE, FALSE, L"");
-        break;
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+	{
+		BOOL bNewFileSuccess =
+#endif
+			FileLoad(FALSE, TRUE, FALSE, FALSE, L"");
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+		// Reset PendingChangeNotify on new file
+		if (bNewFileSuccess) g_bPendingChangeNotify = FALSE;
+	}
+#endif
+		break;
 
     case IDM_FILE_OPEN:
-        FileLoad(FALSE, FALSE, FALSE, FALSE, L"");
-        break;
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+	{
+		BOOL bOpenFileSuccess =
+#endif
+			FileLoad(FALSE, FALSE, FALSE, FALSE, L"");
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+		// Reset PendingChangeNotify on successful file opening
+		if (bOpenFileSuccess) g_bPendingChangeNotify = FALSE;
+	}
+#endif
+		break;
 
     case IDM_FILE_REVERT: {
         if (lstrlen(szCurFile)) {
@@ -2243,13 +2406,17 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             int iDocTopLine = (int)SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, (WPARAM)iVisTopLine, 0);
             int iXOffset = (int)SendMessage(hwndEdit, SCI_GETXOFFSET, 0, 0);
 
-            if ((bModified || iEncoding != iOriginalEncoding) && MsgBox(MBOKCANCEL, IDS_ASK_REVERT) != IDOK)
+            if ((bModified || iEncoding != iOriginalEncoding) && MsgBox(/*MBOKCANCEL*/MBYESNO, IDS_ASK_REVERT) != IDOK)
                 return (0);
 
             lstrcpy(tchCurFile2, szCurFile);
 
             iWeakSrcEncoding = iEncoding;
             if (FileLoad(TRUE, FALSE, TRUE, FALSE, tchCurFile2)) {
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+                // Reset PendingChangeNotify on successful file revert
+                g_bPendingChangeNotify = FALSE;
+#endif
                 if (SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0) >= 4) {
                     char tch[5] = "";
                     SendMessage(hwndEdit, SCI_GETTEXT, 5, (LPARAM)tch);
@@ -2267,12 +2434,30 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     } break;
 
     case IDM_FILE_SAVE:
-        FileSave(TRUE, FALSE, FALSE, FALSE);
-        break;
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+	{
+		BOOL bSaveFileSuccess =
+#endif
+			FileSave(TRUE, FALSE, FALSE, FALSE);
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+		// Reset PendingChangeNotify on successful file saving
+		if (bSaveFileSuccess) g_bPendingChangeNotify = FALSE;
+	}
+#endif
+		break;
 
     case IDM_FILE_SAVEAS:
-        FileSave(TRUE, FALSE, TRUE, FALSE);
-        break;
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+	{
+		BOOL bSaveAsFileSuccess =
+#endif
+			FileSave(TRUE, FALSE, TRUE, FALSE);
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+		// Reset PendingChangeNotify on successful file saving
+		if (bSaveAsFileSuccess) g_bPendingChangeNotify = FALSE;
+	}
+#endif
+		break;
 
     case IDM_FILE_SAVECOPY:
         FileSave(TRUE, FALSE, TRUE, TRUE);
@@ -6545,7 +6730,7 @@ BOOL FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWST
             SHELLEXECUTEINFO shExecInfo;
 
             shExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
-            shExecInfo.fMask = NULL;
+            shExecInfo.fMask = 0;
             shExecInfo.hwnd = NULL;
             shExecInfo.lpVerb = L"runas";
             shExecInfo.lpFile = exeName;
@@ -6976,8 +7161,10 @@ BOOL ActivatePrevInst()
                 LPNP2PARAMS params;
                 DWORD cb = sizeof(NP2PARAMS);
 
-                // Make sure the previous window won't pop up a change notification message
-                //SendMessage(hwnd,WM_CHANGENOTIFYCLEAR,0,0);
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+				// Make sure the previous window won't pop up a change notification message
+                SendMessage(hwnd,WM_CHANGENOTIFYCLEAR,0,0);
+#endif
 
                 if (IsIconic(hwnd))
                     ShowWindowAsync(hwnd, SW_RESTORE);
@@ -7042,8 +7229,10 @@ BOOL ActivatePrevInst()
     if (hwnd != NULL) {
         // Enabled
         if (IsWindowEnabled(hwnd)) {
-            // Make sure the previous window won't pop up a change notification message
-            //SendMessage(hwnd,WM_CHANGENOTIFYCLEAR,0,0);
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+			// Make sure the previous window won't pop up a change notification message
+            SendMessage(hwnd,WM_CHANGENOTIFYCLEAR,0,0);
+#endif
 
             if (IsIconic(hwnd))
                 ShowWindowAsync(hwnd, SW_RESTORE);

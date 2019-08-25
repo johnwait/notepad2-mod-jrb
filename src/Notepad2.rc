@@ -10,6 +10,7 @@
 #define JRB_BUILD
 #endif
 
+#include "StdAfx.h"
 #include "resource.h"
 #include "Version.h"
 
@@ -1831,9 +1832,9 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_READONLY_SAVE       """%s"" is read only. Save to a different file?"
-    IDS_FILECHANGENOTIFY    "The current file has been modified by an external program. Reload?"
-    IDS_FILECHANGENOTIFY2   "The current file has been deleted. Save now?"
+    IDS_READONLY_SAVE       """%s"" is read only.\n\nDo you want to save it to another location?"
+    IDS_FILECHANGENOTIFY    "The current file has been modified by an external program.\n\nDo you wish to reload the updated file from disk?"
+    IDS_FILEDELETENOTIFY    "The current file has been deleted.\n\nDo you want to resave the file now?"
 #ifdef JRB_BUILD
     IDS_STICKYWINPOS        "Sticky Window Position is enabled. Any new Notepad2-mod-jrb windows will use the current window placement settings."
 #else // !JRB_BUILD
@@ -1844,6 +1845,14 @@ BEGIN
     IDS_WRITEINI_FAIL       "Error writing settings to configuration file."
     IDS_SETTINGSNOTSAVED    "No existing configuration file was found.\nTo keep your style modifications, save settings now (F7) or go back to scheme configuration (Ctrl+F12) and export your styles."
     IDS_EXPORT_FAIL         "Error exporting style settings to ""%s""."
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+    IDS_UNSAVEDCHANGENOTIFY "The current file was modified by an external program while you were making changes to it.\n\nDo you wish to discard your changes and reload the file from disk?\n\nBe warned that in doing so unsaved changes will forever be lost."
+    IDS_UCN_ACTION_RELOAD   "Reload and discard my unsaved work"
+    IDS_UCN_ACTION_SAVECOPY "Save this copy elsewhere"
+    IDS_UCN_ACTION_NONE     "Don't do anything"
+    IDS_FCN_ACTION_RELOAD   "Reload to the latest version"
+    IDS_FCN_ACTION_NONE     "Leave it as is"
+#endif // FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
 END
 
 #ifdef JRB_BUILD

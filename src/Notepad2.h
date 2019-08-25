@@ -80,7 +80,9 @@ typedef struct np2params {
 //==== Change Notifications ===================================================
 #define ID_WATCHTIMER 0xA000
 #define WM_CHANGENOTIFY WM_USER+1
-//#define WM_CHANGENOTIFYCLEAR WM_USER+2
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+#define WM_CHANGENOTIFYCLEAR WM_USER+2
+#endif
 
 
 //==== Callback Message from System Tray ======================================
@@ -139,10 +141,16 @@ void    CreateBars(HWND,HINSTANCE);
 void    MsgThemeChanged(HWND,WPARAM,LPARAM);
 void    MsgSize(HWND,WPARAM,LPARAM);
 void    MsgInitMenu(HWND,WPARAM,LPARAM);
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+void    MsgChangeNotify(HWND,WPARAM,LPARAM);
+#endif
 LRESULT MsgCommand(HWND,WPARAM,LPARAM);
 LRESULT MsgNotify(HWND,WPARAM,LPARAM);
 
 BOOL g_bViewWhiteSpace;
 BOOL g_bViewEOLs;
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+BOOL g_bPendingChangeNotify;
+#endif
 
 ///   End of Notepad2.h   \\\

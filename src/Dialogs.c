@@ -47,12 +47,12 @@ extern WCHAR szCurFile[MAX_PATH + 40];
 //
 //  MsgBox()
 //
-int MsgBox(int iType, UINT uIdMsg, ...)
+int _MsgBox(int iType, UINT uIdMsg, ...)
 {
 
-    WCHAR szText[1024];
-    WCHAR szBuf[1024];
-    WCHAR szTitle[64];
+    WCHAR szText[MB_MSG_MAXLEN];
+    WCHAR szBuf[MB_MSG_MAXLEN];
+    WCHAR szTitle[MB_TITLE_MAXLEN];
     int iIcon = 0;
     HWND hwnd;
 
@@ -99,6 +99,9 @@ int MsgBox(int iType, UINT uIdMsg, ...)
     case MBYESNOWARN:
         iIcon = MB_ICONEXCLAMATION | MB_YESNO;
         break;
+    case MBFATAL:
+        iIcon = MB_ICONSTOP;
+        break;
     case MBOKCANCEL:
         iIcon = MB_ICONEXCLAMATION | MB_OKCANCEL;
         break;
@@ -113,6 +116,334 @@ int MsgBox(int iType, UINT uIdMsg, ...)
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT));
 }
 
+#ifdef FEAT_REPLACE_MSGBOX_BY_TASKDLG
+
+//=============================================================================
+//
+//  TaskDlgBox()
+//  
+//  Requires: #include <ommctrl.h>
+//
+int TaskBox(int iMBType, UINT uIdMsg, ...) {
+	WCHAR szText[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR szBuf[TASKDLGBOX_STR_MAXLEN] = L"";
+	PCWSTR iIcon = 0;
+	TASKDIALOG_COMMON_BUTTON_FLAGS tdcbfCommonBtns = 0;
+	TASKDIALOG_FLAGS tdfFlags = 0;
+	int cxDlgWidth = 0;
+
+	if (!GetString(uIdMsg, szBuf, COUNTOF(szBuf)))
+		return (0);
+
+	// Caller's example call: MsgBox(MBINFO, IDS_SAVEDSETTINGS, &szIniFile);
+	wvsprintf(szText, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1));
+	// Also: consider switching to StringCbVPrintfW()
+
+	if (uIdMsg == IDS_ERR_LOADFILE || uIdMsg == IDS_ERR_SAVEFILE || uIdMsg == IDS_CREATEINI_FAIL || uIdMsg == IDS_WRITEINI_FAIL || uIdMsg == IDS_EXPORT_FAIL) {
+		LPVOID lpMsgBuf;
+		WCHAR wcht;
+		FormatMessage(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL,
+			dwLastIOError,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			(LPTSTR)&lpMsgBuf,
+			0,
+			NULL);
+		StrTrim(lpMsgBuf, L" \a\b\f\n\r\t\v");
+		StrCatBuff(szText, L"\n", COUNTOF(szText));
+		StrCatBuff(szText, lpMsgBuf, COUNTOF(szText));
+		LocalFree(lpMsgBuf);
+		wcht = *CharPrev(szText, StrEnd(szText));
+		if (IsCharAlphaNumeric(wcht) || wcht == '"' || wcht == '\'')
+			StrCatBuff(szText, L".", COUNTOF(szText));
+	}
+
+	// Common flags:
+	tdfFlags |= TDF_POSITION_RELATIVE_TO_WINDOW;
+
+	// Set dialog icon & buttons selection from type
+	switch (iMBType) {
+		case MBINFO:
+		case MBYESNO:
+		case MBYESNOCANCEL:
+		case MBOKCANCEL:
+			iIcon = TD_INFORMATION_ICON;
+			break;
+		case MBWARN:
+		case MBYESNOWARN:
+		case MBOKCANCELWARN:
+			iIcon = TD_WARNING_ICON;
+			break;
+		case MBFATAL:
+			iIcon = TD_ERROR_ICON;
+			break;
+	}
+	switch (iMBType) {
+		case MBINFO:
+		case MBWARN:
+		case MBFATAL:
+			tdcbfCommonBtns = TDCBF_OK_BUTTON;
+			// OK-only buttons; allow message dialog to be cancelable
+			tdfFlags |= TDF_ALLOW_DIALOG_CANCELLATION;
+			break;
+		case MBYESNO:
+		case MBYESNOWARN:
+			tdcbfCommonBtns = TDCBF_YES_BUTTON | TDCBF_NO_BUTTON;
+			break;
+		case MBYESNOCANCEL:
+			tdcbfCommonBtns = TDCBF_YES_BUTTON | TDCBF_NO_BUTTON | TDCBF_CANCEL_BUTTON;
+			break;
+		case MBOKCANCEL:
+		case MBOKCANCELWARN:
+			tdcbfCommonBtns = TDCBF_OK_BUTTON | TDCBF_CANCEL_BUTTON;
+			break;
+	}
+
+	tdfFlags |= TDF_VERIFICATION_FLAG_CHECKED;
+	cxDlgWidth = GetSystemMetrics(SM_CXFULLSCREEN) / 2;
+	// Minimum supported width is 1024x768
+	if (cxDlgWidth < 512) cxDlgWidth = 512;
+
+	HWND hwnd;
+	if (!(hwnd = GetFocus()))
+		hwnd = hwndMain;
+
+	int nButtonPressed = 0;
+	HRESULT lResult = S_OK;
+
+#undef USE_CONTENT_FOR_MSG
+#define USE_NATIVE_TASKDLG
+
+#ifdef USE_NATIVE_TASKDLG
+
+#ifdef USE_CONTENT_FOR_MSG
+	lResult = TaskDialog(hwnd, g_hInstance, MAKEINTRESOURCE(IDS_APPTITLE), NULL, szText, tdcbfCommonBtns, iIcon, &nButtonPressed);
+#else
+	lResult = TaskDialog(hwnd, g_hInstance, MAKEINTRESOURCE(IDS_APPTITLE), szText, NULL, tdcbfCommonBtns, iIcon, &nButtonPressed);
+#endif
+	if (S_OK == lResult)
+		return nButtonPressed;
+	else switch(lResult) {
+		case E_OUTOFMEMORY:
+			return TASKDLGBOX_ERR_OUTOFMEMORY;
+		case E_INVALIDARG:
+			return TASKDLGBOX_ERR_INVALIDARG;
+		case E_FAIL:
+			return TASKDLGBOX_ERR_FAIL;
+		default:
+			return TASKDLGBOX_ERR_UNKNOWN;
+	};
+
+#else
+
+#ifdef USE_CONTENT_FOR_MSG then
+	return TaskDlg((LPWSTR)iIcon, 0, 0, szText, 0, 0, tdcbfCommonBtns, tdfFlags, 0, 0, 0, 0, 0, cxDlgWidth);
+#else
+	return TaskDlg((LPWSTR)iIcon, 0, szText,0,  0, 0, tdcbfCommonBtns, tdfFlags, 0, 0, 0, 0, 0, cxDlgWidth);
+#endif
+
+#endif
+};
+
+int TaskDialogEx(PCWSTR                         pwszIcon,
+				 PTASKDIALOGBOX_XTRA_RETURN     xtraReturnVars,
+				 PCWSTR                         pwszMainInstr,
+				 PCWSTR                         pwszContent,
+				 PTASKDIALOGBOX_BTN_ARRAY       ptdbaBtns, 
+				 PTASKDIALOGBOX_BTN_ARRAY       ptdbaRadioBtns,
+				 TASKDIALOG_COMMON_BUTTON_FLAGS dwCmnBtnFlags,
+				 TASKDIALOG_FLAGS               dwFlags,
+				 PCWSTR                         pwszVerificationText,
+				 PCWSTR                         pwszExpandedInformation,
+				 PCWSTR                         pwszExpandedControlText,
+				 PCWSTR                         pwszCollapsedControlText,
+				 PCWSTR                         pwszFooter,
+				 UINT                           cxDialogWidth
+) {
+	HWND hwnd;
+	TASKDIALOGCONFIG tdConfig = { 0 };
+	WCHAR szMainInstr[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR szContent[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR szVerifText[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR szExpandedInfo[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR szExpandedCtlText[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR szCollapsedCtlText[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR szFooter[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR szTitle[64] = L"";
+
+	tdConfig.cbSize				= sizeof(tdConfig);
+	if (!(hwnd = GetFocus()))
+		hwnd = hwndMain;
+	tdConfig.hwndParent			= hwnd;
+	if (GetString(IDS_APPTITLE, szTitle, COUNTOF(szTitle)))
+		tdConfig.pszWindowTitle = szTitle;
+	tdConfig.hInstance          = g_hInstance;
+	tdConfig.pszMainIcon        = (pwszIcon ? pwszIcon : TD_INFORMATION_ICON);
+	if (pwszMainInstr) {
+		if (!(PtrToUint(pwszMainInstr) >> 31) && PtrToUint(pwszMainInstr) < 65536) {
+			UINT uIdMsg = PtrToUint(pwszMainInstr);
+			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
+				if (S_OK == StringCbVPrintfW(szMainInstr, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszMainInstruction = szMainInstr;
+				else
+					tdConfig.pszMainInstruction = szBuf;
+			}
+		} else {
+			if (S_OK == StringCbVPrintf(szMainInstr, TASKDLGBOX_STR_MAXLEN, pwszMainInstr, (LPVOID)((PUINT_PTR)&pwszMainInstr + 1)))
+				tdConfig.pszMainInstruction = szMainInstr;
+			else
+				tdConfig.pszMainInstruction = pwszMainInstr;
+		}
+	}
+	if (pwszContent) {
+		if (!(PtrToUint(pwszContent) >> 31) && PtrToUint(pwszContent) < 65536) {
+			UINT uIdMsg = PtrToUint(pwszContent);
+			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
+				if (S_OK == StringCbVPrintf(szContent, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszContent = szContent;
+				else
+					tdConfig.pszContent = szBuf;
+			}
+		} else {
+			if (S_OK == StringCbVPrintf(szContent, TASKDLGBOX_STR_MAXLEN, pwszContent, (LPVOID)((PUINT_PTR)&pwszContent + 1)))
+				tdConfig.pszContent = szContent;
+			else
+				tdConfig.pszContent = pwszContent;
+		}
+	}
+	tdConfig.cButtons = 0;
+	if (ptdbaBtns) {
+		if (ptdbaBtns->nBtnCount && ptdbaBtns->ptdbButtons) {
+			tdConfig.cButtons = ptdbaBtns->nBtnCount;
+			tdConfig.pButtons = &ptdbaBtns->ptdbButtons[0];
+			tdConfig.nDefaultButton = ptdbaBtns->nDefaultBtn;
+		}
+	}
+	tdConfig.cRadioButtons = 0;
+	if (ptdbaRadioBtns) {
+		if (ptdbaRadioBtns->nBtnCount && ptdbaRadioBtns->ptdbButtons) {
+			tdConfig.cRadioButtons = ptdbaRadioBtns->nBtnCount;
+			tdConfig.pRadioButtons = &ptdbaRadioBtns->ptdbButtons[0];
+			tdConfig.nDefaultRadioButton = ptdbaBtns->nDefaultBtn;
+		}
+	}
+	tdConfig.dwCommonButtons = dwCmnBtnFlags;
+	tdConfig.dwFlags = dwFlags;
+	if (pwszVerificationText) {
+		if (!(PtrToUint(pwszVerificationText) >> 31) && PtrToUint(pwszVerificationText) < 65536) {
+			UINT uIdMsg = PtrToUint(pwszVerificationText);
+			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
+				if (S_OK == StringCbVPrintf(szVerifText, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszVerificationText = szVerifText;
+				else
+					tdConfig.pszVerificationText = szBuf;
+			}
+		} else {
+			if (S_OK == StringCbVPrintf(szVerifText, TASKDLGBOX_STR_MAXLEN, pwszVerificationText, (LPVOID)((PUINT_PTR)&pwszVerificationText + 1)))
+				tdConfig.pszVerificationText = szVerifText;
+			else
+				tdConfig.pszVerificationText = pwszVerificationText;
+		}
+	}
+	if (pwszExpandedInformation) {
+		if (!(PtrToUint(pwszExpandedInformation) >> 31) && PtrToUint(pwszExpandedInformation) < 65536) {
+			UINT uIdMsg = PtrToUint(pwszExpandedInformation);
+			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
+				if (S_OK == StringCbVPrintf(szExpandedInfo, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszExpandedInformation = szExpandedInfo;
+				else
+					tdConfig.pszVerificationText = szBuf;
+			}
+		} else {
+			if (S_OK == StringCbVPrintf(szExpandedInfo, TASKDLGBOX_STR_MAXLEN, pwszExpandedInformation, (LPVOID)((PUINT_PTR)&pwszExpandedInformation + 1)))
+				tdConfig.pszExpandedInformation = szExpandedInfo;
+			else
+				tdConfig.pszFooter = pwszExpandedInformation;
+		}
+	}
+	if (pwszExpandedControlText) {
+		if (!(PtrToUint(pwszExpandedControlText) >> 31) && PtrToUint(pwszExpandedControlText) < 65536) {
+			UINT uIdMsg = PtrToUint(pwszExpandedControlText);
+			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
+				if (S_OK == StringCbVPrintf(szExpandedCtlText, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszExpandedControlText = szExpandedCtlText;
+				else
+					tdConfig.pszVerificationText = szBuf;
+			}
+		} else {
+			if (S_OK == StringCbVPrintf(szExpandedCtlText, TASKDLGBOX_STR_MAXLEN, pwszExpandedControlText, (LPVOID)((PUINT_PTR)&pwszExpandedControlText + 1)))
+				tdConfig.pszExpandedControlText = szExpandedCtlText;
+			else
+				tdConfig.pszFooter = pwszExpandedControlText;
+		}
+	}
+	if (pwszCollapsedControlText) {
+		if (!(PtrToUint(pwszCollapsedControlText) >> 31) && PtrToUint(pwszCollapsedControlText) < 65536) {
+			UINT uIdMsg = PtrToUint(pwszCollapsedControlText);
+			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
+				if (S_OK == StringCbVPrintf(szCollapsedCtlText, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszCollapsedControlText = szCollapsedCtlText;
+				else
+					tdConfig.pszVerificationText = szBuf;
+			}
+		} else {
+			if (S_OK == StringCbVPrintf(szCollapsedCtlText, TASKDLGBOX_STR_MAXLEN, pwszCollapsedControlText, (LPVOID)((PUINT_PTR)&pwszCollapsedControlText + 1)))
+				tdConfig.pszCollapsedControlText = szCollapsedCtlText;
+			else
+				tdConfig.pszFooter = pwszCollapsedControlText;
+		}
+	}
+	if (pwszFooter) {
+		if (!(PtrToUint(pwszFooter) >> 31) && PtrToUint(pwszFooter) < 65536) {
+			UINT uIdMsg = PtrToUint(pwszFooter);
+			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
+				if (S_OK == StringCbVPrintf(szFooter, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszFooter = szFooter;
+				else
+					tdConfig.pszVerificationText = szBuf;
+			}
+		} else {
+			if (S_OK == StringCbVPrintf(szFooter, TASKDLGBOX_STR_MAXLEN, pwszFooter, (LPVOID)((PUINT_PTR)&pwszFooter + 1)))
+				tdConfig.pszFooter = szFooter;
+			else
+				tdConfig.pszFooter = pwszFooter;
+		}
+	}
+	if (cxDialogWidth) tdConfig.cxWidth = cxDialogWidth;
+
+	int nButtonPressed = 0;
+	HRESULT lResult = S_OK;
+
+	if (xtraReturnVars)
+		lResult = TaskDialogIndirect(&tdConfig, &nButtonPressed, &xtraReturnVars->nSelectedRadioBtn,  &xtraReturnVars->bVerifFlagChecked);
+	else
+		lResult = TaskDialogIndirect(&tdConfig, &nButtonPressed, 0, 0);
+
+	if (S_OK == lResult)
+		return nButtonPressed;
+	else switch(lResult) {
+		case E_OUTOFMEMORY:
+			return TASKDLGBOX_ERR_OUTOFMEMORY;
+		case E_INVALIDARG:
+			return TASKDLGBOX_ERR_INVALIDARG;
+		case E_FAIL:
+			return TASKDLGBOX_ERR_FAIL;
+		default:
+			return TASKDLGBOX_ERR_UNKNOWN;
+	};
+
+}
+
+#endif // FEAT_REPLACE_MSGBOX_BY_TASKDLG
+
 //=============================================================================
 //
 //  DisplayCmdLineHelp()
@@ -121,8 +452,8 @@ void DisplayCmdLineHelp(HWND hwnd)
 {
     MSGBOXPARAMS mbp;
 
-    WCHAR szTitle[32];
-    WCHAR szText[2048];
+    WCHAR szTitle[MB_TITLE_MAXLEN];
+    WCHAR szText[MB_MSG_MAXLEN]; // was previously set as ..[2048], but the API's limit is 1023+z anyway...
 
     GetString(IDS_APPTITLE, szTitle, COUNTOF(szTitle));
     GetString(IDS_CMDLINEHELP, szText, COUNTOF(szText));
