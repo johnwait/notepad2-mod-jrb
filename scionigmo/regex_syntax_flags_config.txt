@@ -88,9 +88,16 @@ ONIG_SYN_ALLOW_DOUBLE_RANGE_OP_IN_CC
 // And so, we want:
 // ****************************************************************
 // *  [..]                                                        *
+// *  // where we already have the equivalent of:                 *
+// *  //   DefaultSyntax.op2 = OnigSyntaxPerl.op2;                *
+// *  // we're adding:                                            *
+// *  //   1) \g<name>, \g'name' for subroutine calls;            *
+// *  //   2) \v for \x0b (vertical tab)                          *
+// *  //   3) \uHHHH for escaping Unicode (UCS-2) chars           *
 // *  DefaultSyntax.op2 |=  ONIG_SYN_OP2_ESC_G_SUBEXP_CALL |      *
 // *                        ONIG_SYN_OP2_ESC_V_VTAB |             *
 // *                        ONIG_SYN_OP2_ESC_U_HEX4;              *
+// *  // we're removing: \g{name}, \g{#} for backreferences       *
 // *  DefaultSyntax.op2 &= ~ONIG_SYN_OP2_ESC_G_BRACE_BACKREF;     *
 // ****************************************************************
 //
@@ -106,7 +113,7 @@ ONIG_SYN_ALLOW_DOUBLE_RANGE_OP_IN_CC
 //  1)  |             | \#     | \1 => \9   |
 //  2)  |  \k<name>   | \k<#>  | \k<1..99>  |  «k-angled» backref
 //  3)  |  \k'name'   | \k'#'  | \k'1..99'  |  «k-quoted» backref
-//  -)- |  \g{name}   | \g{#}  | \g{1..99}  |  «g-braced» backref => ultimately removed
+//  -)- |  \g{name}   | \g{#}  | \g{1..99}  |  «g-braced» backref => removed to avoid confusion with \g.. subroutine calls
 //  4)  |  (?P=name)  | (?P=#) | (?P=1..99) |  «P-named» backref
 //      +=============+========+============+
 //
