@@ -104,18 +104,18 @@ ONIG_SYN_ALLOW_DOUBLE_RANGE_OP_IN_CC
 //      | By Name     | By #   | # Range    |
 //      +=============+=====================+
 //  1)  |             | \#     | \1 => \9   |
-//  2)  |  \k<name>   | \k<#>  | \k<1..99>  |  «k-angled» backref
-//  3)  |  \k'name'   | \k'#'  | \k'1..99'  |  «k-quoted» backref
-//  -)- |  \g{name}   | \g{#}  | \g{1..99}  |  «g-braced» backref => ultimately removed
-//  4)  |  (?P=name)  | (?P=#) | (?P=1..99) |  «P-named» backref
+//  2)  |  \k<name>   | \k<#>  | \k<1..99>  |  Â«k-angledÂ» backref
+//  3)  |  \k'name'   | \k'#'  | \k'1..99'  |  Â«k-quotedÂ» backref
+//  -)- |  \g{name}   | \g{#}  | \g{1..99}  |  Â«g-bracedÂ» backref => ultimately removed
+//  4)  |  (?P=name)  | (?P=#) | (?P=1..99) |  Â«P-namedÂ» backref
 //      +=============+========+============+
 //
 // Ways to call back a sub-expression (subroutine calls):
 //      +-------------+--------+------------+
 //      | By Name     | By #   | # Range    |
 //      +=============+=====================+
-//  1)  |  \g<name>   | \g<#>  | \g<1..99>  |  ; «g-angled» subexpr
-//  2)  |  \g'name'   | \g'#'  | \g'1..99'  |  ; «g-quoted» subexpr
+//  1)  |  \g<name>   | \g<#>  | \g<1..99>  |  ; Â«g-angledÂ» subexpr
+//  2)  |  \g'name'   | \g'#'  | \g'1..99'  |  ; Â«g-quotedÂ» subexpr
 //  3)  |  (?&name)   | (?#)   | (?1..99)   |  ; like Perl
 //  4)  |  (?P>name)  |        |            |  ; like Perl
 //      +=============+========+============+
