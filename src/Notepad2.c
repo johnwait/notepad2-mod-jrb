@@ -6849,13 +6849,20 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy)
         int cchText = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
         if (cchText == 0)
             bIsEmptyNewFile = TRUE;
-        else if (cchText < 1023) {
-            char tchText[2048];
-            SendMessage(hwndEdit, SCI_GETTEXT, (WPARAM)2047, (LPARAM)tchText);
-            StrTrimA(tchText, " \t\n\r");
-            if (lstrlenA(tchText) == 0)
-                bIsEmptyNewFile = TRUE;
-        }
+/*
+ * 2019-08-26: Disabled content sniffing for whitespace-only new files;
+ *             By default, and from now on, new files are deemed worthy
+ *             of being saved as long as they have content (cchText > 0)
+ * @github-fixes #4
+ *
+[*      else if (cchText < 1023) {
+ *          char tchText[2048];
+ *          SendMessage(hwndEdit, SCI_GETTEXT, (WPARAM)2047, (LPARAM)tchText);
+ *          StrTrimA(tchText, " \t\n\r");
+ *          if (lstrlenA(tchText) == 0)
+ *              bIsEmptyNewFile = TRUE;
+ *      }
+]*/
     }
 
     if (!bSaveAlways && (!bModified && iEncoding == iOriginalEncoding || bIsEmptyNewFile) && !bSaveAs)
