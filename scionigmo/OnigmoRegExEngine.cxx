@@ -288,12 +288,16 @@ Sci::Position OnigmoRegExEngine::FindText(Document* doc, Sci::Position minPos, S
     ONIG_OPTION_ON(onigmoOptions, (rangeBeg != 0) ? ONIG_OPTION_NOTBOL : ONIG_OPTION_NONE);
     ONIG_OPTION_ON(onigmoOptions, (rangeEnd != docLen) ? ONIG_OPTION_NOTEOL : ONIG_OPTION_NONE);
 
-    short wRegExIdx = (onigmoOptions & (ONIG_OPTION_NOTBOL | ONIG_OPTION_NOTEOL)) / ONIG_OPTION_NOTBOL;
-    
     std::string sPattern(pattern);
     std::string const& sRegExprStrg = translateRegExpr(sPattern, word, wordStart, doc->eolMode, onigmoOptions);
 
-    bool const bReCompile = (m_RegExpr == nullptr) || (m_CmplOptions != onigmoOptions) || (m_RegExprStrg.compare(sRegExprStrg) != 0);
+    // 2019-08-26: Now only considering compile-time options when checking whether their change
+    //             requires the recompilation of an otherwise unchanged regex pattern
+    // @github-fixes #5
+    short compileTimeOptionsMask = ONIG_OPTION_NOTBOL - 1; // to exclude search-time options (and higher), ignored dusing RE compilation
+    bool const bReCompile = (m_RegExpr == nullptr) ||
+                            ((m_CmplOptions & compileTimeOptionsMask) != (onigmoOptions & compileTimeOptionsMask)) ||
+                            (m_RegExprStrg.compare(sRegExprStrg) != 0);
 
     if (bReCompile) {
         m_RegExprStrg.clear();
