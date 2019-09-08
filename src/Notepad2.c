@@ -2406,7 +2406,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             int iDocTopLine = (int)SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, (WPARAM)iVisTopLine, 0);
             int iXOffset = (int)SendMessage(hwndEdit, SCI_GETXOFFSET, 0, 0);
 
-            if ((bModified || iEncoding != iOriginalEncoding) && MsgBox(/*MBOKCANCEL*/MBYESNO, IDS_ASK_REVERT) != IDOK)
+            if ((bModified || iEncoding != iOriginalEncoding) && MsgBox(MBYESNO, IDS_ASK_REVERT) != IDYES)
                 return (0);
 
             lstrcpy(tchCurFile2, szCurFile);
