@@ -4,6 +4,7 @@
 //
 #define IDC_STATIC                      -1
 #define IDR_MAINWND                     100
+#define IDR_RTFREGEXSYNTAX              100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
 #define IDC_COMMANDLINE                 100
@@ -18,6 +19,7 @@
 #define IDC_COPY                        100
 #define IDC_ENCODINGLIST                100
 #define IDC_SORTASCENDING               100 // Added on 2019-08-20
+#define IDC_REGEXSYNTAXRICHEDIT         100 // Added on 2019-10-22
 #define IDC_SEARCHEXE                   101
 #define IDR_POPUPMENU                   101
 #define IDC_GETOPENWITHDIR              101
@@ -168,6 +170,7 @@
 #define IDC_CTLCHAR_1D                  130
 #define IDC_CTLCHAR_1E                  131
 #define IDC_CTLCHAR_1F                  132
+#define IDD_REGEXHELP                   130
 #endif // JRB_BUILD
 #define IDACC_FIND                      200
 #define IDACC_REPLACE                   201
@@ -407,7 +410,7 @@
 #define IDM_VIEW_TOOLBAR                40440
 #define IDM_VIEW_CUSTOMIZETB            40441
 #define IDM_VIEW_STATUSBAR              40442
-#define IDM_VIEW_SAVESETTINGSONEXIT    40443
+#define IDM_VIEW_SAVESETTINGSONEXIT     40443
 #define IDM_VIEW_SAVESETTINGSNOW        40444
 #define IDM_VIEW_FOLDING                40445
 #define IDM_VIEW_TOGGLEFOLDS            40446

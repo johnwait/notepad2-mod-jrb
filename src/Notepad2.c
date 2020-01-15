@@ -47,6 +47,7 @@ HWND hwndNextCBChain = NULL;
 HWND hDlgFindReplace = NULL;
 #ifdef JRB_BUILD
 HWND hDlgInsertCtlChar = NULL;
+HWND hDlgRegexSyntax = NULL;
 #endif
 
 #define NUMTOOLBITMAPS 25
@@ -192,6 +193,10 @@ int cxFavoritesDlg;
 int cyFavoritesDlg;
 int xFindReplaceDlg;
 int yFindReplaceDlg;
+#ifdef JRB_BUILD
+int cxRegexSyntaxDlg;
+int cyRegexSyntaxDlg;
+#endif
 
 LPWSTR lpFileList[32];
 int cFileList = 0;
@@ -646,6 +651,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
 
         if (IsWindow(hDlgInsertCtlChar) && (msg.hwnd == hDlgInsertCtlChar || IsChild(hDlgInsertCtlChar, msg.hwnd)))
             if (IsDialogMessage(hDlgInsertCtlChar, &msg))
+                continue;
+
+        if (IsWindow(hDlgRegexSyntax) && (msg.hwnd == hDlgRegexSyntax || IsChild(hDlgRegexSyntax, msg.hwnd)))
+            if (IsDialogMessage(hDlgRegexSyntax, &msg))
                 continue;
 
         if (!TranslateAccelerator(hwnd, hAccMain, &msg)) {

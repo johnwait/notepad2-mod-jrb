@@ -11,6 +11,7 @@
 #endif
 
 #include "StdAfx.h"
+#include <richedit.h>
 #include "resource.h"
 #include "Version.h"
 
@@ -66,6 +67,13 @@ IDB_ENCODING            BITMAP                  "..\\res\\Encoding.bmp"
 //
 
 IDC_COPY                CURSOR                  "..\\res\\Copy.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Rich-Text
+//
+
+IDR_RTFREGEXSYNTAX      RTF                     "..\\res\\regex_syntax_helpstring_rc-include.rtf"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -500,10 +508,10 @@ BEGIN
     "C",            IDM_EDIT_HEX2CHAR,      VIRTKEY, CONTROL, ALT, NOINVERT
     "C",            IDM_EDIT_COPYLINE,      VIRTKEY, SHIFT, CONTROL,
                                                     NOINVERT
-    #ifdef JRB_BUILD
+#ifdef JRB_BUILD
     "C",            IDM_EDIT_INSERT_CTLCHAR, VIRTKEY, SHIFT, CONTROL, ALT,
                                                     NOINVERT
-    #endif // JRB_BUILD
+#endif // JRB_BUILD
     "D",            IDM_EDIT_DUPLICATELINE, VIRTKEY, CONTROL, NOINVERT
     "D",            IDM_EDIT_SELECTIONDUPLICATE, VIRTKEY, ALT, NOINVERT
     "D",            IDM_EDIT_DELETELINE,    VIRTKEY, SHIFT, CONTROL,
@@ -569,6 +577,11 @@ BEGIN
     "R",            IDM_EDIT_UNESCAPECCHARS, VIRTKEY, CONTROL, ALT, NOINVERT
     "R",            IDM_EDIT_URLDECODE,     VIRTKEY, SHIFT, CONTROL,
                                                     NOINVERT
+#ifdef JRB_BUILD
+    // 2019-10-23: Added accelerator for toggling read-only
+    "R",            IDM_FILE_READONLY,      VIRTKEY, SHIFT, CONTROL, ALT,
+                                                    NOINVERT
+#endif // JRB_BUILD
     "S",            IDM_FILE_SAVE,          VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_EDIT_CONVERTTABS2,  VIRTKEY, CONTROL, ALT, NOINVERT
     "S",            IDM_EDIT_CONVERTTABS,   VIRTKEY, SHIFT, CONTROL,
@@ -870,6 +883,18 @@ BEGIN
     PUSHBUTTON      "Close",IDCANCEL,215,92,50,14
     CONTROL         "<a>Goto Find (Ctrl+F)</a>",IDC_TOGGLEFINDREPLACE,
                     "SysLink",WS_TABSTOP,125,114,74,10
+END
+
+IDD_REGEXHELP DIALOGEX 0, 0, 320, 180
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_NOFAILCREATE | WS_POPUP |
+    WS_CAPTION | WS_SYSMENU
+CAPTION "Regular Expressions Syntax"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_REGEXSYNTAXRICHEDIT,"RichEdit20W",ES_MULTILINE |
+                    ES_READONLY | ES_DISABLENOSCROLL | ES_SAVESEL |
+                    WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,0,0,320,180
+    SCROLLBAR       IDC_RESIZEGRIP2,7,117,10,10
 END
 
 IDD_RUN DIALOGEX 0, 0, 224, 85
@@ -1480,6 +1505,10 @@ BEGIN
         BOTTOMMARGIN, 123
     END
 
+    IDD_REGEXHELP, DIALOG
+    BEGIN
+    END
+
     IDD_OPENWITH, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1682,6 +1711,28 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
+ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include <winresrc.h>\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#include ""Notepad2.ver""\0"
+END
+
+#endif    // APSTUDIO_INVOKED
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1721,27 +1772,21 @@ BEGIN
     IDS_FILTER_EXE          "Executable files (*.exe;*.com;*.bat;*.cmd;*.lnk;*.pif)|*.exe;*.com;*.bat;*.cmd;*.lnk;*.pif|All files (*.*)|*.*|"
 END
 
-#if defined BOOKMARK_EDITION || defined JRB_BUILD
-STRINGTABLE
-BEGIN
-    IDS_BACKSLASHHELP       "Backslash Transformations\n\n\\a\tAlert (BEL, Ascii 7)\n\\b\tBackspace (BS, Ascii 8)\n\\f\tFormfeed (FF, Ascii 12)\n\\n\tNewline (LF, Ascii 10)\n\\r\tCarriage return (CR, Ascii 13)\n\\t\tHorizontal Tab (HT, Ascii 9)\n\\v\tVertical Tab (VT, Ascii 11)\n\\ooo\tOctal Value\n\\u####\tHexadecimal Value\n\\xhh\tHexadecimal Value\n\\\\\tBackslash"
-    IDS_REGEXPHELP          "RegExp Syntax (Single Lines Only)\n\n.\tAny character\n^\tStart of a line\n$\tEnd of a line\n\\<\tStart of a word\n\\>\tEnd of a word\n[...]\tA set of chars ([abc]) or a range ([a-z])\n[^...]\tChars NOT in the set or range\n\\d\tAny decimal digit\n\\D\tAny non-digit char\n\\s\tAny whitespace char\n\\S\tNot a whitespace char\n\\w\tAny ""word"" char\n\\W\tAny ""non-word"" char\n\\x\tEscape character with otherwise special meaning\n\\xHH\tChar with hex code HH\n?\tMatches preceding 0 or 1 times\n*\tMatches preceding 0 or more times\n+\tMatches preceding 1 or more times\n*? or +?\tNon greedy matching of quantifiers ""?"" and ""+""\n(\tStart of a region\n)\tEnd of a region\n\\n\tRefers to a region when replacing (n is 1-9)\n"
-#ifdef JRB_BUILD
-    IDS_REGEXPHELP_DOTALL   "RegExp Syntax (Multi Lines)\n\n.\tMatches any character, incl. line breaks when the option is selected\n^\tEmpty string immediately after Newline\n$\tEmpty string immediately before End of Line\n\\<\tStart of a word\n\\>\tEnd of a word\n\\b\tWord boundary\n[...]\tA set of chars ([abc]) or a range ([a-z])\n[^...]\tChars NOT in the set or range\n\\d\tAny decimal digit\n\\D\tAny non-digit char\n\\s\tAny whitespace char\n\\S\tNot a whitespace char\n\\w\tAny ""word"" char\n\\W\tAny ""non-word"" char\n\\x\tEscape character with otherwise special meaning\n\\xHH\tChar with hex code HH\n?\tMatches preceding 0 or 1 times\n*\tMatches preceding 0 or more times\n+\tMatches preceding 1 or more times\n*? or +?\tNon greedy matching of quantifiers ""?"" and ""+""\n(\tStart of a region\n)\tEnd of a region\n\\n\tRefers to a region when replacing (n is 1-9)\n"
-#endif // JRB_BUILD
-    IDS_WILDCARDHELP        "Wildcard Search\n\n*\tMatches zero or more characters.\n?\tMatches exactly one character. "
-#ifdef JRB_BUILD
-    IDS_FINDTEXTLABEL_SEARCHSTR  "Search stri&ng:"
-    IDS_FINDTEXTLABEL_SEARCHPTRN "Search patter&n:"
-#endif // JRB_BUILD
-END
-#endif // BOOKMARK_EDITION || JRB_BUILD
-
 STRINGTABLE
 BEGIN
     IDS_FILTER_INI          "Configuration files (*.ini)|*.ini|All files (*.*)|*.*|"
     IDS_OPENWITH            "Select the directory with links to your favorite applications."
     IDS_FAVORITES           "Select the directory with links to your favorite files."
+#if defined BOOKMARK_EDITION || defined JRB_BUILD
+    IDS_BACKSLASHHELP       "Backslash Transformations\n\n\\a\tAlert (BEL, Ascii 7)\n\\b\tBackspace (BS, Ascii 8)\n\\f\tFormfeed (FF, Ascii 12)\n\\n\tNewline (LF, Ascii 10)\n\\r\tCarriage return (CR, Ascii 13)\n\\t\tHorizontal Tab (HT, Ascii 9)\n\\v\tVertical Tab (VT, Ascii 11)\n\\ooo\tOctal Value\n\\u####\tHexadecimal Value\n\\xhh\tHexadecimal Value\n\\\\\tBackslash"
+    IDS_REGEXPHELP          "RegExp Syntax (Single Lines Only)\n\n.\tAny character\n^\tStart of a line\n$\tEnd of a line\n\\<\tStart of a word\n\\>\tEnd of a word\n[...]\tA set of chars ([abc]) or a range ([a-z])\n[^...]\tChars NOT in the set or range\n\\d\tAny decimal digit\n\\D\tAny non-digit char\n\\s\tAny whitespace char\n\\S\tNot a whitespace char\n\\w\tAny ""word"" char\n\\W\tAny ""non-word"" char\n\\x\tEscape character with otherwise special meaning\n\\xHH\tChar with hex code HH\n?\tMatches preceding 0 or 1 times\n*\tMatches preceding 0 or more times\n+\tMatches preceding 1 or more times\n*? or +?\tNon greedy matching of quantifiers ""?"" and ""+""\n(\tStart of a region\n)\tEnd of a region\n\\n\tRefers to a region when replacing (n is 1-9)\n"
+    IDS_WILDCARDHELP        "Wildcard Search\n\n*\tMatches zero or more characters.\n?\tMatches exactly one character. "
+#ifdef JRB_BUILD
+    IDS_REGEXPHELP_DOTALL   "RegExp Syntax (Multi Lines)\n\n.\tMatches any character, incl. line breaks when the option is selected\n^\tEmpty string immediately after Newline\n$\tEmpty string immediately before End of Line\n\\<\tStart of a word\n\\>\tEnd of a word\n\\b\tWord boundary\n[...]\tA set of chars ([abc]) or a range ([a-z])\n[^...]\tChars NOT in the set or range\n\\d\tAny decimal digit\n\\D\tAny non-digit char\n\\s\tAny whitespace char\n\\S\tNot a whitespace char\n\\w\tAny ""word"" char\n\\W\tAny ""non-word"" char\n\\x\tEscape character with otherwise special meaning\n\\xHH\tChar with hex code HH\n?\tMatches preceding 0 or 1 times\n*\tMatches preceding 0 or more times\n+\tMatches preceding 1 or more times\n*? or +?\tNon greedy matching of quantifiers ""?"" and ""+""\n(\tStart of a region\n)\tEnd of a region\n\\n\tRefers to a region when replacing (n is 1-9)\n"
+    IDS_FINDTEXTLABEL_SEARCHSTR  "Search stri&ng:"
+    IDS_FINDTEXTLABEL_SEARCHPTRN "Search patter&n:"
+#endif // JRB_BUILD
+#endif // BOOKMARK_EDITION || JRB_BUILD
 END
 
 STRINGTABLE
@@ -1872,6 +1917,10 @@ BEGIN
     IDS_CTLCHAR_09_TOOLTIP  "Horizontal Tab (\\t)"
     IDS_CTLCHAR_0A_TOOLTIP  "Line Feed (\\n)"
     IDS_CTLCHAR_0B_TOOLTIP  "Vertical Tab (\\v)"
+END
+
+STRINGTABLE
+BEGIN
     IDS_CTLCHAR_0C_TOOLTIP  "Form Feed (\\f)"
     IDS_CTLCHAR_0D_TOOLTIP  "Carriage Return (\\r)"
     IDS_CTLCHAR_0E_TOOLTIP  "Shift Out"
@@ -1888,6 +1937,10 @@ BEGIN
     IDS_CTLCHAR_19_TOOLTIP  "End of Medium"
     IDS_CTLCHAR_1A_TOOLTIP  "Substitute"
     IDS_CTLCHAR_1B_TOOLTIP  "Escape (\\e)"
+END
+
+STRINGTABLE
+BEGIN
     IDS_CTLCHAR_1C_TOOLTIP  "File Separator"
     IDS_CTLCHAR_1D_TOOLTIP  "Group Separator"
     IDS_CTLCHAR_1E_TOOLTIP  "Record Separator"
@@ -2463,42 +2516,7 @@ BEGIN
 END
 */
 
-
 #endif    // English (United States) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// German (Switzerland) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DES)
-LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_SWISS
-#pragma code_page(1252)
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-2 TEXTINCLUDE 
-BEGIN
-    "#include <winresrc.h>\0"
-END
-
-3 TEXTINCLUDE 
-BEGIN
-    "#include ""Notepad2.ver""\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
-#endif    // German (Switzerland) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

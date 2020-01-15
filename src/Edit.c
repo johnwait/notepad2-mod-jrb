@@ -65,6 +65,12 @@ extern int iWeakSrcEncoding;
 int g_DOSEncoding;
 
 #ifdef JRB_BUILD
+#define RE_REGEX_SYNTAX_RTF_MAXLEN 0x4000
+char szRESyntaxRtf[RE_REGEX_SYNTAX_RTF_MAXLEN] = "";
+extern HWND hDlgRegexSyntax;
+extern int cxRegexSyntaxDlg;
+extern int cyRegexSyntaxDlg;
+
 HWND hwndCtlCharToolTips[32] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 #endif
 
@@ -5134,7 +5140,24 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                         if (IsDlgButtonChecked(hwnd, IDC_DOTMATCHALL) == BST_CHECKED) {
                             MsgBox(MBINFO, IDS_REGEXPHELP_DOTALL);
                         } else {
+#ifdef JRB_BUILD
+                            // 2019-10-22: Replace message box with RTF-based dialog
+                            ///MsgBox(MBINFO, IDS_REGEXPHELP);
+                            if (!IsWindow(hDlgRegexSyntax))
+                                hDlgRegexSyntax = RegexSyntaxDlg(hwnd, IDR_RTFREGEXSYNTAX);
+                            else {
+                                if (GetDlgItem(hDlgRegexSyntax, IDC_REGEXSYNTAXRICHEDIT)) {
+                                    SetForegroundWindow(hDlgRegexSyntax);
+                                    PostMessage(hDlgRegexSyntax, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hDlgRegexSyntax, IDC_REGEXSYNTAXRICHEDIT)), 1);
+                                } else {
+                                    DestroyWindow(hDlgRegexSyntax);
+                                    hDlgRegexSyntax = RegexSyntaxDlg(hwnd, IDR_RTFREGEXSYNTAX);
+                                }
+                            }
+                            break;
+#else
                             MsgBox(MBINFO, IDS_REGEXPHELP);
+#endif
                         }
                     } else if (pnmhdr->idFrom == IDC_WILDCARDHELP) {
                         MsgBox(MBINFO, IDS_WILDCARDHELP);
@@ -6581,6 +6604,301 @@ BOOL EditSortDlg(HWND hwnd, int* piSortFlags)
 }
 
 #ifdef JRB_BUILD
+
+//=============================================================================
+//
+//  LoadResAsciiString() - Loads a custom resource as a char stream, no matter
+//                         if we're in a Unicode build or not
+//
+static BOOL LoadResAsciiString(HINSTANCE hInst, UINT nResId, LPCTSTR pszRsType, char* pszOutVar, DWORD cchOutVarSize)
+{
+	// Sanity checks
+	if(hInst == NULL) return FALSE;
+
+	// Resolve resource ID
+	LPWSTR pszResId = MAKEINTRESOURCE(nResId);
+
+	// Find resource
+	HRSRC hRsrc = FindResource(hInst, pszResId, pszRsType);
+	if( hRsrc == NULL ) return FALSE;
+
+	// Get a handle
+	HGLOBAL hGlobal = LoadResource(hInst, hRsrc);
+	if (hGlobal == NULL) return FALSE;
+
+	// Lock and get pointer to it
+	const BYTE* pData = (const BYTE*)LockResource( hGlobal );
+	DWORD dwSize = SizeofResource( hInst, hRsrc );
+	if( pData == NULL ) return FALSE;
+
+	// Copy to output buffer
+	if (dwSize > cchOutVarSize) dwSize = cchOutVarSize;
+	StrCpyNA(pszOutVar, (char*)pData, dwSize);
+
+	// Cleanup
+	UnlockResource(hGlobal);
+	FreeResource( hGlobal);
+
+	return TRUE;
+}
+
+//=============================================================================
+//
+//  RegexRichEditSubclassProc() - Subclassing proc to unset the DLGC_HASSETSEL
+//                              flag a control normally sends in response to
+//                              WM_GETDLGCODE
+//
+LRESULT CALLBACK RegexRichEditSubclassProc(HWND hwnd, UINT uiMsg, WPARAM wParam, LPARAM lParam,
+                                         UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	LRESULT lReturn = 0;
+
+	switch (uiMsg) {
+
+		// Intercept WM_GETDLGCODE message, pass it to the control and modify its
+		// response upon return to unset that DLGC_HASSETSEL flag bit
+		case WM_GETDLGCODE:
+			return DefSubclassProc(hwnd, uiMsg, wParam, lParam)
+				& ~DLGC_HASSETSEL;
+
+		// Hide caret
+		case WM_SETFOCUS:
+			lReturn = DefSubclassProc(hwnd, uiMsg, wParam, lParam);
+			HideCaret(hwnd);
+			return lReturn;
+		
+		// Have both scroll bars show at all times
+		case EN_UPDATE:
+			PostMessage(hwnd, EM_SHOWSCROLLBAR, SB_HORZ, 1);
+			PostMessage(hwnd, EM_SHOWSCROLLBAR, SB_VERT, 1);
+			break;
+
+		// Make sure we unsubclass the control upon its desctruction
+		case WM_NCDESTROY:
+			RemoveWindowSubclass(hwnd, RegexRichEditSubclassProc, uIdSubclass);
+			break;
+	}
+	// For anything else, pass it along
+	return DefSubclassProc(hwnd, uiMsg, wParam, lParam);
+}
+
+BOOL RegexSyntaxDlg_LoadRtfRes(HWND hRichEditCtlWnd, LPARAM lParam, BOOL bInvertColors) {
+	if (!hRichEditCtlWnd) return FALSE;
+	if (!IsWindow(hRichEditCtlWnd)) return FALSE;
+
+	// Check if we were passed a resource ID to load RTF stream from
+	UINT uiRtfResId = (UINT)lParam;
+	if (uiRtfResId) {
+		// Load resource stream
+		// NOTE: For control to interpret as RTF code, it must remain as ANSI (unencoded)
+		if (!LoadResAsciiString(g_hInstance, uiRtfResId, TEXT("RTF"), (char *)szRESyntaxRtf,
+								sizeof(szRESyntaxRtf) / sizeof(szRESyntaxRtf[0]) - 1)) {
+			// On failure, display an error
+			lstrcpyA(szRESyntaxRtf, "\0");
+			StrCatA(szRESyntaxRtf,  "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}}"
+					"{\\colortbl ;\\red255\\green0\\blue0;}"
+					"{\\*\\generator Riched20 10.0.18362}\\viewkind4\\uc1 "
+					"\\pard\\cf1\\b\\f0\\fs36 RegexSyntaxDlgProc Internal Error\\par"
+					"\\fs20\\par"
+					"\\cf0 Failed to load the RTF stream from its resource\\b0\\par"
+					"}");
+		}
+	} else {
+		// On failure, display an error
+		StrCpyA(szRESyntaxRtf, "\0");
+		StrCatA(szRESyntaxRtf, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}}"
+				"{\\colortbl ;\\red255\\green0\\blue0;}"
+				"{\\*\\generator Riched20 10.0.18362}\\viewkind4\\uc1 "
+				"\\pard\\cf1\\b\\f0\\fs36 RegexSyntaxDlgProc Internal Error\\par"
+				"\\fs20\\par"
+				"\\cf0 No resource ID provided to load the RTF stream\\b0\\par"
+				"}");
+	}
+
+	switch (bInvertColors) {
+		case TRUE:
+		{
+			char szRtfClrTbl[] = "{\\colortbl ",
+				 szRtfCodeEnd[] = "}";
+			PSTR pszColorTableStart = StrStrA(szRESyntaxRtf, szRtfClrTbl);
+			if (!pszColorTableStart) break;
+			PSTR pszColorTableEnd = StrStrA(pszColorTableStart, szRtfCodeEnd);
+			if (!pszColorTableEnd) break;
+			pszColorTableStart += strlen(szRtfClrTbl);
+			pszColorTableEnd = _strdec(pszColorTableStart, pszColorTableEnd);
+			
+			char *aszColors[256];
+			int iColorCount = 0;
+			char seps[] = ";";
+			char *sep = NULL,
+				 *next_sep = NULL;
+			sep = strtok_s(pszColorTableStart, seps, &next_sep);
+			while (sep != NULL && sep <  pszColorTableEnd)
+			{
+				aszColors[iColorCount++] = sep;
+				sep = strtok_s(NULL, seps, &next_sep);
+			};
+
+			// Add new text color and save reference
+			char szDefColorRef[] = "cf0";
+			char szNewDefColorRef[] = "cf000";
+			char *pszClrIdx = _strninc(szNewDefColorRef, 2);
+			aszColors[iColorCount++] = "\\red207\\green208\\blue210";
+			snprintf(pszClrIdx, 3, "%d", iColorCount);
+
+			// Patch RTF
+			char szTmp[RE_REGEX_SYNTAX_RTF_MAXLEN+RE_REGEX_SYNTAX_RTF_MAXLEN] = "";
+			const int cchMaxLen = 2 * RE_REGEX_SYNTAX_RTF_MAXLEN;
+			const int nCharSize = sizeof(szRESyntaxRtf[0]);
+			int psz = 0;
+			int nSize = 0;
+
+			// Output start of file, including code for color table
+			nSize =  (szRESyntaxRtf - pszColorTableStart) / nCharSize;
+			lstrcpynA(szTmp, szRESyntaxRtf, nSize);
+			szTmp[nSize + 1*nCharSize] = '\0';
+			psz += nSize;
+
+			// Output color table items
+			int i = 0;
+			while (i < iColorCount && psz < cchMaxLen) {
+				lstrcatnA(szTmp, ";\0", 2);
+				psz += 1;
+				nSize = lstrlenA(aszColors[i]);
+				lstrcatnA(szTmp, aszColors[i], nSize + 1);
+				psz += nSize;
+			};
+			// Close color table
+			lstrcatnA(szTmp, ";}\0", 2);
+			psz += 2;
+
+			// Go through remaining code and replace "\\cf0" by the added color
+
+
+			// New bkgrnd color: #1C2128
+		} break;
+	}
+
+	// Set content of RichEdit control
+	SETTEXTEX se;
+	se.codepage = CP_ACP;
+	se.flags = ST_DEFAULT;
+
+	SendMessage(hRichEditCtlWnd, EM_SETTEXTEX, (WPARAM)&se, (LPARAM)(LPSTR)&szRESyntaxRtf);
+
+	return TRUE;
+}
+//=============================================================================
+//
+//  RegexSyntaxDlgProc() - DialogProc for the Regex syntax help dialog
+//
+INT_PTR CALLBACK RegexSyntaxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
+{
+	HWND hRichEditCtlWnd = NULL;
+
+	switch (umsg) {
+		
+		// Dialog init
+		case WM_INITDIALOG: {
+			hRichEditCtlWnd = GetDlgItem(hwnd, IDC_REGEXSYNTAXRICHEDIT);
+			if (!hRichEditCtlWnd) return FALSE;
+
+			// Subclass RichEdit control to unset flag DLGC_HASSETSEL when
+			// it responds to WM_GETDLGCODE, among other things
+			SetWindowSubclass(hRichEditCtlWnd, RegexRichEditSubclassProc, 0, 0);
+
+			// Set up dialog as resizable
+			ResizeDlg_Init(hwnd, cxRegexSyntaxDlg, cyRegexSyntaxDlg, IDC_RESIZEGRIP2);
+
+			// Load RTF stream from resource
+			RegexSyntaxDlg_LoadRtfRes(hRichEditCtlWnd, lParam, TRUE);
+
+			// Center dialog
+			CenterDlgInParent(hwnd);
+
+			return TRUE;
+		}
+
+		case EN_UPDATE:
+			OutputDebugString(TEXT("RegexSyntaxDlgProc(): Received the EN_UPDATE notification\n"));
+			return TRUE;
+
+		case WM_GETDLGCODE:
+			OutputDebugString(TEXT("RegexSyntaxDlgProc(): Received the WM_GETDLGCODE message\n"));
+			return TRUE;
+
+		case WM_SETFOCUS:
+			OutputDebugString(TEXT("RegexSyntaxDlgProc(): Received the WM_SETFOCUS message\n"));
+			return TRUE;
+
+			// Dialog sizing limits
+		case WM_GETMINMAXINFO:
+			// The ResizeDlg_Init() helper sets the dialog's initial dimensions as their
+			// absolute minimal values; ResizeDlg_GetMinMaxInfo() returns those for the
+			// WM_GETMINMAXINFO message
+			ResizeDlg_GetMinMaxInfo(hwnd, lParam);
+			return TRUE;
+
+		// Dialog resize
+		case WM_SIZE: {
+			int dx;
+			int dy;
+			HDWP hdwp;
+
+			// Parse dialog size
+			ResizeDlg_Size(hwnd, lParam, &dx, &dy);
+
+			// Resize controls
+			hdwp = BeginDeferWindowPos(1);
+			hdwp = DeferCtlPos(hdwp, hwnd, IDC_REGEXSYNTAXRICHEDIT, dx, dy, SWP_NOMOVE);
+			EndDeferWindowPos(hdwp);
+
+			return TRUE;
+		}
+
+		// Dialog close request
+		case WM_CLOSE:
+			// Destroy dialog on sysmenu close request
+			DestroyWindow(hwnd);
+			return TRUE;
+
+		// Dialog destruction
+		case WM_DESTROY:
+			// Destroy resize handler
+			ResizeDlg_Destroy(hwnd, &cxRegexSyntaxDlg, &cyRegexSyntaxDlg);
+			return FALSE;
+
+#ifdef _DEBUG
+		// Output unhandled messages; must be disabled once no longer needed
+		// even in debug mode (otherwise we flood the output and might miss
+		// relevant messages)
+		///default: Debug_OutputMsg(umsg);
+#endif
+	}
+	return FALSE;
+}
+
+//=============================================================================
+//
+//  RegexSyntaxDlg() - Constructor for the Regex syntax help dialog
+//
+HWND RegexSyntaxDlg(HWND hwnd, UINT uiRegexSyntaxResId)
+{
+
+	HWND hDlg;
+
+	LoadLibrary(TEXT("RICHED20.DLL"));
+
+	hDlg = CreateThemedDialogParam(g_hInstance,
+									MAKEINTRESOURCE(IDD_REGEXHELP),
+									GetParent(hwnd),
+									RegexSyntaxDlgProc,
+									(LPARAM)uiRegexSyntaxResId);
+
+	ShowWindow(hDlg, SW_SHOW);
+
+	return hDlg;
+}
 
 //=============================================================================
 //
