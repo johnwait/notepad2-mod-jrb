@@ -65,4 +65,4 @@ _Check_return_ __inline char * __CRTDECL _strdec(_In_reads_z_(_Cpc2 - _Cpc1) con
 _Check_return_ __inline char * __CRTDECL _strninc(_In_reads_or_z_(_Sz) const char * _Pc, _In_ size_t _Sz) { return (char *)(_Pc+_Sz); }
 #endif // _UNICODE
 
-///   End of StdAfx.h   \\\
+

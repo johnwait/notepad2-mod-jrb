@@ -2257,8 +2257,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
 //
 void MsgChangeNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
-	///if (iFileWatchingMode == 1 || bModified || iEncoding != iOriginalEncoding)
-	///	   SetForegroundWindow(hwnd);
+	// Reset PendingChangeNotify before showing any messagebox
+	g_bPendingChangeNotify = FALSE;
 
 	if (PathFileExists(szCurFile)) {
 
@@ -2359,8 +2359,6 @@ void MsgChangeNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		if (MsgBox(MBYESNO, IDS_FILEDELETENOTIFY) == IDYES)
 			FileSave(TRUE, FALSE, FALSE, FALSE);
 	}
-	// Reset PendingChangeNotify no matter what (i.e. being handled or dismissed)
-	g_bPendingChangeNotify = FALSE;
 
 	// Re-establish file change monitoring
 	if (!bRunningWatch)
