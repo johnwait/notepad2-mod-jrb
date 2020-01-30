@@ -5143,7 +5143,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                         if (IsDlgButtonChecked(hwnd, IDC_DOTMATCHALL) == BST_CHECKED) {
                             MsgBox(MBINFO, IDS_REGEXPHELP_DOTALL);
                         } else {
-#ifdef JRB_BUILD
+#if defined(JRB_BUILD) && defined(FEAT_RTFDLG_REGEX_SYNTAX)
                             // 2019-10-22: Replace message box with RTF-based dialog
                             ///MsgBox(MBINFO, IDS_REGEXPHELP);
                             if (!IsWindow(hDlgRegexSyntax))
@@ -6645,6 +6645,8 @@ static BOOL LoadResAsciiString(HINSTANCE hInst, UINT nResId, LPCTSTR pszRsType, 
 	return TRUE;
 }
 
+#ifdef FEAT_RTFDLG_REGEX_SYNTAX
+
 //=============================================================================
 //
 //  RegexRichEditSubclassProc() - Subclassing proc to unset the DLGC_HASSETSEL
@@ -6887,7 +6889,7 @@ INT_PTR CALLBACK RegexSyntaxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 			ResizeDlg_Init(hwnd, cxRegexSyntaxDlg, cyRegexSyntaxDlg, IDC_RESIZEGRIP2);
 
 			// Load RTF stream from resource
-			RegexSyntaxDlg_LoadRtfRes(hRichEditCtlWnd, lParam, TRUE);
+			RegexSyntaxDlg_LoadRtfRes(hRichEditCtlWnd, lParam, FALSE);
 
 			// Center dialog
 			CenterDlgInParent(hwnd);
@@ -6896,15 +6898,21 @@ INT_PTR CALLBACK RegexSyntaxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 		}
 
 		case EN_UPDATE:
+#ifdef _DEBUG
 			OutputDebugString(TEXT("RegexSyntaxDlgProc(): Received the EN_UPDATE notification\n"));
+#endif // _DEBUG
 			return TRUE;
 
 		case WM_GETDLGCODE:
+#ifdef _DEBUG
 			OutputDebugString(TEXT("RegexSyntaxDlgProc(): Received the WM_GETDLGCODE message\n"));
+#endif // _DEBUG
 			return TRUE;
 
 		case WM_SETFOCUS:
+#ifdef _DEBUG
 			OutputDebugString(TEXT("RegexSyntaxDlgProc(): Received the WM_SETFOCUS message\n"));
+#endif // _DEBUG
 			return TRUE;
 
 			// Dialog sizing limits
@@ -6944,11 +6952,13 @@ INT_PTR CALLBACK RegexSyntaxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 			ResizeDlg_Destroy(hwnd, &cxRegexSyntaxDlg, &cyRegexSyntaxDlg);
 			return FALSE;
 
-#ifdef _DEBUG
-		// Output unhandled messages; must be disabled once no longer needed
+#if defined(_DEBUG) && defined(DEBUG_OUTPUT_UNHANDLED_WMS)
+		// Output unhandled messages; *MUST* be disabled once no longer needed,
 		// even in debug mode (otherwise we flood the output and might miss
-		// relevant messages)
-		///default: Debug_OutputMsg(umsg);
+		// relevant output/debug messages)
+		default: {
+			Debug_OutputMsg(umsg);
+		}
 #endif
 	}
 	return FALSE;
@@ -6976,6 +6986,7 @@ HWND RegexSyntaxDlg(HWND hwnd, UINT uiRegexSyntaxResId)
 	return hDlg;
 }
 
+#endif // FEAT_RTFDLG_REGEX_SYNTAX
 //=============================================================================
 //
 //  EditInsertCtlCharDlgProcW()
@@ -7054,7 +7065,10 @@ INT_PTR CALLBACK EditInsertCtlCharDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, 
 
 		} break;
 
-#if defined(_DEBUG) && FALSE
+#if defined(_DEBUG) && defined(DEBUG_OUTPUT_UNHANDLED_WMS)
+		// Output unhandled messages; *MUST* be disabled once no longer needed,
+		// even in debug mode (otherwise we flood the output and might miss
+		// relevant output/debug messages)
 		default: {
 			Debug_OutputMsg(umsg);
 		}
@@ -7580,7 +7594,7 @@ int FileVars_GetEncoding(LPFILEVARS lpfv)
 //    return CallWindowProcW(pfnSciWndProc, hwnd, umsg, wParam, lParam);
 //}
 
-#if defined(_DEBUG) && defined(JRB_BUILD)
+#if defined(_DEBUG) && defined(DEBUG_OUTPUT_UNHANDLED_WMS)
 
 void Debug_OutputMsg(UINT umsg) {
 	WCHAR output[200], buffer[64];
@@ -7818,6 +7832,6 @@ void Debug_OutputMsg(UINT umsg) {
 	OutputDebugStringW(output);
 }
 
-#endif
+#endif // _DEBUG && DEBUG_OUTPUT_UNHANDLED_WMS
 
 ///   End of Edit.c   \\\

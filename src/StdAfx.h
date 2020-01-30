@@ -17,6 +17,7 @@
 #endif
 
 // In-dev feature flags; to be decided on on the next feature-set freeze
+#define FEAT_RTFDLG_REGEX_SYNTAX
 #define FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
 #if FALSE
 #define FEAT_REPLACE_MSGBOX_BY_TASKDLG
