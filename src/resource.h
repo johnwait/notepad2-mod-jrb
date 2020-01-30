@@ -38,6 +38,7 @@
 #define IDC_NOUNICODEDETECTION          101
 #define IDC_SORTDESCENDING              101 // Added on 2019-08-20
 #define IDC_COPYRIGHT                   101
+#define IDC_RESIZEGRIP2                 101
 #define IDC_STYLEEDIT                   102
 #define IDC_FINDCASE                    102
 #define IDC_OPENWITHDESCR               102

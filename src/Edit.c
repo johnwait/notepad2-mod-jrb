@@ -27,6 +27,9 @@
 #include "Styles.h"
 #include "Dialogs.h"
 #include "Helpers.h"
+#ifdef JRB_BUILD
+#include <richedit.h>
+#endif
 #include "resource.h"
 #include "SciCall.h"
 // clang-format on
@@ -6692,8 +6695,9 @@ BOOL RegexSyntaxDlg_LoadRtfRes(HWND hRichEditCtlWnd, LPARAM lParam, BOOL bInvert
 		// Load resource stream
 		// NOTE: For control to interpret as RTF code, it must remain as ANSI (unencoded)
 		if (!LoadResAsciiString(g_hInstance, uiRtfResId, TEXT("RTF"), (char *)szRESyntaxRtf,
-								sizeof(szRESyntaxRtf) / sizeof(szRESyntaxRtf[0]) - 1)) {
-			// On failure, display an error
+								sizeof(szRESyntaxRtf) / sizeof(szRESyntaxRtf[0]) - 1))
+		{
+			// On failure, display error: "Failed to load RTF stream"
 			lstrcpyA(szRESyntaxRtf, "\0");
 			StrCatA(szRESyntaxRtf,  "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}}"
 					"{\\colortbl ;\\red255\\green0\\blue0;}"
@@ -6704,7 +6708,7 @@ BOOL RegexSyntaxDlg_LoadRtfRes(HWND hRichEditCtlWnd, LPARAM lParam, BOOL bInvert
 					"}");
 		}
 	} else {
-		// On failure, display an error
+		// On failure, display error: "No resource ID provided"
 		StrCpyA(szRESyntaxRtf, "\0");
 		StrCatA(szRESyntaxRtf, "{\\rtf1\\ansi\\ansicpg1252\\deff0\\nouicompat\\deflang1033{\\fonttbl{\\f0\\fswiss\\fcharset0 Arial;}}"
 				"{\\colortbl ;\\red255\\green0\\blue0;}"
@@ -6715,75 +6719,147 @@ BOOL RegexSyntaxDlg_LoadRtfRes(HWND hRichEditCtlWnd, LPARAM lParam, BOOL bInvert
 				"}");
 	}
 
-	switch (bInvertColors) {
-		case TRUE:
-		{
-			char szRtfClrTbl[] = "{\\colortbl ",
-				 szRtfCodeEnd[] = "}";
-			PSTR pszColorTableStart = StrStrA(szRESyntaxRtf, szRtfClrTbl);
-			if (!pszColorTableStart) break;
-			PSTR pszColorTableEnd = StrStrA(pszColorTableStart, szRtfCodeEnd);
-			if (!pszColorTableEnd) break;
-			pszColorTableStart += strlen(szRtfClrTbl);
-			pszColorTableEnd = _strdec(pszColorTableStart, pszColorTableEnd);
-			
-			char *aszColors[256];
-			int iColorCount = 0;
-			char seps[] = ";";
-			char *sep = NULL,
-				 *next_sep = NULL;
-			sep = strtok_s(pszColorTableStart, seps, &next_sep);
-			while (sep != NULL && sep <  pszColorTableEnd)
-			{
-				aszColors[iColorCount++] = sep;
-				sep = strtok_s(NULL, seps, &next_sep);
-			};
-
-			// Add new text color and save reference
-			char szDefColorRef[] = "cf0";
-			char szNewDefColorRef[] = "cf000";
-			char *pszClrIdx = _strninc(szNewDefColorRef, 2);
-			aszColors[iColorCount++] = "\\red207\\green208\\blue210";
-			snprintf(pszClrIdx, 3, "%d", iColorCount);
-
-			// Patch RTF
-			char szTmp[RE_REGEX_SYNTAX_RTF_MAXLEN+RE_REGEX_SYNTAX_RTF_MAXLEN] = "";
-			const int cchMaxLen = 2 * RE_REGEX_SYNTAX_RTF_MAXLEN;
-			const int nCharSize = sizeof(szRESyntaxRtf[0]);
-			int psz = 0;
-			int nSize = 0;
-
-			// Output start of file, including code for color table
-			nSize =  (szRESyntaxRtf - pszColorTableStart) / nCharSize;
-			lstrcpynA(szTmp, szRESyntaxRtf, nSize);
-			szTmp[nSize + 1*nCharSize] = '\0';
-			psz += nSize;
-
-			// Output color table items
-			int i = 0;
-			while (i < iColorCount && psz < cchMaxLen) {
-				lstrcatnA(szTmp, ";\0", 2);
-				psz += 1;
-				nSize = lstrlenA(aszColors[i]);
-				lstrcatnA(szTmp, aszColors[i], nSize + 1);
-				psz += nSize;
-			};
-			// Close color table
-			lstrcatnA(szTmp, ";}\0", 2);
-			psz += 2;
-
-			// Go through remaining code and replace "\\cf0" by the added color
-
-
-			// New bkgrnd color: #1C2128
-		} break;
-	}
-
-	// Set content of RichEdit control
+	// Init structure for EM_SETTEXTEX
 	SETTEXTEX se;
 	se.codepage = CP_ACP;
 	se.flags = ST_DEFAULT;
 
+#define CHAR_PTR_POS(x) ((DWORD_PTR) x)
+
+	int nRtfLen = lstrlenA(szRESyntaxRtf);
+
+	// Handle inverted-colors flag
+	switch (bInvertColors) {
+		// NOTE: We use a switch block to easily break out when needed
+		case TRUE:
+		{
+			// Find the color table
+			const char
+				szRtfClrTbl[] = "{\\colortbl ",
+				szRtfCodeEnd[] = "}";
+			PSTR pszColorTableStart = strstr(szRESyntaxRtf, szRtfClrTbl);
+			if (!pszColorTableStart) break;
+			PSTR pszColorTableEnd = strstr(pszColorTableStart, szRtfCodeEnd);
+			if (!pszColorTableEnd) break;
+			// Remember some measures before we move pointers around
+			ptrdiff_t cchHeaderAndColorTable = (CHAR_PTR_POS(pszColorTableEnd) + lstrlenA(szRtfCodeEnd) - CHAR_PTR_POS(szRESyntaxRtf));
+			ptrdiff_t cchColorTable = (CHAR_PTR_POS(pszColorTableEnd) + lstrlenA(szRtfCodeEnd) - CHAR_PTR_POS(pszColorTableStart));
+			// Advance past color table header
+			pszColorTableStart += lstrlenA(szRtfClrTbl);
+			pszColorTableEnd = _strdec(pszColorTableStart, pszColorTableEnd);
+			ptrdiff_t cchColorsLen = (CHAR_PTR_POS(pszColorTableEnd) - CHAR_PTR_POS(pszColorTableStart));
+
+			// Color table defs
+#define RTF_COLOR_DEF_LEN (24 + 1)  // i.e. '\red###\green###\blue###' + ('\0'|';')
+#define RTF_COLOR_TBL_SIZE (256)    // we don't expect color defs to be > 256, but we might still be served malformed/rogue RTF code...
+#define RTF_COLOR_TBL_LEN (RTF_COLOR_TBL_SIZE) * (RTF_COLOR_DEF_LEN)
+
+			// Make a copy of color table we'll work with
+			// (since strtok() is desctructive, i.e. replaces seps with nulls)
+			char szClrTblBuff[RTF_COLOR_TBL_LEN] = "\0";
+			char *aszColors[RTF_COLOR_TBL_SIZE]; // for storing pointers to szClrTblBuff[]
+			int iColorCount = 0;
+			const char* sep = ";";
+
+			strncpy_s(szClrTblBuff, RTF_COLOR_TBL_LEN, pszColorTableStart, cchColorsLen);
+			// First pass to find out the color table size
+			char *ptr = NULL,
+				 *ptrNext = NULL,
+				 *ptrEnd = _strninc(ptr, cchColorsLen);
+			ptr = strtok_s(szClrTblBuff, sep, &ptrNext);
+			while (ptr != NULL && ptr <  pszColorTableEnd)
+			{
+				aszColors[iColorCount++] = ptr;
+				ptr = strtok_s(NULL, sep, &ptrNext);
+			};
+
+			// Add new color and save its reference
+			char szDefColorRef[] = "\\cf0";
+			char szNewColorRef[] = "\\cf000";
+			char szNewColor[] = "\\red207\\green208\\blue210";
+			// - Get a pointer to "\\cf[0]00"
+			char *pszClrIdx = _strninc(szNewColorRef, 3); 
+			// - New bkgrnd color: #1C2128
+			aszColors[iColorCount++] = szNewColor;
+			// - Resolve & save reference for added color
+			snprintf(pszClrIdx, 3, "%d", iColorCount);
+
+			// Start patching RTF
+			char szPatchedRtf[RE_REGEX_SYNTAX_RTF_MAXLEN] = "";
+			///const int cchMaxLen = RE_REGEX_SYNTAX_RTF_MAXLEN;
+			const int nCharSize = sizeof(szRESyntaxRtf[0]);
+			DWORD_PTR pszSrcRel = 0; // Relative position to start of szRESyntaxRtf (i.e. 0-based)
+			ptrdiff_t cchCopySize = 0, cchColor = 0;
+
+			// Output start of file, including code for color table
+			cchCopySize =  (CHAR_PTR_POS(pszColorTableStart) - CHAR_PTR_POS((PSTR)&szRESyntaxRtf)) / nCharSize;
+			strncpy_s(szPatchedRtf, RE_REGEX_SYNTAX_RTF_MAXLEN, szRESyntaxRtf, cchCopySize);
+			///szPatchedRtf[cchSize + 1*nCharSize] = '\0';
+			// Move source ptr past *end* of color table
+			pszSrcRel += cchHeaderAndColorTable;
+
+			// Output color table items
+			// NOTE: Do *not* increment pszSrcRel, since it's already been
+			//       moved past its color table
+			int i = 0;
+			
+			while (i < iColorCount) {
+				lstrcatnA(szPatchedRtf, ";", RE_REGEX_SYNTAX_RTF_MAXLEN);
+				cchColor = lstrlenA(aszColors[i]);
+				lstrcatnA(szPatchedRtf, aszColors[i], RE_REGEX_SYNTAX_RTF_MAXLEN);
+				i++;
+			};
+			// Close color table
+			lstrcatnA(szPatchedRtf, ";}", RE_REGEX_SYNTAX_RTF_MAXLEN);
+
+			// Go through remaining code and replace "\\cf0" by the added color
+			PSTR pszSrcAbs = szRESyntaxRtf + pszSrcRel;
+			PSTR pszSrcEnd = szRESyntaxRtf + nRtfLen;
+			PSTR pszNext = pszSrcAbs;
+			ptrdiff_t distCatSize = 0;
+			int cchOldColorRef = lstrlenA(szDefColorRef);
+			int cchNewColorRef = lstrlenA(szNewColorRef);
+			while (CHAR_PTR_POS(pszSrcAbs) < CHAR_PTR_POS(pszSrcEnd)) {
+				// Find position to next "\\cf0"
+				pszNext = strstr(pszSrcAbs, (const char*) &szDefColorRef);
+				// Check if we found the next (old) color ref
+				if (pszNext) {
+					// Sanity check: Don't go past end of source string
+					if (CHAR_PTR_POS(pszNext) >= CHAR_PTR_POS(pszSrcEnd)) break;
+					// Check if we have (unchanged) chars to append
+					distCatSize = (CHAR_PTR_POS(pszNext) - CHAR_PTR_POS(pszSrcAbs));
+					if (distCatSize > 0) {
+						// Append unchanged chars
+						lstrncatnA(szPatchedRtf, distCatSize, pszSrcAbs, RE_REGEX_SYNTAX_RTF_MAXLEN);
+						pszSrcAbs += distCatSize;
+					}
+					// Append new color ref
+					lstrncatnA(szPatchedRtf, cchNewColorRef, szNewColorRef, RE_REGEX_SYNTAX_RTF_MAXLEN);
+					// Advance past (old) color ref
+					pszSrcAbs = pszNext + cchNewColorRef;
+					// Loop back up
+				} else {
+					// Sanity check: make sure we're not already past end of source string
+					if (CHAR_PTR_POS(pszSrcAbs) >= CHAR_PTR_POS(pszSrcEnd)) break;
+					// No more color refs, append everything up to end of source string
+					distCatSize = (CHAR_PTR_POS(pszSrcEnd) - CHAR_PTR_POS(pszSrcAbs));
+					lstrncatnA(szPatchedRtf, distCatSize, pszSrcAbs, RE_REGEX_SYNTAX_RTF_MAXLEN);
+					// Exit loop
+					break;
+				}
+			} // while (pszSrcAbs < pszSrcEnd)
+
+			SendMessage(hRichEditCtlWnd, EM_SETBKGNDCOLOR,0, RGB(0x10, 0x10, 0x10));
+			// Load patched RTF stream into RichEdit control
+			SendMessage(hRichEditCtlWnd, EM_SETTEXTEX, (WPARAM)&se, (LPARAM)(LPSTR)&szPatchedRtf);
+
+			// Return here
+			return TRUE;
+
+		} break; // <= no-man's-land
+	}
+
+	// Set content of RichEdit control
 	SendMessage(hRichEditCtlWnd, EM_SETTEXTEX, (WPARAM)&se, (LPARAM)(LPSTR)&szRESyntaxRtf);
 
 	return TRUE;

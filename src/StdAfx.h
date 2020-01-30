@@ -33,6 +33,7 @@
 #include <stdio.h>      // Edit.c, Helpers.c, Notepad2.c, Styles.c
 #include <string.h>     // Dialogs.c, Dlapi.c, Edit.c, Helpers.c, Notepad2.c, Print.cpp
 #include <strsafe.h>
+#include <tchar.h>      // Edit.c (for _strdec(), _strninc())
 #include <time.h>       // Notepad2.c
 #include <limits.h>     // Edit.c
 #include <uxtheme.h>    // Helpers.c
@@ -42,3 +43,13 @@
 
 #define lstrcpynA(dst, src, ccount_inc_tz) \
     (StringCchCopyA(dst, ccount_inc_tz, src) == S_OK ? dst : NULL)
+
+// Implement _strdec() & _strninc() when _UNICODE is used (normally in <tchar.h>)
+#ifdef _UNICODE
+_Check_return_ __inline char * __CRTDECL _strdec(_In_reads_z_(_Cpc2 - _Cpc1) const char * _Cpc1, _In_z_ const char * _Cpc2) { return (char *)((_Cpc1)>=(_Cpc2) ? NULL : (_Cpc2-1)); }
+///_Check_return_ __inline char * __CRTDECL _strinc(_In_z_ const char * _Pc) { return (char *)(_Pc+1); }
+///_Check_return_ __inline unsigned int __CRTDECL _strnextc(_In_z_ const char * _Cpc) { return (unsigned int)*(const unsigned char *)_Cpc; }
+_Check_return_ __inline char * __CRTDECL _strninc(_In_reads_or_z_(_Sz) const char * _Pc, _In_ size_t _Sz) { return (char *)(_Pc+_Sz); }
+#endif // _UNICODE
+
+///   End of StdAfx.h   \\\
