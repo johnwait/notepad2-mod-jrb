@@ -546,9 +546,6 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         LOGFONT lf;
 
         SetDlgItemText(hwnd, IDC_VERSION, VERSION_FILEVERSION_LONG);
-        SetDlgItemText(hwnd, IDC_COPYRIGHT, VERSION_LEGALCOPYRIGHT_SHORT);
-        SetDlgItemText(hwnd, IDC_AUTHORNAME, VERSION_AUTHORNAME);
-        SetDlgItemText(hwnd, IDC_COMPILER, VERSION_COMPILER);
 
         if (hFontTitle)
             DeleteObject(hFontTitle);
@@ -560,10 +557,21 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         hFontTitle = CreateFontIndirect(&lf);
         SendDlgItemMessage(hwnd, IDC_VERSION, WM_SETFONT, (WPARAM)hFontTitle, TRUE);
 
+        SetDlgItemText(hwnd, IDC_COMPILER, VERSION_COMPILER);
 #ifdef JRB_BUILD
         SetDlgItemText(hwnd, IDC_JRB_SCINTILLA_VER, VERSION_SCINTILLA);
         SetDlgItemText(hwnd, IDC_JRB_ONIGMO_VER, VERSION_ONIGMO);
+        SetDlgItemText(hwnd, IDC_JRB_BUILDDATE, BUILD_DATE);
 
+        SetDlgItemText(hwnd, IDC_JRB_ABOUT, VERSION_JRB_COPYRIGHT);
+        if (GetDlgItem(hwnd, IDC_JRB_PAGE) == NULL) {
+            SetDlgItemText(hwnd, IDC_JRB_PAGE2, VERSION_JRB_PAGEDISPLAY);
+            ShowWindow(GetDlgItem(hwnd, IDC_JRB_PAGE2), SW_SHOWNORMAL);
+        } else {
+            wsprintf(wch, L"<A>%s</A>", VERSION_JRB_PAGEDISPLAY);
+            SetDlgItemText(hwnd, IDC_JRB_PAGE, wch);
+        }
+/*
         if (hFontJrbAbout)
             DeleteObject(hFontJrbAbout);
 
@@ -572,9 +580,26 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         GetObject(hFontJrbAbout, sizeof(LOGFONT), &lf);
         lf.lfItalic = 1;
         hFontJrbAbout = CreateFontIndirect(&lf);
-        SendDlgItemMessage(hwnd, IDC_JRB_ABOUT_LN1, WM_SETFONT, (WPARAM)hFontJrbAbout, TRUE);
-        SendDlgItemMessage(hwnd, IDC_JRB_ABOUT_LN2, WM_SETFONT, (WPARAM)hFontJrbAbout, TRUE);
-#endif
+        SendDlgItemMessage(hwnd, IDC_JRB_ABOUT, WM_SETFONT, (WPARAM)hFontJrbAbout, TRUE);
+        SendDlgItemMessage(hwnd, IDC_JRB_PAGE, WM_SETFONT, (WPARAM)hFontJrbAbout, TRUE);
+*/
+        SetDlgItemText(hwnd, IDC_MOD_COPYRIGHT, VERSION_MOD_COPYRIGHT);
+        
+#endif // JRB_BUILD
+
+        if (GetDlgItem(hwnd, IDC_MOD_PAGE) == NULL) {
+            SetDlgItemText(hwnd, IDC_MOD_PAGE, VERSION_MOD_PAGEDISPLAY);
+            ShowWindow(GetDlgItem(hwnd, IDC_MOD_PAGE2), SW_SHOWNORMAL);
+        } else {
+            wsprintf(wch, L"<A>%s</A>", VERSION_MOD_PAGEDISPLAY);
+            SetDlgItemText(hwnd, IDC_MOD_PAGE, wch);
+        }
+
+#ifdef JRB_BUILD
+        SetDlgItemText(hwnd, IDC_COPYRIGHT, VERSION_ORG_COPYRIGHT);
+#else // !defined(JRB_BUILD)
+        SetDlgItemText(hwnd, IDC_COPYRIGHT, VERSION_COPYRIGHT);
+#endif // JRB_BUILD
 
         if (GetDlgItem(hwnd, IDC_WEBPAGE) == NULL) {
             SetDlgItemText(hwnd, IDC_WEBPAGE2, VERSION_WEBPAGEDISPLAY);
@@ -590,14 +615,6 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         } else {
             wsprintf(wch, L"<A>%s</A>", VERSION_EMAILDISPLAY);
             SetDlgItemText(hwnd, IDC_EMAIL, wch);
-        }
-
-        if (GetDlgItem(hwnd, IDC_MOD_PAGE) == NULL) {
-            SetDlgItemText(hwnd, IDC_MOD_PAGE, VERSION_MODPAGEDISPLAY);
-            ShowWindow(GetDlgItem(hwnd, IDC_MOD_PAGE2), SW_SHOWNORMAL);
-        } else {
-            wsprintf(wch, L"<A>%s</A>", VERSION_MODPAGEDISPLAY);
-            SetDlgItemText(hwnd, IDC_MOD_PAGE, wch);
         }
 
         CenterDlgInParent(hwnd);

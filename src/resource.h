@@ -102,17 +102,20 @@
 #define IDC_FINDPREV                    109
 #define IDC_NEXTSTYLE                   109
 #ifdef JRB_BUILD
-#define IDC_JRB_ABOUT_LN1               109
+#define IDC_JRB_ABOUT                   109
 #endif // JRB_BUILD
 #define IDD_CHANGENOTIFY                110
 #define IDC_IMPORT                      110
 #ifdef JRB_BUILD
 #define IDC_DOTMATCHALL                 110
-#define IDC_JRB_ABOUT_LN2               110
+#define IDC_JRB_PAGE                    110
 #endif // JRB_BUILD
 #define IDD_MODIFYLINES                 111
 #define IDC_EXPORT                      111
 #define IDC_FINDTEXTLABEL               111
+#ifdef JRB_BUILD
+#define IDC_JRB_PAGE2                   111
+#endif // JRB_BUILD
 #define IDC_REPLACE                     112
 #define IDC_MOD_PAGE                    112
 #define IDC_TITLE                       112
@@ -120,6 +123,9 @@
 #define IDD_ENCLOSESELECTION            113
 #define IDC_REPLACEALL                  113
 #define IDC_STYLELABELS                 113
+#ifdef JRB_BUILD
+#define IDC_MOD_COPYRIGHT               113
+#endif // JRB_BUILD
 #define IDD_INSERTTAG                   114
 #define IDC_REPLACEINSEL                114
 #define IDD_SORT                        115
@@ -192,6 +198,9 @@
 #define IDC_NFOASOEM                    300
 #define IDC_COMPILER                    301
 #define IDC_COMPILER2                   302
+#ifdef JRB_BUILD
+#define IDC_JRB_BUILDDATE               303
+#endif // JRB_BUILD
 #define IDS_APPTITLE                    10000
 #define IDS_APPTITLE_ELEVATED           10001
 #define IDS_APPTITLE_PASTEBOARD         10002

@@ -16,12 +16,16 @@
 #define NTDDI_VERSION 0x06010000  /*NTDDI_WIN7*/
 #endif
 
+#ifdef JRB_BUILD
+
 // In-dev feature flags; to be decided on on the next feature-set freeze
 #define FEAT_RTFDLG_REGEX_SYNTAX
 #define FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
 #if FALSE
 #define FEAT_REPLACE_MSGBOX_BY_TASKDLG
 #endif
+
+#endif // JRB_BUILD
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 // Windows Header Files:

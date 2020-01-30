@@ -1,14 +1,5 @@
 // Microsoft Visual C++ generated resource script.
 //
-/*
- * 2019-08-20: Now making those two defines hardcoded (JRB)
- */
-#ifndef BOOKMARK_EDITION
-#define BOOKMARK_EDITION
-#endif
-#ifndef JRB_BUILD
-#define JRB_BUILD
-#endif
 
 #include "StdAfx.h"
 #include <richedit.h>
@@ -90,7 +81,11 @@ BEGIN
         MENUITEM "&Save\tCtrl+S",               IDM_FILE_SAVE
         MENUITEM "Save &As...\tF6",             IDM_FILE_SAVEAS
         MENUITEM "Save a &Copy...\tCtrl+F6",    IDM_FILE_SAVECOPY
+#ifdef JRB_BUILD
+        MENUITEM "&Read Only\tCtrl+Alt+Shift+R",IDM_FILE_READONLY
+#else
         MENUITEM "&Read Only",                  IDM_FILE_READONLY
+#endif // JRB_BUILD
         MENUITEM SEPARATOR
         POPUP "&Reload"
         BEGIN
@@ -252,10 +247,10 @@ BEGIN
             MENUITEM "Complete Word\tCtrl+Enter",   IDM_EDIT_COMPLETEWORD
             MENUITEM SEPARATOR
             MENUITEM "&HTML/XML Tag...\tAlt+X",     IDM_EDIT_INSERT_TAG
-    #ifdef JRB_BUILD
+#ifdef JRB_BUILD
             MENUITEM SEPARATOR
             MENUITEM "&Control Characters...\tCtrl+Alt+Shift+C", IDM_EDIT_INSERT_CTLCHAR
-    #endif // JRB_BUILD
+#endif // JRB_BUILD
             MENUITEM SEPARATOR
             MENUITEM "&Encoding Identifier\tCtrl+F8",
                                                     IDM_EDIT_INSERT_ENCODING
@@ -508,6 +503,7 @@ BEGIN
     "C",            IDM_EDIT_HEX2CHAR,      VIRTKEY, CONTROL, ALT, NOINVERT
     "C",            IDM_EDIT_COPYLINE,      VIRTKEY, SHIFT, CONTROL,
                                                     NOINVERT
+    // 2019-08-20: Ctrl+Shift+Alt+C => Show new dialog for insertion of control chars
 #ifdef JRB_BUILD
     "C",            IDM_EDIT_INSERT_CTLCHAR, VIRTKEY, SHIFT, CONTROL, ALT,
                                                     NOINVERT
@@ -725,7 +721,7 @@ END
 //
 
 #ifdef JRB_BUILD
-IDD_ABOUT DIALOGEX 0, 0, 255, 170
+IDD_ABOUT DIALOGEX 0, 0, 305, 170
 #else // !JRB_BUILD
 IDD_ABOUT DIALOGEX 0, 0, 255, 130
 #endif // JRB_BUILD
@@ -735,26 +731,33 @@ CAPTION MY_APPNAME
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
 #ifdef JRB_BUILD
-    DEFPUSHBUTTON   "OK",IDOK,195,150,50,14
-    ICON            IDR_MAINWND,IDC_STATIC,15,7,21,20
+    DEFPUSHBUTTON   "OK",IDOK,245,150,50,14
+    ICON            IDR_MAINWND,IDC_STATIC,15,7,24,24
     LTEXT           "",IDC_VERSION,45,7,200,8
-    LTEXT           "Compiled with: ",IDC_COMPILER2,45,19,200,8
-    LTEXT           "",IDC_COMPILER,102,19,98,8
+    LTEXT           "Compiled with: ",IDC_COMPILER2,45,19,55,8
+    LTEXT           "",IDC_COMPILER,110,19,115,8
     LTEXT           "Scintilla version: ",IDC_STATIC,45,28,55,8
-    LTEXT           "",IDC_JRB_SCINTILLA_VER,102,28,98,8
+    LTEXT           "",IDC_JRB_SCINTILLA_VER,110,28,115,8
     LTEXT           "Onigmo version: ",IDC_STATIC,45,37,55,8
-    LTEXT           "",IDC_JRB_ONIGMO_VER,102,37,98,8
-    LTEXT           "",IDC_COPYRIGHT,45,53,200,8
-    LTEXT           "",IDC_WEBPAGE2,45,62,200,8,NOT WS_VISIBLE | WS_DISABLED
-    CONTROL         "",IDC_WEBPAGE,"SysLink",WS_TABSTOP,45,62,200,10
-    LTEXT           "Visit Notepad2-mod's website:",IDC_STATIC,45,78,200,8
-    LTEXT           "",IDC_MOD_PAGE2,45,87,200,8,NOT WS_VISIBLE | WS_DISABLED
-    CONTROL         "",IDC_MOD_PAGE,"SysLink",WS_TABSTOP,45,87,200,10
-    LTEXT           "Contact Florian Balmer:",IDC_STATIC,45,103,200,8
-    LTEXT           "",IDC_EMAIL2,45,112,200,8,NOT WS_VISIBLE | WS_DISABLED
-    CONTROL         "",IDC_EMAIL,"SysLink",WS_TABSTOP,45,112,200,10
-    LTEXT           "(with changes by JRB, including among others",IDC_JRB_ABOUT_LN1,45,128,200,8
-    LTEXT           "the switch to the Onigmo regex engine)",IDC_JRB_ABOUT_LN2,45,137,200,8
+    LTEXT           "",IDC_JRB_ONIGMO_VER,110,37,115,8
+    LTEXT           "Build date/time:",IDC_STATIC,45,46,55,9
+    LTEXT           "",IDC_JRB_BUILDDATE,110,46,115,8
+
+    LTEXT           "",IDC_JRB_ABOUT,45,62,250,8
+    LTEXT           "",IDC_JRB_PAGE2,45,71,200,8
+    CONTROL         "",IDC_JRB_PAGE,"SysLink",WS_TABSTOP,45,71,200,10
+
+    LTEXT           "",IDC_MOD_COPYRIGHT,45,87,250,8
+    LTEXT           "",IDC_MOD_PAGE2,45,96,200,8,NOT WS_VISIBLE | WS_DISABLED
+    CONTROL         "",IDC_MOD_PAGE,"SysLink",WS_TABSTOP,45,96,200,10
+
+    LTEXT           "",IDC_COPYRIGHT,45,112,200,8
+    LTEXT           "",IDC_WEBPAGE2,45,121,200,8,NOT WS_VISIBLE | WS_DISABLED
+    CONTROL         "",IDC_WEBPAGE,"SysLink",WS_TABSTOP,45,121,200,10
+    
+    LTEXT           "Contact Florian Balmer:",IDC_STATIC,45,137,80,8
+    LTEXT           "",IDC_EMAIL2,127,137,150,8,NOT WS_VISIBLE | WS_DISABLED
+    CONTROL         "",IDC_EMAIL,"SysLink",WS_TABSTOP,125,137,150,10
 #else // !JRB_BUILD
     DEFPUSHBUTTON   "OK",IDOK,195,107,50,14
     ICON            IDR_MAINWND,IDC_STATIC,7,7,21,20
@@ -1781,7 +1784,7 @@ BEGIN
     IDS_FILTER_INI          "Configuration files (*.ini)|*.ini|All files (*.*)|*.*|"
     IDS_OPENWITH            "Select the directory with links to your favorite applications."
     IDS_FAVORITES           "Select the directory with links to your favorite files."
-#if defined BOOKMARK_EDITION || defined JRB_BUILD
+#if defined(BOOKMARK_EDITION) || defined(JRB_BUILD)
     IDS_BACKSLASHHELP       "Backslash Transformations\n\n\\a\tAlert (BEL, Ascii 7)\n\\b\tBackspace (BS, Ascii 8)\n\\f\tFormfeed (FF, Ascii 12)\n\\n\tNewline (LF, Ascii 10)\n\\r\tCarriage return (CR, Ascii 13)\n\\t\tHorizontal Tab (HT, Ascii 9)\n\\v\tVertical Tab (VT, Ascii 11)\n\\ooo\tOctal Value\n\\u####\tHexadecimal Value\n\\xhh\tHexadecimal Value\n\\\\\tBackslash"
     IDS_REGEXPHELP          "RegExp Syntax (Single Lines Only)\n\n.\tAny character\n^\tStart of a line\n$\tEnd of a line\n\\<\tStart of a word\n\\>\tEnd of a word\n[...]\tA set of chars ([abc]) or a range ([a-z])\n[^...]\tChars NOT in the set or range\n\\d\tAny decimal digit\n\\D\tAny non-digit char\n\\s\tAny whitespace char\n\\S\tNot a whitespace char\n\\w\tAny ""word"" char\n\\W\tAny ""non-word"" char\n\\x\tEscape character with otherwise special meaning\n\\xHH\tChar with hex code HH\n?\tMatches preceding 0 or 1 times\n*\tMatches preceding 0 or more times\n+\tMatches preceding 1 or more times\n*? or +?\tNon greedy matching of quantifiers ""?"" and ""+""\n(\tStart of a region\n)\tEnd of a region\n\\n\tRefers to a region when replacing (n is 1-9)\n"
     IDS_WILDCARDHELP        "Wildcard Search\n\n*\tMatches zero or more characters.\n?\tMatches exactly one character. "

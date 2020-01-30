@@ -29,7 +29,7 @@
 #include "Helpers.h"
 #ifdef JRB_BUILD
 #include <richedit.h>
-#endif
+#endif // JRB_BUILD
 #include "resource.h"
 #include "SciCall.h"
 // clang-format on
@@ -75,7 +75,7 @@ extern int cxRegexSyntaxDlg;
 extern int cyRegexSyntaxDlg;
 
 HWND hwndCtlCharToolTips[32] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-#endif
+#endif // JRB_BUILD
 
 // Supported Encodings
 WCHAR wchANSI[8] = L"";
@@ -1694,7 +1694,7 @@ void EditTitleCase(HWND hwnd)
 
 #ifdef BOOKMARK_EDITION
     BOOL bPrevWasSpace = FALSE;
-#endif
+#endif // BOOKMARK_EDITION
 
     iCurPos = (int)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
     iAnchorPos = (int)SendMessage(hwnd, SCI_GETANCHOR, 0, 0);
@@ -1737,7 +1737,7 @@ void EditTitleCase(HWND hwnd)
             else {
 
 #ifdef BOOKMARK_EDITION
-                //Slightly enhanced function to make Title Case: Added some '-characters and bPrevWasSpace makes it better (for example "'Don't'" will now work)
+                // Slightly enhanced function to make Title Case: Added some '-characters and bPrevWasSpace makes it better (for example "'Don't'" will now work)
                 bPrevWasSpace = TRUE;
                 for (i = 0; i < cchTextW; i++) {
                     if (!IsCharAlphaNumericW(pszTextW[i]) && (!StrChr(L"'`΄’", pszTextW[i]) || bPrevWasSpace)) {
@@ -1761,7 +1761,7 @@ void EditTitleCase(HWND hwnd)
                     else
                         bPrevWasSpace = FALSE;
                 }
-#else
+#else // Not(BOOKMARK_EDITION)
 
                 for (i = 0; i < cchTextW; i++) {
                     BOOL bAlphaNumeric = IsCharAlphaNumericW(pszTextW[i]);
@@ -1783,7 +1783,7 @@ void EditTitleCase(HWND hwnd)
                     }
                     bWordEnd = !bAlphaNumeric;
                 }
-#endif
+#endif // BOOKMARK_EDITION
             }
 
             if (bChanged) {
@@ -4668,7 +4668,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
     BOOL bIsFindDlg;
 #ifdef JRB_BUILD
     WCHAR tchFindStrLbl[255];
-#endif
+#endif // JRB_BUILD
 
     static UINT uCPEdit;
 
@@ -4683,7 +4683,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
 #ifdef BOOKMARK_EDITION
             static BOOL bFirstTime = TRUE;
-#endif
+#endif // BOOKMARK_EDITION
             WCHAR tchMruItem[128];
             HMENU hmenu;
 
@@ -4698,7 +4698,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                           tchFindStrLbl, COUNTOF(tchFindStrLbl))) {
                 SetDlgItemTextW(hwnd, IDC_FINDTEXTLABEL, tchFindStrLbl);
             }
-#endif
+#endif // JRB_BUILD
 
             // Get the current code page for Unicode conversion
             uCPEdit = (UINT)SendMessage(lpefr->hwnd, SCI_GETCODEPAGE, 0, 0);
@@ -4733,7 +4733,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                         LocalFree(pClip);
                     }
                     bFirstTime = FALSE;
-#endif
+#endif // BOOKMARK_EDITION
 
                     // Check lpszSelection and truncate bad chars
                     lpsz = StrChrA(lpszSelection, 13);
@@ -4782,7 +4782,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 #ifdef JRB_BUILD
             if (lpefr->fuFlags & SCFIND_DOT_MATCH_ALL)
                 CheckDlgButton(hwnd, IDC_DOTMATCHALL, BST_CHECKED);
-#endif
+#endif // JRB_BUILD
 
             if (lpefr->bTransformBS)
                 CheckDlgButton(hwnd, IDC_FINDTRANSFORMBS, BST_CHECKED);
@@ -4792,11 +4792,11 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                 CheckDlgButton(hwnd, IDC_WILDCARDSEARCH, BST_CHECKED);
                 CheckDlgButton(hwnd, IDC_FINDREGEXP, BST_UNCHECKED);
             }
-#endif
+#endif // BOOKMARK_EDITION
 #ifdef JRB_BUILD
             // Enable/disable "dot-matches-all" option
             EnableWindow(GetDlgItem(hwnd, IDC_DOTMATCHALL), IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED);
-#endif
+#endif // JRB_BUILD
 
             if (lpefr->bNoFindWrap)
                 CheckDlgButton(hwnd, IDC_NOWRAP, BST_CHECKED);
@@ -4872,12 +4872,12 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                     }
                     // Enable/disable "dot-matches-all" option
                     EnableWindow(GetDlgItem(hwnd, IDC_DOTMATCHALL), bIsChecked);
-#endif
+#endif // JRB_BUILD
                     if (bIsChecked) {
                         CheckDlgButton(hwnd, IDC_FINDTRANSFORMBS, BST_UNCHECKED);
 #ifdef BOOKMARK_EDITION
                         CheckDlgButton(hwnd, IDC_WILDCARDSEARCH, BST_UNCHECKED); // Can not use wildcard search together with regexp
-#endif
+#endif // BOOKMARK_EDITION
                     }
 
                 } break; // case IDC_FINDREGEXP
@@ -4885,8 +4885,10 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                 case IDC_FINDTRANSFORMBS:
                     if (IsDlgButtonChecked(hwnd, IDC_FINDTRANSFORMBS) == BST_CHECKED) {
                         CheckDlgButton(hwnd, IDC_FINDREGEXP, BST_UNCHECKED);
-                        // Disable "dot-matches-all" option
-                        EnableWindow(GetDlgItem(hwnd, IDC_DOTMATCHALL), FALSE);
+#ifdef JRB_BUILD
+                    // Disable "dot-matches-all" option
+                    EnableWindow(GetDlgItem(hwnd, IDC_DOTMATCHALL), FALSE);
+#endif // JRB_BUILD
                     }
                     break;
 
@@ -4894,12 +4896,15 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                     // handle wildcard search checkbox
                 case IDC_WILDCARDSEARCH:
                     CheckDlgButton(hwnd, IDC_FINDREGEXP, BST_UNCHECKED);
+#ifdef JRB_BUILD
                     // Disable "dot-matches-all" option
                     EnableWindow(GetDlgItem(hwnd, IDC_DOTMATCHALL), FALSE);
+#endif // JRB_BUILD
+                    // Below: Was already commented out when notepad2-mod-jrb was forked
                     ///if (IsDlgButtonChecked(hwnd,IDC_FINDWILDCARDS) == BST_CHECKED)
                     ///  CheckDlgButton(hwnd,IDC_FINDREGEXP,BST_UNCHECKED);
                     break;
-#endif
+#endif // BOOKMARK_EDITION
 
                 case IDOK:
                 case IDC_FINDPREV:
@@ -4941,7 +4946,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                     // Rebuild search flags from control states
 #ifdef BOOKMARK_EDITION
                     lpefr->bWildcardSearch = (IsDlgButtonChecked(hwnd, IDC_WILDCARDSEARCH) == BST_CHECKED) ? TRUE : FALSE;
-#endif
+#endif // BOOKMARK_EDITION
 
                     lpefr->fuFlags = 0;
 
@@ -4960,7 +4965,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 #ifdef JRB_BUILD
                     if (IsDlgButtonChecked(hwnd, IDC_DOTMATCHALL) == BST_CHECKED)
                         lpefr->fuFlags |= SCFIND_DOT_MATCH_ALL;
-#endif
+#endif // JRB_BUILD
 
                     lpefr->bTransformBS = (IsDlgButtonChecked(hwnd, IDC_FINDTRANSFORMBS) == BST_CHECKED) ? TRUE : FALSE;
 
@@ -5062,7 +5067,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                     // Wildcard search will enable regexp, so I turn it off again otherwise it will be on in the gui
                     if (lpefr->bWildcardSearch && (lpefr->fuFlags & SCFIND_REGEXP))
                         lpefr->fuFlags ^= SCFIND_REGEXP;
-#endif
+#endif // BOOKMARK_EDITION
                     break;
 
                 case IDCANCEL:
@@ -5105,8 +5110,10 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                     lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
                     SetDlgItemTextA2W(CP_UTF8, hwnd, IDC_FINDTEXT, lpefr->szFindUTF8);
                     CheckDlgButton(hwnd, IDC_FINDREGEXP, BST_UNCHECKED);
+#ifdef JRB_BUILD
                     // Disable "dot-matches-all" option
                     EnableWindow(GetDlgItem(hwnd, IDC_DOTMATCHALL), FALSE);
+#endif // JRB_BUILD
                     CheckDlgButton(hwnd, IDC_FINDTRANSFORMBS, BST_UNCHECKED);
                     PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_FINDTEXT)), 1);
                     break;
@@ -5140,10 +5147,11 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                     else if (pnmhdr->idFrom == IDC_BACKSLASHHELP) {
                         MsgBox(MBINFO, IDS_BACKSLASHHELP);
                     } else if (pnmhdr->idFrom == IDC_REGEXPHELP) {
+#ifdef JRB_BUILD
                         if (IsDlgButtonChecked(hwnd, IDC_DOTMATCHALL) == BST_CHECKED) {
                             MsgBox(MBINFO, IDS_REGEXPHELP_DOTALL);
                         } else {
-#if defined(JRB_BUILD) && defined(FEAT_RTFDLG_REGEX_SYNTAX)
+#ifdef FEAT_RTFDLG_REGEX_SYNTAX
                             // 2019-10-22: Replace message box with RTF-based dialog
                             ///MsgBox(MBINFO, IDS_REGEXPHELP);
                             if (!IsWindow(hDlgRegexSyntax))
@@ -5158,14 +5166,17 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                                 }
                             }
                             break;
-#else
+#else // !defined(FEAT_RTFDLG_REGEX_SYNTAX)
                             MsgBox(MBINFO, IDS_REGEXPHELP);
-#endif
+#endif // FEAT_RTFDLG_REGEX_SYNTAX
                         }
+#else // !defined(JRB_BUILD)
+                        MsgBox(MBINFO, IDS_REGEXPHELP);
+#endif // JRB_BUILD
                     } else if (pnmhdr->idFrom == IDC_WILDCARDHELP) {
                         MsgBox(MBINFO, IDS_WILDCARDHELP);
                     }
-#endif
+#endif // BOOKMARK_EDITION
                     break;
             } // switch (pnmhdr->code)
         } break; // case WM_NOTIFY
@@ -5225,7 +5236,7 @@ void EscapeWildcards(char* szFind2, LPCEDITFINDREPLACE lpefr)
     szWildcardEscaped[iDest] = (char)NULL;
     lstrcpynA(szFind2, szWildcardEscaped, COUNTOF(szWildcardEscaped));
 }
-#endif
+#endif // BOOKMARK_EDITION
 
 //=============================================================================
 //
@@ -5256,7 +5267,7 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
 #ifdef BOOKMARK_EDITION
     if (lpefr->bWildcardSearch)
         EscapeWildcards(szFind2, lpefr);
-#endif
+#endif // BOOKMARK_EDITION
 
     iSelPos = (int)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
     iSelAnchor = (int)SendMessage(hwnd, SCI_GETANCHOR, 0, 0);
@@ -5322,7 +5333,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
 #ifdef BOOKMARK_EDITION
     if (lpefr->bWildcardSearch)
         EscapeWildcards(szFind2, lpefr);
-#endif
+#endif // BOOKMARK_EDITION
 
     iSelPos = (int)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
     iSelAnchor = (int)SendMessage(hwnd, SCI_GETANCHOR, 0, 0);
@@ -5391,7 +5402,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
 #ifdef BOOKMARK_EDITION
     if (lpefr->bWildcardSearch)
         EscapeWildcards(szFind2, lpefr);
-#endif
+#endif // BOOKMARK_EDITION
 
     if (lstrcmpA(lpefr->szReplace, "^c") == 0) {
         iReplaceMsg = SCI_REPLACETARGET;
@@ -5725,7 +5736,7 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
 #ifdef BOOKMARK_EDITION
     if (lpefr->bWildcardSearch)
         EscapeWildcards(szFind2, lpefr);
-#endif
+#endif // BOOKMARK_EDITION
 
     bRegexStartOfLine = (szFind2[0] == '^');
     bRegexStartOrEndOfLine = (lpefr->fuFlags & SCFIND_REGEXP && (!lstrcmpA(szFind2, "$") || !lstrcmpA(szFind2, "^") || !lstrcmpA(szFind2, "^$")));
@@ -5848,7 +5859,7 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
 #ifdef BOOKMARK_EDITION
     if (lpefr->bWildcardSearch)
         EscapeWildcards(szFind2, lpefr);
-#endif
+#endif // BOOKMARK_EDITION
 
     bRegexStartOfLine = (szFind2[0] == '^');
     bRegexStartOrEndOfLine = (lpefr->fuFlags & SCFIND_REGEXP && (!lstrcmpA(szFind2, "$") || !lstrcmpA(szFind2, "^") || !lstrcmpA(szFind2, "^$")));
@@ -6959,7 +6970,7 @@ INT_PTR CALLBACK RegexSyntaxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 		default: {
 			Debug_OutputMsg(umsg);
 		}
-#endif
+#endif // defined(_DEBUG) && defined(DEBUG_OUTPUT_UNHANDLED_WMS)
 	}
 	return FALSE;
 }
@@ -7072,7 +7083,7 @@ INT_PTR CALLBACK EditInsertCtlCharDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, 
 		default: {
 			Debug_OutputMsg(umsg);
 		}
-#endif
+#endif // defined(_DEBUG) && defined(DEBUG_OUTPUT_UNHANDLED_WMS)
 
 	} // switch (umsg)
 
@@ -7098,7 +7109,7 @@ HWND EditInsertCtlCharDlg(HWND hwnd)
 
 	return hDlg;
 }
-#endif
+#endif // JRB_BUILD
 
 //=============================================================================
 //

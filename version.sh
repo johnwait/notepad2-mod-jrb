@@ -60,9 +60,13 @@ fi
 
 ver_full="_T(\"$ver ($hash)$ver_full\")"
 
-version_info+="#define VERSION_HASH _T(\"$hash\")"$'\n'
-version_info+="#define VERSION_REV $ver"$'\n'
-version_info+="#define VERSION_REV_FULL $ver_full"
+# 2019-09-08: Now hardcoding build date as part of version info
+build_date=$(date +"%Y-%m-%d %T")
+
+version_info+="#define VERSION_HASH      _T(\"$hash\")"$'\n'
+version_info+="#define VERSION_REV       $ver"$'\n'
+version_info+="#define VERSION_REV_FULL  $ver_full"$'\n'
+version_info+="#define BUILD_DATE        _T(\"$build_date\")"
 
 if [[ "$branch" ]]; then
   echo "On branch: $branch"

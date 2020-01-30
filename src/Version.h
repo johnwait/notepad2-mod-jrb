@@ -35,20 +35,34 @@
 
 #ifdef JRB_BUILD
     #define MY_APPNAME                   L"Notepad2-mod-jrb"
+    #define VERSION_FILENAME             L"Notepad2-jrb"
+    #define VERSION_DESCRIPTION          MY_APPNAME ///L"Notepad2-mod-jrb, a personal fork of XhmikosR's Notepad2-mod"
+    #define VERSION_JRB_COPYRIGHT        L"Notepad2-mod-jrb © 2019-2020 Contributors; see Readme-mod-jrb.txt"
+    #define VERSION_JRB_PAGEDISPLAY      L"https://github.com/johnwait/notepad2-mod/"
+    #define VERSION_MOD_COPYRIGHT        L"Notepad2-mod © 2010-2017 All contributors; see Readme-mod.txt"
+    #define VERSION_MOD_PAGEDISPLAY      L"https://xhmikosr.github.io/notepad2-mod/"
+    #define VERSION_ORG_COPYRIGHT        L"Notepad2 © 2004-2011 Florian Balmer"
+    #define VERSION_COPYRIGHT            VERSION_JRB_COPYRIGHT L";  " VERSION_MOD_COPYRIGHT L";  " VERSION_ORG_COPYRIGHT
+    #define VERSION_COMMENT              L"Official repository: " VERSION_JRB_PAGEDISPLAY
+    #define VERSION_COMPANYNAME          L"Jonathan Richard-Brochu, Notepad2-mod-jrb Contributors"
 #else
     #define MY_APPNAME                   L"Notepad2-mod"
-#endif
+    #define VERSION_FILENAME             MY_APPNAME
+    #define VERSION_DESCRIPTION          MY_APPNAME
+    #define VERSION_LEGALCOPYRIGHT_SHORT L"Copyright © 2004-2017"
+    #define VERSION_LEGALCOPYRIGHT_LONG  L"© 2004-2017 Florian Balmer"
+    #define VERSION_COPYRIGHT            VERSION_LEGALCOPYRIGHT_LONG
+    #define VERSION_COMMENT              MY_APPNAME
+    #define VERSION_COMPANYNAME          L"Florian Balmer et al."
+    #define VERSION_MOD_PAGEDISPLAY      L"https://xhmikosr.github.io/notepad2-mod/"
+#endif // JRB_BUILD
 
 #define VERSION_FILEVERSION_NUM      VERSION_MAJOR,VERSION_MINOR,VERSION_BUILD,VERSION_REV
 #define VERSION_FILEVERSION          STRINGIFY(VERSION_MAJOR) L"." STRINGIFY(VERSION_MINOR) L"." \
                                      STRINGIFY(VERSION_BUILD) L"." STRINGIFY(VERSION_REV)
-#define VERSION_LEGALCOPYRIGHT_SHORT L"Copyright © 2004-2017"
-#define VERSION_LEGALCOPYRIGHT_LONG  L"© Florian Balmer 2004-2017"
 #define VERSION_AUTHORNAME           L"Florian Balmer"
 #define VERSION_WEBPAGEDISPLAY       L"flo's freeware - http://www.flos-freeware.ch"
 #define VERSION_EMAILDISPLAY         L"florian.balmer@gmail.com"
-#define VERSION_COMPANYNAME          L"Florian Balmer et al."
-#define VERSION_MODPAGEDISPLAY       L"https://xhmikosr.github.io/notepad2-mod/"
 
 #if defined(_WIN64)
     #define VERSION_FILEVERSION_LONG  MY_APPNAME L" (64-bit) " STRINGIFY(VERSION_MAJOR) L"." \
@@ -58,7 +72,7 @@
     #define VERSION_FILEVERSION_LONG  MY_APPNAME L" (32-bit) " STRINGIFY(VERSION_MAJOR) L"." \
                                       STRINGIFY(VERSION_MINOR) L"." STRINGIFY(VERSION_BUILD) \
                                       L" r" STRINGIFY(VERSION_REV) L" (" VERSION_HASH L")"
-#endif
+#endif // defined(_WIN64)
 
 // Compiler specific
 #if defined(_MSC_VER)
@@ -80,6 +94,6 @@
     #endif
 #else
     #define VERSION_COMPILER        L"(Unknown compiler)"
-#endif
+#endif // defined(_MSC_VER)
 
 #endif // NOTEPAD2_VERSION_H
