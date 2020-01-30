@@ -76,21 +76,25 @@ typedef struct np2params {
 #define STATUS_LEXER     5
 #define STATUS_HELP    255
 
-
-//==== Change Notifications ===================================================
-#define ID_WATCHTIMER 0xA000
-#define WM_CHANGENOTIFY WM_USER+1
-#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
-#define WM_CHANGENOTIFYCLEAR WM_USER+2
-#endif
-
+// 2020-01-29: We shouldn't use the [WM_USER .. 0x7FFF] range, but [WM_APP .. 0xBFFF] instead
+//             See https://devblogs.microsoft.com/oldnewthing/20060925-02/?p=29603
 
 //==== Callback Message from System Tray ======================================
-#define WM_TRAYMESSAGE WM_USER
+#define WM_TRAYMESSAGE                 WM_APP + 0
+
+
+//==== Change Notifications ===================================================
+#define WM_CHANGENOTIFY                WM_APP + 1
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+#define WM_CHANGENOTIFYCLEAR           WM_APP + 2
+#define WM_CHANGENOTIFYUSERPRESENT     WM_APP + 3
+#endif
+// 2020-01-29: Timers IDs now expressed as being WM_APP-based
+#define ID_WATCHTIMER                  WM_APP + 0x2000
 
 
 //==== Paste Board Timer ======================================================
-#define ID_PASTEBOARDTIMER 0xA001
+#define ID_PASTEBOARDTIMER             WM_APP + 0x2001
 
 
 //==== Reuse Window Lock Timeout ==============================================

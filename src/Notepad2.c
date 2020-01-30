@@ -1113,23 +1113,25 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         UpdateToolbar();
         UpdateStatusbar();
 
-        ///if (g_bPendingChangeNotify)
-        ///  PostMessage(hwnd,WM_CHANGENOTIFY,0,0);
+#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+        // Check if we got a pending file-change notification while in background
+        if (g_bPendingChangeNotify) {
+            // Notify now
+            PostMessage(hwnd, WM_CHANGENOTIFYUSERPRESENT, 0, 0);
+        }
+#endif // FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+
         break;
 
     case WM_DROPFILES: {
         WCHAR szBuf[MAX_PATH + 40];
         HDROP hDrop = (HDROP)wParam;
 
-#ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
-		// Reset Change Notify
-        g_bPendingChangeNotify = FALSE;
-#endif
-
         if (IsIconic(hwnd))
             ShowWindow(hwnd, SW_RESTORE);
 
-        //SetForegroundWindow(hwnd);
+        // 2020-01-29: ??? TODO: Below line is candidate for deletion
+        ///SetForegroundWindow(hwnd);
 
         DragQueryFile(hDrop, 0, szBuf, COUNTOF(szBuf));
 
@@ -1152,8 +1154,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         PCOPYDATASTRUCT pcds = (PCOPYDATASTRUCT)lParam;
 
 #ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
+        // 2020-01-19: Commented out (no idea why we need to do that here)
         // Reset Change Notify
-        g_bPendingChangeNotify = FALSE;
+        ///g_bPendingChangeNotify = FALSE;
 #endif
 
         SetDlgItemInt(hwnd, IDC_REUSELOCK, GetTickCount(), FALSE);
@@ -1261,7 +1264,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             return DefWindowProc(hwnd, umsg, wParam, lParam);
 
         hmenu = LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_POPUPMENU));
-        //SetMenuDefaultItem(GetSubMenu(hmenu,1),0,FALSE);
+        ///SetMenuDefaultItem(GetSubMenu(hmenu,1),0,FALSE);
 
         pt.x = (int)(short)LOWORD(lParam);
         pt.y = (int)(short)HIWORD(lParam);
@@ -1335,22 +1338,25 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
     case WM_CHANGENOTIFY:
 #ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
-		// Check if we're currently the active window
-		if (GetActiveWindow() != hwnd) {
-			// Report notification to a later time (next activation)
-			g_bPendingChangeNotify = TRUE;
-		} else {
-			// Process it now
-			MsgChangeNotify(hwnd, wParam, lParam);
-		}
-		break;
+        // Check if we're currently the foreground window, i.e. by
+        // being shown, rather than just having the kbd focus (aka active)
+        if (GetForegroundWindow() == hwndMain) {
+            // Process it now
+            MsgChangeNotify(hwnd, wParam, lParam);
+        } else {
+            // Defer notification to a later time (next window-now-showing event)
+            g_bPendingChangeNotify = TRUE;
+        }
+        break;
 
-	case WM_ACTIVATE:
-		// Make sure this is an activation (i.e. wParam == (WA_ACTIVE || WA_CLICKACTIVE) )
-		if (!wParam) break;
-
-		// Process any pending file-change notification
-		if (g_bPendingChangeNotify) MsgChangeNotify(hwnd, wParam, lParam);
+    // 2020-01-29: WM_CHANGENOTIFYUSERPRESENT gets sent when getting back the focus
+    //             (see WM_SETFOCUS) with g_bPendingChangeNotify == TRUE
+    case WM_CHANGENOTIFYUSERPRESENT:
+        // Process the pending file-change notification now
+        if (g_bPendingChangeNotify && GetForegroundWindow() == hwndMain) {
+            MsgChangeNotify(hwnd, wParam, lParam);
+        }
+        break;
 
 #else
         if (iFileWatchingMode == 1 || bModified || iEncoding != iOriginalEncoding)
@@ -1391,17 +1397,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             }
         } else {
 
-            if (MsgBox(MBYESNO, IDS_FILECHANGENOTIFY2) == IDYES)
+            if (MsgBox(MBYESNO, IDS_FILEDELETENOTIFY) == IDYES)
                 FileSave(TRUE, FALSE, FALSE, FALSE);
         }
         // Re-establish file change monitoring
         if (!bRunningWatch)
             InstallFileWatching(szCurFile);
+
         break;
 #endif
 
 #ifdef FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
-	// This message is posted before Notepad2 reactivates itself
+    // This message is posted before Notepad2 reactivates itself
     case WM_CHANGENOTIFYCLEAR:
         g_bPendingChangeNotify = FALSE;
         break;
@@ -7639,7 +7646,6 @@ void CALLBACK WatchTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTim
             dwChangeNotifyTime = 0;
             SendMessage(hwndMain, WM_CHANGENOTIFY, 0, 0);
         }
-
         // Check Change Notification Handle
         else if (WAIT_OBJECT_0 == WaitForSingleObject(hChangeHandle, 0)) {
             // Check if the changes affect the current file
