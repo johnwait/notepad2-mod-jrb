@@ -14,6 +14,8 @@ Changes compared to the official Notepad2:
 
 Changes compared to the Notepad2-mod fork:
 * Switch to the Onigmo Regex Engine (https://github.com/k-takata/Onigmo)
+* File-change notifications received while in the background are deferred
+  until window is shown again
 * More keywords being recognized for PowerShell syntax highlighting
 
 Supported Operating Systems:
