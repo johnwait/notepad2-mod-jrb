@@ -39,11 +39,23 @@
 #include <limits.h>     // Edit.c
 #include <uxtheme.h>    // Helpers.c
 
-#define lstrcpynW(dst, src, ccount_inc_tz) \
-    (StringCchCopyW(dst, ccount_inc_tz, src) == S_OK ? dst : NULL)
+// (Re-)Implement lstrcpynW() & lstrcpynA() as wrappers around more safer StringCchCopy*()
+#define lstrcpynW(dst, src, max_buffer_size) \
+    (StringCchCopyW(dst, max_buffer_size, src) == S_OK ? dst : NULL)
+#define lstrcpynA(dst, src, max_buffer_size) \
+    {HRESULT hr = StringCchCopyA(dst, max_buffer_size, src); if (!SUCCEEDED(hr)) { DebugBreak(); }; (hr == S_OK ? dst : NULL);}
 
-#define lstrcpynA(dst, src, ccount_inc_tz) \
-    (StringCchCopyA(dst, ccount_inc_tz, src) == S_OK ? dst : NULL)
+// (Re-)Implement lstrcatnW() & lstrcatnA() as wrappers around more safer StringCchCat*()
+
+#define lstrcatnW(dst, src, max_buffer_size) \
+    (StringCchCatW(dst, max_buffer_size, src) == S_OK ? dst : NULL)
+#define lstrcatnA(dst, src, max_buffer_size) \
+    {HRESULT hr = StringCchCatA(dst, max_buffer_size, src); if (!SUCCEEDED(hr)) { DebugBreak(); }; (hr == S_OK ? dst : NULL);}
+
+#define lstrncatnW(dst, to_append_size, src, max_buffer_size) \
+    (StringCchCatNW(dst, max_buffer_size, src, to_append_size) == S_OK ? dst : NULL)
+#define lstrncatnA(dst, to_append_size, src, max_buffer_size) \
+    {HRESULT hr = StringCchCatNA(dst, max_buffer_size, src, to_append_size); if (!SUCCEEDED(hr)) { DebugBreak(); }; (hr == S_OK ? dst : NULL);}
 
 // Implement _strdec() & _strninc() when _UNICODE is used (normally in <tchar.h>)
 #ifdef _UNICODE

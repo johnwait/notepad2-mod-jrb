@@ -246,6 +246,4 @@ BOOL GetDoAnimateMinimize(VOID);
 VOID MinimizeWndToTray(HWND hWnd);
 VOID RestoreWndFromTray(HWND hWnd);
 
-
-
 ///   End of Helpers.h   \\\

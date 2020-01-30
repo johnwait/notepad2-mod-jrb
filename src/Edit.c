@@ -7118,7 +7118,7 @@ BOOL FileVars_Init(char* lpData, DWORD cbData, LPFILEVARS lpfv)
     if ((fNoFileVariables && bNoEncodingTags) || !lpData || !cbData)
         return (TRUE);
 
-    lstrcpynA(tch, lpData, min(cbData + 1, COUNTOF(tch)));
+    strncpy_s(tch, COUNTOF(tch), lpData, min(cbData + 1, COUNTOF(tch) - 1));
 
     if (!fNoFileVariables) {
         if (FileVars_ParseInt(tch, "enable-local-variables", &i) && (!i))
