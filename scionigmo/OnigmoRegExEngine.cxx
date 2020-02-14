@@ -32,6 +32,18 @@
 #include <string>
 #include <vector>
 #include <sstream>
+// 2020-01-30: Added for std::transform() in OnigmoRegExEngine::SubstituteByPosition()
+#include <algorithm>
+#include <locale>
+
+std::string toTitle( std::string s, const std::locale& loc = std::locale() ) {
+    bool last = true;
+    for (char& ch : s) {
+        ch = last ? std::toupper( ch, loc ) : std::tolower( ch, loc );
+        last = std::isspace( ch, loc );
+    }
+    return s;
+}
 
 #define VC_EXTRALEAN 1
 #include <windows.h>
@@ -112,6 +124,9 @@ public:
     {
         OutputDebugString(L"Test from OutputDebugString()\n");
         fwprintf(stderr, L"Test from %s\n", L"stderr");
+
+        // 2020-01-30: Explicitely set default std::locale
+        std::locale::global(std::locale(""));
 
         // Add to base syntax support for GNU's \< and \> word boundaries
         m_OnigSyntax.op |= ONIG_SYN_OP_ESC_LTGT_WORD_BEGIN_END;
@@ -398,8 +413,26 @@ static int GrpNameCallback(const UChar* name, const UChar* name_end,
 //   called by:  int r = onig_foreach_name(m_RegExpr, GrpNameCallback, (void*)this);
 */
 
+std::string applyTransform( std::string s, const char chTransform ) {
+    switch(chTransform) {
+        case 'L':
+        case 'F':
+            std::transform(s.begin(), s.end(), s.begin(), towlower);
+            if (chTransform == 'F') s[0] = towupper(s[0]);
+            break;
+        case 'U': std::transform(s.begin(), s.end(), s.begin(), towupper); break;
+        case 'l': s[0] = towlower(s[0]); break;
+        case 'u': s[0] = towupper(s[0]); break;
+        case 'I':
+            s = toTitle(s);
+            break;
+    }
+    return s;
+}
+
 // ============================================================================
 
+// 2020-01-30: Added preliminary support for transform sequences in replacement strings
 const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* text, Sci::Position* length)
 {
     if (m_MatchPos < 0) {
@@ -408,6 +441,7 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
     }
     std::string sText(text, *length);
     std::string const& rawReplStrg = convertReplExpr(sText);
+    char chCaseXform = '\0';
 
     m_SubstBuffer.clear();
 
@@ -415,17 +449,56 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
 
     for (size_t j = 0; j < rawReplStrg.length(); j++) {
         bool bReplaced = false;
-        if ((rawReplStrg[j] == '$') || (rawReplStrg[j] == '\\')) {
+        int grpNum = -1;
+        if ((rawReplStrg[j] == '\\') || (rawReplStrg[j] == '$')) {
+            // here, allowing either forms: \0 .. \9 or $0 .. $9
             if ((rawReplStrg[j + 1] >= '0') && (rawReplStrg[j + 1] <= '9')) {
-                int const grpNum = rawReplStrg[j + 1] - '0';
-                if (grpNum < m_Region.num_regs) {
-                    auto const rBeg = SciPos(m_Region.beg[grpNum]);
-                    auto const len = SciPos(m_Region.end[grpNum] - rBeg);
-
-                    m_SubstBuffer.append(doc->RangePointer(rBeg, len), static_cast<size_t>(len));
-                }
+                grpNum = rawReplStrg[j + 1] - '0';
                 bReplaced = true;
                 ++j;
+            } else if (rawReplStrg[j] == '\\') {
+                if ((rawReplStrg[j + 1] == '{') &&
+                    (rawReplStrg[j + 2] >= '0') && (rawReplStrg[j + 2] <= '9') &&
+                    (rawReplStrg[j + 3] == '}')) {
+                    grpNum = rawReplStrg[j + 2] - '0';
+                    bReplaced = true;
+                    j += 3;
+                } else if ((rawReplStrg[j + 1] == '{') &&
+                    (rawReplStrg[j + 2] >= '0') && (rawReplStrg[j + 2] <= '9') &&
+                           (rawReplStrg[j + 3] >= '0') && (rawReplStrg[j + 3] <= '9') &&
+                           (rawReplStrg[j + 4] == '}')) {
+                    grpNum = (rawReplStrg[j + 2] - '0') * 10 + (rawReplStrg[j + 3] - '0');
+                    bReplaced = true;
+                    j += 4;
+                } else if (rawReplStrg[j + 1] == '\\') {
+                    m_SubstBuffer.push_back('\\');
+                    bReplaced = true;
+                    ++j;
+                } else {
+                    switch (rawReplStrg[j + 1]) {
+                        case 'L': // all-lowercase transform
+                        case 'U': // all-uppercase transform
+                        case 'l': // only-first-letter-lowercase transform
+                        case 'u': // only-first-letter-uppercase transform
+                        case 'F': // phrase-case transform
+                        case 'I': // title-case transform
+                            chCaseXform = rawReplStrg[j + 1];
+                            bReplaced = true;
+                            ++j;
+                            break;
+                        case 'E': // end of transform sequence
+                            chCaseXform = '\0';
+                            bReplaced = true;
+                            ++j;
+                            break;
+                        default:
+                            // add as literal?
+                            m_SubstBuffer.push_back('\\');
+                            // let the if (!bReplaced) {} block append rawReplStrg[j+1]
+                            ++j;
+                            // TODO: Confirm code above represents the desired behaviour
+                    } // switch()
+                } // if ( == "\{#}" || == "\{##}")
             } else if (rawReplStrg[j] == '$') {
                 size_t k = ((rawReplStrg[j + 1] == '+') && (rawReplStrg[j + 2] == '{')) ? (j + 3) : ((rawReplStrg[j + 1] == '{') ? (j + 2) : 0);
                 if (k > 0) {
@@ -435,25 +508,49 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
                         ++k;
                     }
                     if (rawReplStrg[k] == '}') {
-                        int const grpNum = onig_name_to_backref_number(m_RegExpr, name_beg, UCharCPtr(&(rawReplStrg[k])), &m_Region);
-                        if ((grpNum >= 0) && (grpNum < m_Region.num_regs)) {
-                            auto const rBeg = SciPos(m_Region.beg[grpNum]);
-                            auto const len = SciPos(m_Region.end[grpNum] - rBeg);
-
-                            m_SubstBuffer.append(doc->RangePointer(rBeg, len), static_cast<size_t>(len));
-                        }
+                        grpNum = onig_name_to_backref_number(m_RegExpr, name_beg, UCharCPtr(&(rawReplStrg[k])), &m_Region);
                         bReplaced = true;
                         j = k;
                     }
                 }
-            } else if ((rawReplStrg[j] == '\\') && (rawReplStrg[j + 1] == '\\')) {
-                m_SubstBuffer.push_back('\\');
-                bReplaced = true;
-                ++j;
             }
-        }
+            // check if we got a valid backreference
+            if ((grpNum >= 0) && (grpNum < m_Region.num_regs)) {
+                auto const rBeg = SciPos(m_Region.beg[grpNum]);
+                auto const len = SciPos(m_Region.end[grpNum] - rBeg);
+                // check for case transforms
+                if (chCaseXform) {
+                    // copy backref, apply transform and append
+                    std::string sTmp(doc->ContentPointer(rBeg, len), static_cast<size_t>(len));
+                    m_SubstBuffer.append(applyTransform(sTmp, chCaseXform));
+                } else { // no transform
+    /*
+     * 2020-01-30: A while ago we implemented Document::ContentPointer() as a
+     *             replacement for ::RangePointer() over issues with non-contiguous
+     *             string buffers sometimes causing an expected match to fail;
+     *             It now bears the question: shouldn't be also be using it here?!?
+     */
+#if FALSE then
+                    m_SubstBuffer.append(doc->RangePointer(rBeg, len), static_cast<size_t>(len));
+#else
+                    m_SubstBuffer.append(doc->ContentPointer(rBeg, len), static_cast<size_t>(len));
+#endif
+                }
+                bReplaced = true;
+            }
+        } // if ((rawReplStrg[j] == '\\') || (rawReplStrg[j] == '$'))
+        // append anything that wasn't escaped
         if (!bReplaced) {
-            m_SubstBuffer.push_back(rawReplStrg[j]);
+            // check for case transforms
+            if (!chCaseXform) // no transform
+                m_SubstBuffer.push_back(rawReplStrg[j]);
+            else {
+                // TODO: Consider if transforms should also be applied here
+                //       (theoretically here they're literals, and transforms are
+                //       meant to allow conversion of text which isn't already
+                //       provided literally).
+                m_SubstBuffer.push_back(rawReplStrg[j]);
+            }
         }
     }
 
@@ -568,81 +665,129 @@ std::string& OnigmoRegExEngine::convertReplExpr(std::string& replStr)
                 // former behavior convenience:
                 // change "\\<n>" to deelx's group reference ($<n>)
                 tmpStr.push_back('$');
+                // the backref index will be appended when reaching the
+                // default: clause of the next switch() block
             }
             switch (ch) {
-                // check for escape seq:
-            case 'a':
-                tmpStr.push_back('\a');
-                break;
-            case 'b':
-                tmpStr.push_back('\b');
-                break;
-            case 'f':
-                tmpStr.push_back('\f');
-                break;
-            case 'n':
-                tmpStr.push_back('\n');
-                break;
-            case 'r':
-                tmpStr.push_back('\r');
-                break;
-            case 't':
-                tmpStr.push_back('\t');
-                break;
-            case 'v':
-                tmpStr.push_back('\v');
-                break;
-            case '\\':
-                tmpStr.push_back('\\'); // preserve escd "\"
-                tmpStr.push_back('\\');
-                break;
-            case 'x':
-            case 'u': {
-                bool bShort = (ch == 'x');
-                char buf[8] = { '\0' };
-                char* pch = buf;
-                WCHAR val[2] = L"";
-                int hex;
-                val[0] = 0;
-                ++i;
-                hex = GetHexDigit(replStr[i]);
-                if (hex >= 0) {
+                // 2020-01-30: Added preliminary support for backreferences with
+                //             transforms
+                case 'L': // all-lowercase transform
+                case 'U': // all-uppercase transform
+                case 'l': // only-first-ltr-lowercase transform
+                ///case 'u': // only-first-ltr-uppercase transform
+                case 'F': // phrase-case transform (e.g. Ulll llll)
+                case 'I': // title-case transform (e.g. Ulll Ulll)
+                {
+                    // push modifier (we needed to make sure we had digits first)
+                    tmpStr.push_back('\\'); tmpStr.push_back(ch);
+                    // Check if next char if a digit, for catching sequences of the sort:
+                    // - \U1 .. \U99  =>  \U\1\E .. \U\{99}\E
+                    // - \L1 .. \L99  =>  \L\1\E .. \L\{99}\E
+                    // - \F1 .. \F99  =>  \F\1\E .. \F\{99}\E
+                    // - \I1 .. \I99  =>  \I\1\E .. \I\{99}\E
+                    char ch2 = replStr[i + 1];
+                    if (ch2 >= '1' && ch2 <= '9') {
+                        i++;
+                        // start pushing back backref index
+                        tmpStr.push_back('\\'); tmpStr.push_back('{'); tmpStr.push_back(ch2);
+                        // check if we have a second digit
+                        ch2 = replStr[i + 1];
+                        if (ch2 >= '0' && ch2 <= '9') {
+                            i++;
+                            // push second digit of backref index
+                            tmpStr.push_back(ch2);
+                        }
+                        // finalize backref
+                        tmpStr.push_back('}');
+                        // close transform sequence
+                        tmpStr.push_back('\\'); tmpStr.push_back('E');
+                    } else {
+                        // sequences \U, \L, \F, & \I kept as-is
+                    }
+                    break;
+                } // case 'U'/'L'/'F'/'I'
+
+                case 'E': // end of transform sequence
+                    tmpStr.push_back('\\'); tmpStr.push_back('E');
+                    break;
+                
+                    // check for escape seq:
+                case 'a':
+                    tmpStr.push_back('\a');
+                    break;
+                case 'b':
+                    tmpStr.push_back('\b');
+                    break;
+                case 'f':
+                    tmpStr.push_back('\f');
+                    break;
+                case 'n':
+                    tmpStr.push_back('\n');
+                    break;
+                case 'r':
+                    tmpStr.push_back('\r');
+                    break;
+                case 't':
+                    tmpStr.push_back('\t');
+                    break;
+                case 'v':
+                    tmpStr.push_back('\v');
+                    break;
+                case '\\':
+                    tmpStr.push_back('\\'); // preserve escd "\"
+                    tmpStr.push_back('\\');
+                    break;
+                case 'x':
+                case 'u': {
+                    bool bShort = (ch == 'x');
+                    char buf[8] = { '\0' };
+                    char* pch = buf;
+                    WCHAR val[2] = L"";
+                    int hex;
+                    val[0] = 0;
                     ++i;
-                    val[0] = static_cast<WCHAR>(hex);
                     hex = GetHexDigit(replStr[i]);
                     if (hex >= 0) {
                         ++i;
-                        val[0] *= 16;
-                        val[0] += static_cast<WCHAR>(hex);
-                        if (!bShort) {
-                            hex = GetHexDigit(replStr[i]);
-                            if (hex >= 0) {
-                                ++i;
-                                val[0] *= 16;
-                                val[0] += static_cast<WCHAR>(hex);
+                        val[0] = static_cast<WCHAR>(hex);
+                        hex = GetHexDigit(replStr[i]);
+                        if (hex >= 0) {
+                            ++i;
+                            val[0] *= 16;
+                            val[0] += static_cast<WCHAR>(hex);
+                            if (!bShort) {
                                 hex = GetHexDigit(replStr[i]);
                                 if (hex >= 0) {
                                     ++i;
                                     val[0] *= 16;
                                     val[0] += static_cast<WCHAR>(hex);
+                                    hex = GetHexDigit(replStr[i]);
+                                    if (hex >= 0) {
+                                        ++i;
+                                        val[0] *= 16;
+                                        val[0] += static_cast<WCHAR>(hex);
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (val[0]) {
-                        val[1] = 0;
-                        WideCharToMultiByte(CP_UTF8, 0, val, -1, buf, ARRAYSIZE(val), nullptr, nullptr);
-                        tmpStr.push_back(*pch++);
-                        while (*pch)
+                        if (val[0]) {
+                            val[1] = 0;
+                            WideCharToMultiByte(CP_UTF8, 0, val, -1, buf, ARRAYSIZE(val), nullptr, nullptr);
                             tmpStr.push_back(*pch++);
+                            while (*pch)
+                                tmpStr.push_back(*pch++);
+                        } else
+                            tmpStr.push_back(ch); // unknown ctrl seq
+                    // could be the \u one-letter uppercase transform
+                    } else if (ch == 'u') {
+                        // preserve as literal
+                        tmpStr.push_back('\\'); tmpStr.push_back(ch);
                     } else
                         tmpStr.push_back(ch); // unknown ctrl seq
-                } else
-                    tmpStr.push_back(ch); // unknown ctrl seq
-            } break;
+                } break;
 
             default:
-                tmpStr.push_back(ch); // unknown ctrl seq
+                tmpStr.push_back(ch); // unknown ctrl seq *or* backref index (following the '$')
                 break;
             }
         } else {

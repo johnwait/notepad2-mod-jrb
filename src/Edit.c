@@ -5386,49 +5386,62 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
     char* pszReplace2;
     BOOL bSuppressNotFound = FALSE;
 
+    // Make sure we have something to search for
     if (!lstrlenA(lpefr->szFind))
         return /*EditFindReplaceDlg(hwnd,lpefr,TRUE)*/ FALSE;
 
+    // Start processing the search string
     lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
+    // Expand backslash-escaped sequences, if expected to
     if (lpefr->bTransformBS)
-        TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
-        (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
+        TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP), (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
 
+    // Recheck for a null search string
     if (lstrlenA(szFind2) == 0) {
         InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
         return FALSE;
     }
 
 #ifdef BOOKMARK_EDITION
+    // Escape wildcards, if configured to
+    // NOTE: This and REGEX search are mutually exclusive
     if (lpefr->bWildcardSearch)
         EscapeWildcards(szFind2, lpefr);
 #endif // BOOKMARK_EDITION
 
+    // Check if we're expected to use the clipboard content
+    // as the replacement text
     if (lstrcmpA(lpefr->szReplace, "^c") == 0) {
+        // Use clipboard content as replacement
         iReplaceMsg = SCI_REPLACETARGET;
         pszReplace2 = EditGetClipboardText(hwnd);
     } else {
-        //lstrcpyA(szReplace2,lpefr->szReplace);
+        // Use provided text as replacement
         pszReplace2 = StrDupA(lpefr->szReplace);
+        // Also expand backslash-escaped sequences in the replacement text
         if (lpefr->bTransformBS)
             TransformBackslashes(pszReplace2, (lpefr->fuFlags & SCFIND_REGEXP),
             (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
     }
 
+    // Making sure we have a valid string
     if (!pszReplace2)
         pszReplace2 = StrDupA("");
 
+    // Start the "find" operation
     iSelStart = (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
     iSelEnd = (int)SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
 
     ZeroMemory(&ttf, sizeof(ttf));
 
-    ttf.chrg.cpMin = (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0); // Start!
+    ttf.chrg.cpMin = (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
     ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
     ttf.lpstrText = szFind2;
 
     iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
 
+    // If we reached the end of the document and are allowed to wrap around, do so
+    // with a new "find" operation
     if (iPos == -1 && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap) {
         if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW)) {
             ttf.chrg.cpMin = 0;
@@ -5437,14 +5450,16 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
             bSuppressNotFound = TRUE;
     }
 
+    // Check if the Scintilla edit came up empty-handed
     if (iPos == -1) {
-        // notfound
+        // Search string not found; clean up and return
         LocalFree(pszReplace2);
         if (!bSuppressNotFound)
             InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
         return FALSE;
     }
 
+    // Make sure 
     if (iSelStart != ttf.chrgText.cpMin || iSelEnd != ttf.chrgText.cpMax) {
         LocalFree(pszReplace2);
         EditSelectEx(hwnd, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
