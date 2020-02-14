@@ -1,66 +1,81 @@
-Characters and classes:
-	matches...
-.	Any character, incl. line breaks when option selected
-[..]	Character class set ([abc]), range ([a-c]) or mix of both
-[^..]	Negated char class
-[:xyz:]	POSIX bracket expression
-\d, \D	Any single digit, non-digit char
-\s, \S	Any whitespace, non-whitespace char
-\w, \W	Any word, non-word char
-\h, \H	Any hexadecimal [0-9a-fA-F], non-hexadecimal char
-\x##	Char whose code is the hex value ##h (0x##), from \x00 to \xFF
-\###	Char whose code is the octal value ###o, from \000 to \777
-\x{#}	Unicode char by hex value, for # => 0 to FFFF
-\a	Bell character (\x07)
-\t	Horizontal tab (\x09)
-\n	Line feed (\x0a)
-\v	Vertical tab (\x0b)
-\f	Form feed (\x0c)
-\r	Carriage return (\x0d)
-\e	Escape (\x1b)
+  Characters and classes:
+       matches...
+    .        Any character, incl. line breaks when the dialog option is
+             ticked
+    [..]     Character class set ([abc]), range ([a-c]) or a mix of both
+             ([a-cfh-k])
+    [^..]    Negated char class set ([^abc]), range ([^a-c]) or mixed
+             ([^a-cfh-k])
+    [:xyz:]  POSIX bracket expression (alnum, alpha, ascii, blank, cntrl,
+             graph, lower, etc.)
+    \d ; \D  Any single digit   ; Any non-digit character
+    \s ; \S  Any whitespace     ; Any non-whitespace character
+    \w ; \W  Any word character ; Any non-word character
+    \h ; \H  Any hexadecimal (i.e. [0-9a-fA-F]) ; Any non-hexadecimal
+             character
+    \x##     ASCII char whose code is the hexadecimal value ##h (i.e. 0x##)
+             is from \x00 to \xFF
+    \###     ASCII char whose code is the octcal value ###o,
+             from \000 to \777
+    \x{#}    Unicode character by its hexadecimal codepoint value,
+             for # => 0 to FFFF
+    \a       Bell character, i.e. \x07
+  *** \b does NOT match backspace chars, i.e. \x08
+    \t       Horizontal tab, i.e. \x09
+    \n       Line feed, i.e. \x0A
+    \v       Vertical tab, i.e. \x0B
+    \f       Form feed, i.e. \x0C
+    \r       Carriage return, i.e. \x0D
+    \e       Escape char, i.e. \x1B
 
-Anchors:
-\A, \Z	Start, end of text
-^,  $	Start, end of line (with or w/o \n)
-\<, \>	Start, and of a word
-\b, \B	Boundary, non-word boundary
+  Anchors:
+    \A ; \Z  Start of text ; End of text
+    ^  ; $   Start of a line ; End of a line
+    \< ; \>  Start of word ; End of word
+    \b ; \B  Word boundary ; Non-w. boundary
+    \Q … \E  Escaped sequence of chars, where everything between \Q & \E
+             matches literally
 
-Quantifier:
-	matches preceding...
-?	0 or 1 times
-*	0 or more times
-+	1 or more times
-{n}	Exactly n times
-{m,n}	Between m & n times (inclusive)
-{,n}	Up to n times
-..?	Non greedy modifier, e.g. ??, *?, +? & {m,n}?
-..+	Possessive modifier, e.g. ?+, *+, ++ & {m,n}+
+  Quantifier:
+       matches preceeding...
+    ?        0 or 1 time
+    *        0 or more times
+    +        1 or more times
+    {n}      Exactly n times
+    {m,n}    Between m & n times (inclusive)
+    {,n}     Up to =n times
+    ..?      Lazy modifier (does incremental backtracking),
+             e.g.:  ??, *?, +? & {m,n}?
+    ..+      Possessive modifier (disallows backtracking),
+             e.g.:  ?+, *+, ++ & {m,n}+
 
-Subexpressions:
-..|..	Alternation
-(..)	Capturing group
-(?:..)	Non-capturing group
-(?>..)	Atomic group (non-capturing)
-(#..)	Comment
+  Subexpressions:                             Backreferences:
+    ..|..   Alternation                         \#       For # => 1 to 9
+    (..)    Capturing group                     \k<#>    For # => 1 to 99
+    (?:..)  Non-capturing group                 \k'#'    For # => 1 to 99
+    (?>..)  Atomic group (non-capturing)        (?P=#)   For # => 1 to 99
+    (#..)   Comment
 
-Backrefs:
-\#	For # => 1 to 9
-\k<#>	For # => 1 and 99
-\k'#'	For # => 1 and 99
-(?P=#)	For # => 1 to 99
+  Named Capturing Groups (any of the following):
+    (?<name>/regex/)
+    (?'name'/regex/)
+    (?P<name>/regex/)
 
-Named Capturing Groups:
-(?<name>/regex/)  /or/  (?'name'/regex/)  /or/  (?P<name>/regex/)
+  Named Backreferences (any of the following):
+    \k<name>
+    \k'name'
+    (?P=name)
 
-Named Backrefs:
-\k<name>  /or/  \k'name'  /or/  (?P=name)
+  Subroutine Calls (sub-expression recall, all equivalent):
+    \g<name>
+    \g'name'
+    (?P>name)
+    (?&name)
 
-Subroutine Calls:
-\g<name>  /or/  \g'name'  /or/  (?P>name) /or/ (?&name)
-
-Conditionals
-..(?=/regex/)	Positive lookahead =>	first .. followed by /regex/
-..(?!/regex/)	Negative lookahead =>	first .. *not* followed by /regex/
-(?<=/regex/)..	Positive <= lookbehind	first .. preceeded by /regex/
-(?<!/regex/)..	Negative <= lookbehind	first .. *not* preceeded by /regex/
-(?(..)/then/|/else/)	Conditional: if (..) then match /then/; or else match /else/
+  Conditionals
+    .. (?=/regex/)   Positive lookahead =>  first .. followed by /regex/
+    .. (?!/regex/)   Negative lookahead =>  first .. *not* foll. by /regex/
+    (?<=/regex/) ..  Positive <= lookbehind first .. preceeded by /regex/
+    (?<!/regex/) ..  Negative <= lookbehind first .. *not* prec. by /regex/
+    (?(..)/then/|/else/)  Conditional:
+                          if (..) then match /then/; or else match /else/
