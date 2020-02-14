@@ -5644,8 +5644,18 @@ BOOL SaveSettings(BOOL bSaveSettingsNow)
 
     WCHAR wchTmp[MAX_PATH];
 
-    if (lstrlen(szIniFile) == 0)
-        return FALSE;
+    if (lstrlen(szIniFile) == 0) {
+        // Come on, try harder!!
+        ///return FALSE;
+        BOOL bCreateFailure = FALSE;
+        if (lstrlen(szIniFile2) > 0) {
+            if (CreateIniFileEx(szIniFile2)) {
+                lstrcpy(szIniFile, szIniFile2);
+                lstrcpy(szIniFile2, L"");
+            } else
+                bCreateFailure = TRUE;
+        }
+    }
 
     CreateIniFile();
 
