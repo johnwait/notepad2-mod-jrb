@@ -1,6 +1,6 @@
-Notepad2 Copyright © 2004-2011 Florian Balmer
-Notepad2-mod Copyright © 2010-2017 All contributors, see Readme-mod.txt
-Notepad2-mod-jrb Copyright © 2019-2020 Contributors, see Readme-mod-jrb.txt
+Notepad2 Copyright © 2004-2011 Florian Balmer;
+Notepad2-mod Copyright © 2010-2017 All contributors, see "Readme-mod.txt" for details;
+Notepad2-mod-jrb Copyright © 2019-2020 Contributors, see "Readme-mod-jrb.txt" for details.
 
 All rights reserved.
 
