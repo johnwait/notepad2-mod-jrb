@@ -14,8 +14,29 @@ rem *
 rem ******************************************************************************
 
 SETLOCAL ENABLEEXTENSIONS
-CD /D %~dp0
+CD /D "%~dp0"
 
+:: Configuration
+SET "l_project_name=Notepad2-mod-jrb"
+SET "l_installer_naming_scheme=$PRJNAME$_v$VERMAJOR$.$VERMINOR$.$VERBUILD$.$VERREV$"
+SET "l_zip_common_scheme=$PRJNAME$_v$VERMAJOR$.$VERMINOR$.$VERBUILD$.$VERREV$"
+SET "l_zip_naming_scheme=$PRJNAME$_v$VERMAJOR$.$VERMINOR$.$VERBUILD$.$VERREV$_$ARCH$"
+SET "l_project_devenv=VS2017" & REM <= Still needed?
+SET "l_project_binary=Notepad2-jrb.exe"
+SET "l_path_output_x86=..\bin\Release_x86"
+SET "l_path_output_x64=..\bin\Release_x64"
+SET "l_readme_path=..\"
+SET "l_readme_file=Readme-mod-jrb.txt"
+SET "l_readme2_file=Readme-mod.txt"
+SET "l_readme3_file=Readme.txt"
+SET "l_license_path=..\"
+SET "l_license_file=License.txt"
+SET "l_info_path=..\"
+SET "l_info_file=Notepad2.txt"
+SET "l_config_path=..\distrib\"
+SET "l_config_file=Notepad2.ini"
+SET "l_zip_everything=1"
+SET "l_project_zip=$PRJNAME$_v$VERMAJOR$.$VERMINOR$.$VERBUILD$.$VERREV$.zip"
 
 rem Check for the help switches
 IF /I "%~1" == "help"   GOTO SHOWHELP
@@ -27,59 +48,72 @@ IF /I "%~1" == "/?"     GOTO SHOWHELP
 
 rem Check for the first switch
 IF "%~1" == "" (
-  SET "COMPILER=VS2017"
+    rem Set default value
+    SET "COMPILER=%l_project_devenv%"
 ) ELSE (
-  IF /I "%~1" == "VS2017"   (SET "COMPILER=VS2017" & GOTO START)
-  IF /I "%~1" == "/VS2017"  (SET "COMPILER=VS2017" & GOTO START)
-  IF /I "%~1" == "-VS2017"  (SET "COMPILER=VS2017" & GOTO START)
-  IF /I "%~1" == "--VS2017" (SET "COMPILER=VS2017" & GOTO START)
+    IF /I "%~1" == "%l_project_devenv%"   (SET "COMPILER=%l_project_devenv%" & GOTO START)
+    IF /I "%~1" == "/%l_project_devenv%"  (SET "COMPILER=%l_project_devenv%" & GOTO START)
+    IF /I "%~1" == "-%l_project_devenv%"  (SET "COMPILER=%l_project_devenv%" & GOTO START)
+    IF /I "%~1" == "--%l_project_devenv%" (SET "COMPILER=%l_project_devenv%" & GOTO START)
 
-  ECHO.
-  ECHO Unsupported commandline switch!
-  ECHO Run "%~nx0 help" for details about the commandline switches.
-  CALL :SUBMSG "ERROR" "Compilation failed!"
+    ECHO:
+    ECHO:Unsupported commandline switch!
+    ECHO:Run "%~nx0 help" for details about the commandline switches.
+    CALL :SubMsg "ERROR" "Compilation failed!"
 )
 
 
 :START
-IF EXIST "%~dp0..\signinfo.txt" SET "SIGN=True"
+IF EXIST "..\signinfo.txt" SET "SIGN=True"
 
-SET INPUTDIRx86=bin\%COMPILER%\Release_x86
-SET INPUTDIRx64=bin\%COMPILER%\Release_x64
-IF /I NOT "%COMPILER%" == "VS2017" SET SUFFIX=_%COMPILER%
+IF /I NOT "%COMPILER%" == "%l_project_devenv%" SET SUFFIX=_%COMPILER%
 SET "TEMP_NAME=temp_zip%SUFFIX%"
 
-IF NOT EXIST "..\%INPUTDIRx86%\Notepad2-jrb.exe" CALL :SUBMSG "ERROR" "Compile Notepad2 x86 first!"
-IF NOT EXIST "..\%INPUTDIRx64%\Notepad2-jrb.exe" CALL :SUBMSG "ERROR" "Compile Notepad2 x64 first!"
+IF NOT EXIST "%l_path_output_x86%\%l_project_binary%" CALL :SubMsg "ERROR" "Compile %l_project_name% x86 first!"
+IF NOT EXIST "%l_path_output_x64%\%l_project_binary%" CALL :SubMsg "ERROR" "Compile %l_project_name% x64 first!"
 
 CALL :SubGetVersion
 CALL :SubDetectSevenzipPath
 
-IF /I "%SEVENZIP%" == "" CALL :SUBMSG "ERROR" "7za wasn't found!"
+IF /I "%SEVENZIP%" == "" CALL :SubMsg "ERROR" "7za wasn't found!"
 
-IF /I "%SIGN%" == "True" CALL :SubSign %INPUTDIRx86%
-IF /I "%SIGN%" == "True" CALL :SubSign %INPUTDIRx64%
+IF /I "%SIGN%" == "True" CALL :SubSign "%l_path_output_x86%"
+IF /I "%SIGN%" == "True" CALL :SubSign "%l_path_output_x64%"
 
-CALL :SubZipFiles %INPUTDIRx86% x86
-CALL :SubZipFiles %INPUTDIRx64% x64
+CALL :SubZipFiles "%l_path_output_x86%" x86
+CALL :SubZipFiles "%l_path_output_x64%" x64
+
+IF NOT "%l_zip_everything%"=="1" GOTO :END
+
+CALL :SubMsg "INFO" "Creating ZIP archive of everything..."
 
 rem Compress everything into a single ZIP file
 PUSHD "packages"
-IF EXIST "Notepad2-mod.zip" DEL "Notepad2-mod.zip"
+IF EXIST "%l_project_zip%"  DEL "%l_project_zip%"
 IF EXIST "%TEMP_NAME%"      RD /S /Q "%TEMP_NAME%"
 IF NOT EXIST "%TEMP_NAME%"  MD "%TEMP_NAME%"
 
-IF EXIST "Notepad2-mod.%NP2_VER%*.exe" COPY /Y /V "Notepad2-mod.%NP2_VER%*.exe" "%TEMP_NAME%\" >NUL
-IF EXIST "Notepad2-mod.%NP2_VER%*.zip" COPY /Y /V "Notepad2-mod.%NP2_VER%*.zip" "%TEMP_NAME%\" >NUL
+SET "INSTALLER_FNAME=%l_installer_naming_scheme%"
+SET "ZIP_CMN_FNAME=%l_zip_common_scheme%"
+
+rem Expand name fields
+Call :SubExpandFields INSTALLER_FNAME
+Call :SubExpandFields ZIP_CMN_FNAME
+
+IF EXIST "%INSTALLER_FNAME%*.exe" COPY /Y /V "%INSTALLER_FNAME%*.exe" "%TEMP_NAME%\" >NUL
+IF EXIST "%ZIP_CMN_FNAME%*.zip" COPY /Y /V "%ZIP_CMN_FNAME%*.zip" "%TEMP_NAME%\" >NUL
 
 PUSHD "%TEMP_NAME%"
 
-"%SEVENZIP%" a -tzip -mx=9 Notepad2-mod.zip * >NUL
-IF %ERRORLEVEL% NEQ 0 CALL :SUBMSG "ERROR" "Compilation failed!"
+rem Expand name fields
+Call :SubExpandFields l_project_zip
 
-CALL :SUBMSG "INFO" "Notepad2-mod.zip created successfully!"
+"%SEVENZIP%" a -tzip -mx=9 "%l_project_zip%" * >NUL
+IF %ERRORLEVEL% NEQ 0 CALL :SubMsg "ERROR" "Compilation failed!"
 
-MOVE /Y "Notepad2-mod.zip" ".." >NUL
+CALL :SubMsg "INFO" "%l_project_zip% created successfully!"
+
+MOVE /Y "%l_project_zip%" ".." >NUL
 
 POPD
 IF EXIST "%TEMP_NAME%" RD /S /Q "%TEMP_NAME%"
@@ -89,99 +123,124 @@ POPD
 
 :END
 TITLE Finished!
-ECHO.
+ECHO:Finished!
+ECHO:
+PAUSE
 ENDLOCAL
-EXIT /B
+GOTO :EOF
 
 
 :SubZipFiles
-SET "ZIP_NAME=Notepad2-mod.%NP2_VER%_%2%SUFFIX%"
-TITLE Creating %ZIP_NAME%.zip...
-CALL :SUBMSG "INFO" "Creating %ZIP_NAME%.zip..."
+SET "BINPATH=%~1"
+SET "ARCH=%~2"
+SET "ZIP_FNAME=%l_zip_naming_scheme%.zip"
+
+rem Expand name fields
+Call :SubExpandFields ZIP_FNAME
+
+TITLE Creating %ZIP_FNAME%...
+CALL :SubMsg "INFO" "Creating %ZIP_FNAME%..."
 
 IF EXIST "%TEMP_NAME%"     RD /S /Q "%TEMP_NAME%"
 IF NOT EXIST "%TEMP_NAME%" MD "%TEMP_NAME%"
 IF NOT EXIST "packages"    MD "packages"
 
-FOR %%A IN ("..\License.txt" "..\%1\Notepad2-jrb.exe"^
- "..\distrib\Notepad2.ini" "..\Notepad2.txt" "..\Readme-mod.txt"
+FOR %%A IN ("%l_license_path%%l_license_file%" "%1\%l_project_binary%"^
+    "%l_config_path%%l_config_file%" "%l_info_path%%l_info_file%"^
+    "%l_readme_path%%l_readme_file%" "%l_readme_path%%l_readme2_file%"^
+    "%l_readme_path%%l_readme3_file%"
 ) DO COPY /Y /V "%%A" "%TEMP_NAME%\"
 
 PUSHD "%TEMP_NAME%"
 "%SEVENZIP%" a -tzip -mx=9^
- "%ZIP_NAME%.zip" "License.txt" "Notepad2-jrb.exe"^
- "Notepad2.ini" "Notepad2.txt" "Readme-mod.txt" >NUL
-IF %ERRORLEVEL% NEQ 0 CALL :SUBMSG "ERROR" "Compilation failed!"
+    "%ZIP_FNAME%" "%l_license_file%" "%l_project_binary%"^
+    "%l_config_file%" "%l_info_file%" "%l_readme_file%"^
+    "%l_readme2_file%" "%l_readme3_file%" >NUL
+IF %ERRORLEVEL% NEQ 0 CALL :SubMsg "ERROR" "Compilation failed!"
 
-CALL :SUBMSG "INFO" "%ZIP_NAME%.zip created successfully!"
+CALL :SubMsg "INFO" "%ZIP_FNAME% created successfully!"
 
-MOVE /Y "%ZIP_NAME%.zip" "..\packages" >NUL
+MOVE /Y "%ZIP_FNAME%" "..\packages" >NUL
 POPD
 IF EXIST "%TEMP_NAME%" RD /S /Q "%TEMP_NAME%"
-EXIT /B
+GOTO:EOF
 
 
 :SubDetectSevenzipPath
 FOR %%G IN (7z.exe) DO (SET "SEVENZIP_PATH=%%~$PATH:G")
-IF EXIST "%SEVENZIP_PATH%" (SET "SEVENZIP=%SEVENZIP_PATH%" & EXIT /B)
+IF EXIST "%SEVENZIP_PATH%" (SET "SEVENZIP=%SEVENZIP_PATH%" & GOTO :EOF)
 
 FOR %%G IN (7za.exe) DO (SET "SEVENZIP_PATH=%%~$PATH:G")
-IF EXIST "%SEVENZIP_PATH%" (SET "SEVENZIP=%SEVENZIP_PATH%" & EXIT /B)
+IF EXIST "%SEVENZIP_PATH%" (SET "SEVENZIP=%SEVENZIP_PATH%" & GOTO :EOF)
 
 FOR /F "tokens=2*" %%A IN (
   'REG QUERY "HKLM\SOFTWARE\7-Zip" /v "Path" 2^>NUL ^| FIND "REG_SZ" ^|^|
    REG QUERY "HKLM\SOFTWARE\Wow6432Node\7-Zip" /v "Path" 2^>NUL ^| FIND "REG_SZ"') DO SET "SEVENZIP=%%B\7z.exe"
-EXIT /B
+GOTO :EOF
 
 
 :SubGetVersion
-rem Get the version
+REM Get the version
 FOR /F "tokens=3,4 delims= " %%K IN (
-  'FINDSTR /I /L /C:"define VERSION_MAJOR" "..\src\Version.h"') DO (SET "VerMajor=%%K")
+    'FINDSTR /I /L /C:"define VERSION_MAJOR" "..\src\Version.h"') DO (SET "VerMajor=%%K")
 FOR /F "tokens=3,4 delims= " %%K IN (
-  'FINDSTR /I /L /C:"define VERSION_MINOR" "..\src\Version.h"') DO (SET "VerMinor=%%K")
+    'FINDSTR /I /L /C:"define VERSION_MINOR" "..\src\Version.h"') DO (SET "VerMinor=%%K")
 FOR /F "tokens=3,4 delims= " %%K IN (
-  'FINDSTR /I /L /C:"define VERSION_BUILD" "..\src\Version.h"') DO (SET "VerBuild=%%K")
+    'FINDSTR /I /L /C:"define VERSION_BUILD" "..\src\Version.h"') DO (SET "VerBuild=%%K")
 FOR /F "tokens=3,4 delims= " %%K IN (
-  'FINDSTR /I /L /C:"define VERSION_REV " "..\src\VersionRev.h"') DO (SET "VerRev=%%K")
+    'FINDSTR /I /L /C:"define VERSION_REV " "..\src\VersionRev.h"') DO (SET "VerRev=%%K")
 
-SET NP2_VER=%VerMajor%.%VerMinor%.%VerBuild%.%VerRev%
-EXIT /B
+SET BIN_VER=%VerMajor%.%VerMinor%.%VerBuild%.%VerRev%
+GOTO :EOF
+
+
+:SubExpandFields
+SET "TARGET_VAR=%~1"
+CALL SET "%TARGET_VAR%=%%%TARGET_VAR%:$PRJNAME$=%l_project_name%%%"
+CALL SET "%TARGET_VAR%=%%%TARGET_VAR%:$ARCH$=%ARCH%%%"
+CALL SET "%TARGET_VAR%=%%%TARGET_VAR%:$VERMAJOR$=%VerMajor%%%"
+CALL SET "%TARGET_VAR%=%%%TARGET_VAR%:$VERMINOR$=%VerMinor%%%"
+CALL SET "%TARGET_VAR%=%%%TARGET_VAR%:$VERBUILD$=%VerBuild%%%"
+CALL SET "%TARGET_VAR%=%%%TARGET_VAR%:$VERREV$=%VerRev%%%"
+GOTO :EOF
 
 
 :SubSign
-IF %ERRORLEVEL% NEQ 0 EXIT /B
-REM %1 is the subfolder
+SET "BIN_PATH=%~1"
+IF %ERRORLEVEL% NEQ 0 GOTO :EOF
 
-CALL "%~dp0sign.bat" "..\%1\Notepad2-jrb.exe" || (CALL :SUBMSG "ERROR" "Problem signing ..\%1\Notepad2-jrb.exe" & GOTO Break)
+CALL "%~dp0sign.bat" "..\%BIN_PATH%\%l_project_binary%" || (CALL :SubMsg "ERROR" "Problem signing ..\%BIN_PATH%\%l_project_binary%" & GOTO Break)
+CALL :SubMsg "INFO" "..\%BIN_PATH%\%l_project_binary% signed successfully."
 
-CALL :SUBMSG "INFO" "..\%1\Notepad2-jrb.exe signed successfully."
 
 :Break
-EXIT /B
+GOTO :EOF
 
 
 :SHOWHELP
 TITLE %~nx0 %1
-ECHO. & ECHO.
-ECHO Usage:  %~nx0 [VS2017]
-ECHO.
-ECHO Notes:  You can also prefix the commands with "-", "--" or "/".
-ECHO         The arguments are not case sensitive.
-ECHO. & ECHO.
-ECHO Executing %~nx0 without any arguments is equivalent to "%~nx0 VS2017"
-ECHO.
+ECHO:
+ECHO:
+ECHO:Usage:  %~nx0 [%l_project_devenv%]
+ECHO:
+ECHO:Notes:  You can also prefix the commands with "-", "--" or "/".
+ECHO:        The arguments are not case sensitive.
+ECHO:
+ECHO:Executing %~nx0 without any arguments is equivalent to "%~nx0 %l_project_devenv%"
+ECHO:
+ECHO:
 ENDLOCAL
-EXIT /B
+GOTO :EOF
 
 
-:SUBMSG
-ECHO. & ECHO ______________________________
-ECHO [%~1] %~2
-ECHO ______________________________ & ECHO.
+:SubMsg
+ECHO. & ECHO:______________________________
+ECHO:[%~1] %~2
+ECHO:______________________________ & ECHO:
 IF /I "%~1" == "ERROR" (
-  PAUSE
-  EXIT
+    CHOICE /C "YN" /N /M "Build failed; do you wish to retry? [y,n]: "
+    IF ERRORLEVEL 2 EXIT
+    GOTO START
 ) ELSE (
-  EXIT /B
+    EXIT /B
 )

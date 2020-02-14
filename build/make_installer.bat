@@ -63,7 +63,9 @@ CALL :SubInstaller
 
 :END
 TITLE Finished!
+ECHO:Finished!
 ECHO:
+PAUSE
 ENDLOCAL
 GOTO :EOF
 
@@ -82,24 +84,24 @@ GOTO :EOF
 rem Detect if we are running on 64bit Windows and use Wow6432Node since Inno Setup is
 rem a 32-bit application, and set the registry key of Inno Setup accordingly
 IF DEFINED PROGRAMFILES(x86) (
-  SET "l_reg_uninstall_root=HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+    SET "l_reg_uninstall_root=HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
 ) ELSE (
-  SET "l_reg_uninstall_root=HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
+    SET "l_reg_uninstall_root=HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall"
 )
 
 IF DEFINED InnoSetupPath IF NOT EXIST "%InnoSetupPath%" (
-  CALL :SUBMSG "INFO" ""%InnoSetupPath%" wasn't found on this machine! I will try to detect Inno Setup's path from the registry..."
+    CALL :SUBMSG "INFO" ""%InnoSetupPath%" wasn't found on this machine! I will try to detect Inno Setup's path from the registry..."
 )
 
 IF NOT EXIST "%InnoSetupPath%" (
-  FOR /F "delims=" %%a IN (
-    'REG QUERY "%l_reg_uninstall_root%\Inno Setup 5_is1" /v "Inno Setup: App Path"2^>Nul^|FIND "REG_"') DO (
-    SET "InnoSetupPath=%%a" & CALL :SubInnoSetupPath %%InnoSetupPath:*Z=%%)
+    FOR /F "delims=" %%a IN (
+      'REG QUERY "%l_reg_uninstall_root%\Inno Setup 5_is1" /v "Inno Setup: App Path"2^>Nul^|FIND "REG_"') DO (
+      SET "InnoSetupPath=%%a" & CALL :SubInnoSetupPath %%InnoSetupPath:*Z=%%)
 )
 IF NOT EXIST "%InnoSetupPath%" (
-  FOR /F "delims=" %%a IN (
-    'REG QUERY "%l_reg_uninstall_root%\Inno Setup 6_is1" /v "Inno Setup: App Path"2^>Nul^|FIND "REG_"') DO (
-    SET "InnoSetupPath=%%a" & CALL :SubInnoSetupPath %%InnoSetupPath:*Z=%%)
+    FOR /F "delims=" %%a IN (
+      'REG QUERY "%l_reg_uninstall_root%\Inno Setup 6_is1" /v "Inno Setup: App Path"2^>Nul^|FIND "REG_"') DO (
+      SET "InnoSetupPath=%%a" & CALL :SubInnoSetupPath %%InnoSetupPath:*Z=%%)
 )
 
 IF NOT EXIST "%InnoSetupPath%" CALL :SUBMSG "ERROR" "Inno Setup wasn't found!"
@@ -132,10 +134,9 @@ ECHO:
 ECHO:Notes:  You can also prefix the commands with "-", "--" or "/".
 ECHO         The arguments are not case sensitive.
 ECHO:
-ECHO         You can use another Inno Setup location by defining %%InnoSetupPath%%.
-ECHO         This is usefull if you have the Unicode build installed
-ECHO         and you want to use the ANSI one.
-ECHO:
+ECHO:        You can use another Inno Setup location by defining %%InnoSetupPath%%.
+ECHO:        This is usefull if you have the Unicode build installed
+ECHO:        and you want to use the ANSI one.
 ECHO:
 ECHO:
 ENDLOCAL
@@ -147,8 +148,9 @@ ECHO. & ECHO:______________________________
 ECHO:[%~1] %~2
 ECHO:______________________________ & ECHO:
 IF /I "%~1" == "ERROR" (
-  PAUSE
-  EXIT
+    CHOICE /C "YN" /N /M "Build failed; do you wish to retry? [y,n]: "
+    IF ERRORLEVEL 2 EXIT
+    GOTO START
 ) ELSE (
-  GOTO :EOF
+    EXIT /B
 )

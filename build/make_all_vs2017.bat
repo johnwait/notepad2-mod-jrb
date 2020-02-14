@@ -15,16 +15,16 @@ rem *
 rem ******************************************************************************
 
 SETLOCAL
-CD /D %~dp0
+CD /D "%~dp0"
 
 CALL "build_vs2017.bat" %1
-CALL "make_installer.bat" vs2017
+CALL "make_installer.bat"
 CALL "make_zip.bat" vs2017
 
 
 :END
 TITLE Finished!
 ECHO.
-PAUSE
+rem PAUSE
 ENDLOCAL
 EXIT /B
