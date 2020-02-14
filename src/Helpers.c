@@ -1507,6 +1507,32 @@ UINT CodePageFromCharSet(UINT uCharSet)
 //
 //  MRU functions
 //
+
+int MRU_Cleanup(LPMRULIST pmru)
+// Shifts down entries to fill empty ones (if any) and then returns their total count
+{
+
+    int i = 0, nUsed = 0;
+    for (i = 0; i < pmru->iSize; i++) {
+        // 2020-02-14: BUGFIX: Skip null items (uninitialized string entries)
+        if (pmru->pszItems[i]) nUsed++;
+    }
+    if (nUsed) {
+        int nLeft = nUsed;
+        i = 0;
+        while (i < pmru->iSize - 1) {
+            if (pmru->pszItems[i] == 0) {
+                pmru->pszItems[i] = pmru->pszItems[i + 1];
+            } else {
+                i++;
+                nLeft--;
+            }
+            if (nLeft <= 0) break;
+        }
+    }
+    return (nUsed);
+}
+
 LPMRULIST MRU_Create(LPCWSTR pszRegKey, int iFlags, int iSize)
 {
 
@@ -1557,26 +1583,37 @@ BOOL MRU_Add(LPMRULIST pmru, LPCWSTR pszNew)
     return (1);
 }
 
+
 BOOL MRU_AddFile(LPMRULIST pmru, LPCWSTR pszFile, BOOL bRelativePath, BOOL bUnexpandMyDocs)
 {
 
-    int i;
-    for (i = 0; i < pmru->iSize; i++) {
-        if (lstrcmpi(pmru->pszItems[i], pszFile) == 0) {
-            LocalFree(pmru->pszItems[i]);
-            break;
-        } else {
-            WCHAR wchItem[MAX_PATH];
-            PathAbsoluteFromApp(pmru->pszItems[i], wchItem, COUNTOF(wchItem), TRUE);
-            if (lstrcmpi(wchItem, pszFile) == 0) {
-                LocalFree(pmru->pszItems[i]);
-                break;
+    int i, nUsed = MRU_Cleanup(pmru);
+
+    // No need to shift entries if we don't have any yet
+    if (nUsed) {
+        nUsed = 0;
+        for (i = 0; i < pmru->iSize; i++) {
+            // 2020-02-14: BUGFIX: Skip null items (uninitialized string entries)
+            if (pmru->pszItems[i]) {
+                if (lstrcmpi(pmru->pszItems[i], pszFile) == 0) {
+                    LocalFree(pmru->pszItems[i]);
+                    pmru->pszItems[i] = 0;
+                    break;
+                } else {
+                    WCHAR wchItem[MAX_PATH];
+                    PathAbsoluteFromApp(pmru->pszItems[i], wchItem, COUNTOF(wchItem), TRUE);
+                    if (lstrcmpi(wchItem, pszFile) == 0) {
+                        LocalFree(pmru->pszItems[i]);
+                        pmru->pszItems[i] = 0;
+                        break;
+                    }
+                }
             }
         }
-    }
-    i = min(i, pmru->iSize - 1);
-    for (; i > 0; i--)
-        pmru->pszItems[i] = pmru->pszItems[i - 1];
+        i = min(i, pmru->iSize - 1);
+        for (; i > 0; i--)
+            pmru->pszItems[i] = pmru->pszItems[i - 1];
+    } // if (nUsed)
 
     if (bRelativePath) {
         WCHAR wchFile[MAX_PATH];

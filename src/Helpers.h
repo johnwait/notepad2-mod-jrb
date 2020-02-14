@@ -194,6 +194,7 @@ typedef struct _mrulist {
 
 } MRULIST, *PMRULIST, *LPMRULIST;
 
+int       MRU_Cleanup(LPMRULIST);
 LPMRULIST MRU_Create(LPCWSTR,int,int);
 BOOL      MRU_Destroy(LPMRULIST);
 BOOL      MRU_Add(LPMRULIST,LPCWSTR);
