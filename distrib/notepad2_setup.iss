@@ -12,20 +12,22 @@
 ; Config
 #define ProjectName              "Notepad2-mod-jrb"
 #define ProjectHead              "Jonathan R.-Brochu"
-#define ProjectRepo              "https://github.com/johnwait/notepad2-mod"
-#define CopyrightNotice          "Copyright © 2004-2017, Florian Balmer et al.; Copyright © 2010-2017 XhmikosR; Copyright © 2019 " + ProjectHead + " et al."
+#define ProjectRepo              "https://github.com/johnwait/notepad2-mod-jrb"
+#define CopyrightNotice          "Copyright © 2004-2017, Florian Balmer et al.; Copyright © 2010-2017 XhmikosR; Copyright © 2019-2020" + ProjectHead + " et al."
 #define AppTaskbarGrpId          "Notepad2"
 ;
 #define Files_MainBinary         "Notepad2-jrb.exe"
 #define Files_Config             "Notepad2.ini"
-#define Files_License            "license.txt"
+#define Files_License            "License_no-long-line-split.txt"
 #define Files_Readme             "Readme-mod-jrb.txt"
+#define Files_Readme2            "Readme-mod.txt"
+#define Files_Readme3            "Readme.txt"
 #define Files_Info               "Notepad2.txt"
 ;
 #define SrcDirs_MainBinary_x86   "..\bin\Release_x86\"
 #define SrcDirs_MainBinary_x64   "..\bin\Release_x64\"
-#define SrcDirs_Config           ""
-#define SrcDirs_License          "..\"
+#define SrcDirs_Config           ".\"
+#define SrcDirs_License          ".\"
 #define SrcDirs_Readme           "..\"
 #define SrcDirs_Info             "..\"
 ;
@@ -77,10 +79,10 @@ UninstallDisplayName={#app_name} {#app_version}
 ;;UninstallDisplayName={#app_name} {#app_version} ({#compiler})
 ;;#endif
 DefaultDirName={pf}\{#InstSubDirs_PFiles}
-LicenseFile={#Files_License}
+LicenseFile={#SrcDirs_License}{#Files_License}
 OutputDir={#InstallerOutputPath}
 ;;#if defined(VS2017)
-OutputBaseFilename={#app_name}.{#app_version}
+OutputBaseFilename={#app_name}_v{#app_version}_Setup
 ;;#else
 ;;OutputBaseFilename={#app_name}.{#app_version}_{#compiler}
 ;;#endif
@@ -154,6 +156,8 @@ Source: {#SrcDirs_MainBinary_x86}{#Files_MainBinary};  DestDir: {app};          
 Source: {#SrcDirs_License}{#Files_License};            DestDir: {app};                                Flags: ignoreversion
 Source: {#SrcDirs_Info}{#Files_Info};                  DestDir: {app};                                Flags: ignoreversion
 Source: {#SrcDirs_Readme}{#Files_Readme};              DestDir: {app};                                Flags: ignoreversion
+Source: {#SrcDirs_Readme}{#Files_Readme2};             DestDir: {app};                                Flags: ignoreversion
+Source: {#SrcDirs_Readme}{#Files_Readme3};             DestDir: {app};                                Flags: ignoreversion
 Source: {#SrcDirs_Config}{#Files_Config};              DestDir: {userappdata}\{#InstSubDirs_AppData}; Flags: onlyifdoesntexist uninsneveruninstall
 
 
