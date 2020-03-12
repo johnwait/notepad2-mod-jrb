@@ -1,0 +1,53 @@
+Characters and classes:
+Matches...
+.	Any character, incl. line breaks when the dialog option is ticked
+[..]	Character class set ([abc]), range ([a-c]) or a mix of both ([a-cfh-k])
+[^..]	Negated char class set ([^abc]), range ([^a-c]) or mixed ([^a-cfh-k])
+[:xyz:]	POSIX bracket expression (alnum, alpha, ascii, blank, cntrl, graph, lower, etc.)
+\d ;	\D	Any single digit	;	Any non-digit character
+\s ;	\S	Any whitespace	;	Any non-whitespace character
+\w ;	\W	Any word character	;	Any non-word character
+\h ;	\H	Any hexadecimal (i.e. [0-9a-fA-F])	;	Any non-hexadecimal character
+\x##	ASCII char whose code is the hexadecimal value ##h (i.e. 0x##), from \x00 to \xFF
+\###	ASCII char whose code is the octcal value ###o, from \000 to \777
+\x{#}	Unicode character by its hexadecimal codepoint value, for # => 0 to FFFF
+\t	Horizontal tab, i.e. \x09	\a	Bell character, i.e. \x07
+\v	Vertical tab, i.e. \x0B	\e	Escape char, i.e. \x1B
+\n	Line feed, i.e. \x0A	\f	Form feed, i.e. \x0C
+\r	Carriage return, i.e. \x0D	*** \b does NOT match backspace chars, i.e. \x08
+
+Anchors:
+\A ;	\Z	Start of text	;	End of text	^  ;	$	Start of a line	;	End of a line
+\< ;	\>	Start of word	;	End of word	\b ;	\B	Word boundary	;	Non-w. boundary
+\Q …	\E	Escaped sequence of chars, where everything between \Q & \E matches literally
+
+Quantifier:
+Matches preceeding...
+?	0 or 1 times	{n}	Exactly n times
+*	0 or more times	{m,n}	Between m & n times (inclusive)
++	1 or more times	{,n}	Up to n times
+..?	Lazy modifier (does incremental backtracking),	e.g.:	??; *?, +? & {m,n}?
+..+	Possessive modifier (disallows backtracking),	e.g.:	?+; *+, ++ & {m,n}+
+
+Subexpressions:	Backreferences:
+..|..	Alternation	\#	For # => 1 to 9
+(..)	Capturing group	\k<#>	For # => 1 to 99
+(?:..)	Non-capturing group	\k'#'	For # => 1 to 99
+(?>..)	Atomic group (non-capturing)	(?P=#)	For # => 1 to 99
+(?#..)	Comment	
+
+Named Capturing Groups:
+(?<name>/regex/)	/or/	(?'name'/regex/)	/or/	(?P<name>/regex/)
+
+Named Backreferences:
+\k<name>	/or/	\k'name'	/or/	(?P=name)
+
+Subroutine Calls (sub-expression recall):
+\g<name>	/or/	\g'name'	/or/	(?P>name)	/or/	(?&name)
+
+Conditionals
+..	(?=/regex/)	Positive	lookahead =>	first .. followed by /regex/
+..	(?!/regex/)	Negative	lookahead =>	first .. *not* followed by /regex/
+(?<=/regex/)	..	Positive	<= lookbehind	first .. preceeded by /regex/
+(?<!/regex/)	..	Negative	<= lookbehind	first .. *not* preceeded by /regex/
+(?(..)/then/|/else/)	Conditional: if (..) then match /then/; or else match /else/
