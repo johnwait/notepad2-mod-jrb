@@ -1,0 +1,155 @@
+// I/ Required Defines
+// -------------------
+#define USE_NAMED_GROUP
+#define USE_BACKREF_WITH_LEVEL
+#define USE_SUBEXP_CALL
+#define USE_WORD_BEGIN_END
+
+
+// II/ ONIG_SYN_OP_* Syntax Flags
+// ------------------------------
+// We picked:
+// - ONIG_SYN_OP_DOT_ANYCHAR                                               /* .     */
+// - ONIG_SYN_OP_ASTERISK_ZERO_INF                                         /* (..)* */
+// - ONIG_SYN_OP_PLUS_ONE_INF                                              /* (..)+ */
+// - ONIG_SYN_OP_QMARK_ZERO_ONE                                            /* (..)? */
+// - ONIG_SYN_OP_BRACE_INTERVAL                                            /* (..){n}, (..){n,}, (..)m,n} */
+// - ONIG_SYN_OP_VBAR_ALT                                                  /* (.. | ..) */
+// - ONIG_SYN_OP_LPAREN_SUBEXP                                             /* (..)
+// - ONIG_SYN_OP_ESC_AZ_BUF_ANCHOR                                         /* \A, \Z, \z */
+// - ONIG_SYN_OP_ESC_CAPITAL_G_BEGIN_ANCHOR                                /* \G */
+// - ONIG_SYN_OP_DECIMAL_BACKREF                                           /* \# */
+// - ONIG_SYN_OP_BRACKET_CC                                                /* [..], [^..] */
+// - ONIG_SYN_OP_ESC_W_WORD                                                /* \w, \W */
+// - ONIG_SYN_OP_ESC_LTGT_WORD_BEGIN_END                                   /* \<, \> */
+// - ONIG_SYN_OP_ESC_B_WORD_BOUND                                          /* \b, \B */
+// - ONIG_SYN_OP_ESC_S_WHITE_SPACE                                         /* \s, \S */
+// - ONIG_SYN_OP_ESC_D_DIGIT                                               /* \d, \D */
+// - ONIG_SYN_OP_LINE_ANCHOR                                               /* ^.. ..$ */
+// - ONIG_SYN_OP_POSIX_BRACKET                                             /* [:zzz:] */
+// (Flags above: Same as the SYN_GNU_REGEX_OP bitmask)
+// - ONIG_SYN_OP_QMARK_NON_GREEDY                                          /* ()??, ()*?, ()+?, (){n,m}?, etc. */
+// - ONIG_SYN_OP_ESC_CONTROL_CHARS                                         /* \a == \x07 (bell)
+//                                                                          ! \b == \x08 (backspace) => only if/when ONIG_SYN_OP_ESC_B_WORD_BOUND is *not* set
+//                                                                          * \e == \x1b (escape)
+//                                                                          * \f == \x0c (form feed)
+//                                                                          * \n == \x0a (line feed)
+//                                                                          * \r == \x0d (carriage return)
+//                                                                          * \t == \x09 (horizontal tab)
+//                                                                          */
+// - ONIG_SYN_OP_ESC_C_CONTROL                                             /* \ca => \cz */
+// - ONIG_SYN_OP_ESC_OCTAL3                                                /* \000 => \777 */
+// - ONIG_SYN_OP_ESC_X_HEX2                                                /* \xHH */
+// - ONIG_SYN_OP_ESC_X_BRACE_HEX8                                          /* \x{7HHHHHHH} */
+// (All flags above: Like Perl 5.8 with the flag ONIG_SYN_OP_ESC_LTGT_WORD_BEGIN_END negated)
+// - ONIG_SYN_OP_ESC_O_BRACE_OCTAL                                         /* \o{###} */
+// (All flags above: Like Perl 5.10 with the flag ONIG_SYN_OP_ESC_LTGT_WORD_BEGIN_END negated)
+//
+// To use the flags listed above, we set:
+
+m_OnigSyntax = *ONIG_SYNTAX_PERL; /* == OnigSyntaxPerl */
+m_OnigSyntax.op |= ONIG_SYN_OP_ESC_LTGT_WORD_BEGIN_END;
+
+
+// III/ ONIG_SYN_OP2_* Syntax Flags
+// --------------------------------
+// Of all ONIG_SYN_OP2_* flags (listed below) we chose as follows:
+// - star-ticked flags are already included in the OnigSyntaxPerl.op2 bitmask
+// - plus-ticked flags are the ones we add to OnigSyntaxPerl.op2
+// - minus-ticked flags are the ones we exclude from OnigSyntaxPerl.op2
+// - unticked flags are those we leave out (not already included & not desired)
+//
+// [*] ONIG_SYN_OP2_ESC_CAPITAL_Q_QUOTE                                    /* \Q ..unescaped meta..\E */
+// [*] ONIG_SYN_OP2_QMARK_GROUP_EFFECT                                     /* everything (?..), ex.: (?:..), look-arounds, etc. /*
+// [*] ONIG_SYN_OP2_OPTION_PERL                                            /* (?imsxadlu), (?-imsx), (?^imsxalu) */
+// [ ] ///ONIG_SYN_OP2_OPTION_RUBY                 // Not used             /* (?imxadu), (?-imx)  */
+// [*] ONIG_SYN_OP2_PLUS_POSSESSIVE_REPEAT                                 /* ?+, *+, ++ */
+// [*] ONIG_SYN_OP2_PLUS_POSSESSIVE_INTERVAL                               /* {n,m}+ */
+// [ ] ///ONIG_SYN_OP2_CCLASS_SET_OP               // Not used             /* [..&&[..]] and [..&&[^..]] */
+// [*] ONIG_SYN_OP2_QMARK_LT_NAMED_GROUP                                   /* (?<name>..), (?'name'..) */
+// [*] ONIG_SYN_OP2_ESC_K_NAMED_BACKREF                                    /* \k<name>, \k'name' */
+// [+] ONIG_SYN_OP2_ESC_G_SUBEXP_CALL                                      /* \g<name>, \g'name' */
+// [ ] ///ONIG_SYN_OP2_ATMARK_CAPTURE_HISTORY      // Not used             /* (?@..), (?@<x>..) */
+// [ ] ///ONIG_SYN_OP2_ESC_CAPITAL_C_BAR_CONTROL   // Not used             /* \C-x */
+// [ ] ///ONIG_SYN_OP2_ESC_CAPITAL_M_BAR_META      // Not used             /* \M-x */
+// [+] ONIG_SYN_OP2_ESC_V_VTAB                     //  YES!!!              /* \v == \x0b (vertical tab) */
+// [+] ONIG_SYN_OP2_ESC_U_HEX4                                             /* \uHHHH */
+// [ ] ///ONIG_SYN_OP2_ESC_GNU_BUF_ANCHOR          // Not used             /* \`, \' */
+// [*] ONIG_SYN_OP2_ESC_P_BRACE_CHAR_PROPERTY                              /* \p{..}, \P{..} */
+// [*] ONIG_SYN_OP2_ESC_P_BRACE_CIRCUMFLEX_NOT                             /* \p{^..}, \P{^..} */
+// [ ] ///ONIG_SYN_OP2_ESC_H_XDIGIT                // Not used (reserved)  /* \h, \H */
+// [ ] ///ONIG_SYN_OP2_INEFFECTIVE_ESCAPE          // (??) Not used        /* \ */
+// [*] ONIG_SYN_OP2_ESC_CAPITAL_R_LINEBREAK                                /* \R == (?>\x0D\x0A|[\x0A-\x0D\x{85}\x{2028}\x{2029}]) */
+// [*] ONIG_SYN_OP2_ESC_CAPITAL_X_EXTENDED_GRAPHEME_CLUSTER                /* \X */
+// [ ] ///ONIG_SYN_OP2_ESC_V_VERTICAL_WHITESPACE   // Not implemented      /* \v, \V */
+// [ ] ///ONIG_SYN_OP2_ESC_H_HORIZONTAL_WHITESPACE // Not implemented      /* \h, \H */
+// [*] ONIG_SYN_OP2_ESC_CAPITAL_K_KEEP                                     /* \K */
+// [-] ///ONIG_SYN_OP2_ESC_G_BRACE_BACKREF         // Could be confusing   /* \g{name}, \g{#} */
+// [*] ONIG_SYN_OP2_QMARK_SUBEXP_CALL                                      /* (?&name), (?n), (?R), (?0) */
+// [ ] ///ONIG_SYN_OP2_QMARK_VBAR_BRANCH_RESET     // Not implemented      /* (?|..) */
+// [*] ONIG_SYN_OP2_QMARK_LPAREN_CONDITION                                 /* (?(cond)yes..|no..) */
+// [*] ONIG_SYN_OP2_QMARK_CAPITAL_P_NAMED_GROUP                            /* (?P<name>..), (?P=name), (?P>name) -- Python/PCRE */
+// [ ] ///ONIG_SYN_OP2_QMARK_TILDE_ABSENT          // (??) Not used        /* (?~..) */
+//
+// To use the flags listed above, we set:
+
+// Where we already have (DefaultSyntax.op2 == OnigSyntaxPerl.op2),
+// we're adding:
+//   1) \g<name>, \g'name' for subroutine calls;
+//   2) \v == \x0b (vertical tab)
+//   3) \uHHHH for escaping Unicode (UCS-2) chars
+m_OnigSyntax.op2 |= ONIG_SYN_OP2_ESC_G_SUBEXP_CALL |
+                    ONIG_SYN_OP2_ESC_V_VTAB |
+                    ONIG_SYN_OP2_ESC_U_HEX4;
+// we're removing: \g{name}, \g{#} for backreferences
+m_OnigSyntax.op2 &= ~ONIG_SYN_OP2_ESC_G_BRACE_BACKREF;
+
+
+// IV/ ONIG_SYN_* Syntax Behaviours
+// --------------------------------
+// We especially wanted:
+// - ONIG_SYN_BACKSLASH_ESCAPE_IN_CC
+// - ONIG_SYN_ALLOW_DOUBLE_RANGE_OP_IN_CC
+// but they're already included in OnigSyntaxPerl.behavior and thus
+// m_OnigSyntax.behavior, which is defined as:
+
+assert(SYN_GNU_REGEX_BV &
+       ONIG_SYN_BACKSLASH_ESCAPE_IN_CC == ONIG_SYN_BACKSLASH_ESCAPE_IN_CC);
+assert(SYN_GNU_REGEX_BV &
+       ONIG_SYN_ALLOW_DOUBLE_RANGE_OP_IN_CC == ONIG_SYN_ALLOW_DOUBLE_RANGE_OP_IN_CC);
+assert(m_OnigSyntax.behavior == SYN_GNU_REGEX_BV |
+                                ONIG_SYN_ALLOW_MULTIPLEX_DEFINITION_NAME |
+                                ONIG_SYN_ALLOW_MULTIPLEX_DEFINITION_NAME_CALL |
+                                ONIG_SYN_USE_LEFT_MOST_NAMED_GROUP);
+
+
+// V/ Summary
+// ----------
+//
+// Ways to introduce a named capturing group:
+//   1) (?<name>regex)
+//   2) (?'name'regex)
+//   3) (?P<name>regex)
+//
+// Ways to summon a backreference (named or #-ed):
+//      +-------------+--------+------------+
+//      | By Name     | By #   | # Range    |
+//      +=============+=====================+
+//  1)  |             | \#     | \1 => \9   |
+//  2)  |  \k<name>   | \k<#>  | \k<1..99>  |  «k-angled» backref
+//  3)  |  \k'name'   | \k'#'  | \k'1..99'  |  «k-quoted» backref
+//  -)- |  \g{name}   | \g{#}  | \g{1..99}  |  «g-braced» backref => removed to avoid confusion with \g.. subroutine calls
+//  4)  |  (?P=name)  | (?P=#) | (?P=1..99) |  «P-named» backref
+//      +=============+========+============+
+//
+// Ways to call back a sub-expression (subroutine calls):
+//      +-------------+--------+------------+
+//      | By Name     | By #   | # Range    |
+//      +=============+=====================+
+//  1)  |  \g<name>   | \g<#>  | \g<1..99>  |  ; «g-angled» subexpr
+//  2)  |  \g'name'   | \g'#'  | \g'1..99'  |  ; «g-quoted» subexpr
+//  3)  |  (?&name)   | (?#)   | (?1..99)   |  ; like Perl
+//  4)  |  (?P>name)  |        |            |  ; like Perl
+//      +=============+========+============+
+//
+// <EOF>

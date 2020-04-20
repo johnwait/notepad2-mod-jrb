@@ -19,7 +19,7 @@ Matches...
 Anchors:
 \A ;	\Z	Start of text	;	End of text	^  ;	$	Start of a line	;	End of a line
 \< ;	\>	Start of word	;	End of word	\b ;	\B	Word boundary	;	Non-w. boundary
-\Q …	\E	Escaped sequence of chars, where everything between \Q & \E matches literally
+\Q â€¦	\E	Escaped sequence of chars, where everything between \Q & \E matches literally
 
 Quantifier:
 Matches preceeding...
