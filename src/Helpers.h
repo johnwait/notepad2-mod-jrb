@@ -18,11 +18,8 @@
 *
 ******************************************************************************/
 
-
-
 extern HINSTANCE g_hInstance;
 extern UINT16 g_uWinVer;
-
 
 #define COUNTOF(ar) (sizeof(ar)/sizeof(ar[0]))
 #define CSTRLEN(s)  (COUNTOF(s)-1)
@@ -39,29 +36,34 @@ extern UINT16 g_uWinVer;
 #define MRUINI_VALUE_MAXLEN  DLG_ITEM_MAXLEN
 #define MRUINI_LINE_MAXLEN   ( MRUINI_NAME_MAXLEN + sizeof('=') + MRUINI_VALUE_MAXLEN + sizeof('\r\n') )
 
-extern WCHAR szIniFile[MAX_PATH];
-#define IniGetString(lpSection,lpName,lpDefault,lpReturnedStr,nSize) \
-  GetPrivateProfileString(lpSection,lpName,lpDefault,lpReturnedStr,nSize,szIniFile)
-#define IniGetInt(lpSection,lpName,nDefault) \
-  GetPrivateProfileInt(lpSection,lpName,nDefault,szIniFile)
-#define IniSetString(lpSection,lpName,lpString) \
-  WritePrivateProfileString(lpSection,lpName,lpString,szIniFile)
-#define IniDeleteSection(lpSection) \
-  WritePrivateProfileSection(lpSection,NULL,szIniFile)
-__inline BOOL IniSetInt(LPCWSTR lpSection,LPCWSTR lpName,int i) {
-  WCHAR tch[32]; wsprintf(tch,L"%i",i); return IniSetString(lpSection,lpName,tch);
-}
-#define LoadIniSection(lpSection,lpBuf,cchBuf) \
-  GetPrivateProfileSection(lpSection,lpBuf,cchBuf,szIniFile);
-#define SaveIniSection(lpSection,lpBuf) \
-  WritePrivateProfileSection(lpSection,lpBuf,szIniFile)
-int IniSectionGetString(LPCWSTR,LPCWSTR,LPCWSTR,LPWSTR,int);
-int IniSectionGetInt(LPCWSTR,LPCWSTR,int);
-BOOL IniSectionSetString(LPWSTR,LPCWSTR,LPCWSTR);
-__inline BOOL IniSectionSetInt(LPWSTR lpCachedIniSection,LPCWSTR lpName,int i) {
-  WCHAR tch[32]; wsprintf(tch,L"%i",i); return IniSectionSetString(lpCachedIniSection,lpName,tch);
-}
+extern TCHAR g_tszIniFile[MAX_PATH];
 
+#define IniGetStringW(lpwSection,lpwName,lpwDefault,lpwReturnedStr,nSize) \
+    GetPrivateProfileStringW(lpwSection,lpwName,lpwDefault,lpwReturnedStr,nSize,g_tszIniFile)
+#define IniGetIntW(lpwSection,lpwName,nDefault) \
+    GetPrivateProfileIntW(lpwSection,lpwName,nDefault,wszIniFile)
+#define IniSetStringW(lpwSection,lpwName,lpwString) \
+    WritePrivateProfileString(lpwSection,lpwName,lpwString,wszIniFile)
+#define IniDeleteSectionW(lpwSection) \
+    WritePrivateProfileSectionW(lpwSection,NULL,wszIniFile)
+
+__inline BOOL IniSetIntW(LPCWSTR lpwSection,LPCWSTR lpwName,int i) {
+    WCHAR wch[32]; wsprintfW(wch, L"%i",i); return IniSetStringW(lpwSection, lpwName, wch);
+}
+#define LoadIniSectionA(lpSection,lpBuf,cchBuf) \
+    GetPrivateProfileSectionA(lpSection,lpBuf,cchBuf,wszIniFile);
+#define LoadIniSectionW(lpwSection,lpwBuf,cchBuf) \
+    GetPrivateProfileSectionW(lpwSection,lpwBuf,cchBuf,wszIniFile);
+
+#define SaveIniSectionW(lpwSection,lpwBuf) \
+    WritePrivateProfileSectionW(lpwSection,lpwBuf,wszIniFile)
+
+int IniSectionGetStringW(LPCWSTR,LPCWSTR,LPCWSTR,LPWSTR,int);
+int IniSectionGetIntW(LPCWSTR,LPCWSTR,int);
+BOOL IniSectionSetStringW(LPWSTR,LPCWSTR,LPCWSTR);
+__inline BOOL IniSectionSetIntW(LPWSTR lpCachedIniSection,LPCWSTR lpName,int i) {
+    WCHAR tch[32]; wsprintf(tch,L"%i",i); return IniSectionSetStringW(lpCachedIniSection,lpName,tch);
+}
 
 extern HWND hwndEdit;
 __inline void BeginWaitCursor()
@@ -81,23 +83,19 @@ __inline void EndWaitCursor()
 #define IsVista() (g_uWinVer >= 0x0600)
 #define IsW7()    (g_uWinVer >= 0x0601)
 
-
 BOOL PrivateIsAppThemed();
-HRESULT PrivateSetCurrentProcessExplicitAppUserModelID(PCWSTR);
+HRESULT PrivateSetCurrentProcessExplicitAppUserModelID(PCTSTR);
 BOOL IsElevated();
 //BOOL SetExplorerTheme(HWND);
-
 
 BOOL BitmapMergeAlpha(HBITMAP,COLORREF);
 BOOL BitmapAlphaBlend(HBITMAP,COLORREF,BYTE);
 BOOL BitmapGrayScale(HBITMAP);
 BOOL VerifyContrast(COLORREF,COLORREF);
-BOOL IsFontAvailable(LPCWSTR);
+BOOL IsFontAvailableW(LPCWSTR);
 
-
-BOOL SetWindowTitle(HWND,UINT,BOOL,UINT,LPCWSTR,int,BOOL,UINT,BOOL,LPCWSTR);
+BOOL SetWindowTitle(HWND,UINT,BOOL,UINT,LPCTSTR,int,BOOL,UINT,BOOL,LPCTSTR);
 void SetWindowTransparentMode(HWND,BOOL);
-
 
 void CenterDlgInParent(HWND);
 void GetDlgPos(HWND,LPINT,LPINT);
@@ -111,14 +109,13 @@ void MakeBitmapButton(HWND,int,HINSTANCE,UINT);
 void MakeColorPickButton(HWND,int,HINSTANCE,COLORREF);
 void DeleteBitmapButton(HWND,int);
 
-
 #define StatusSetSimple(hwnd,b) SendMessage(hwnd,SB_SIMPLE,(WPARAM)b,0)
-BOOL StatusSetText(HWND,UINT,LPCWSTR);
+BOOL StatusSetText(HWND,UINT,LPCTSTR);
 BOOL StatusSetTextID(HWND,UINT,UINT);
-int  StatusCalcPaneWidth(HWND,LPCWSTR);
+int  StatusCalcPaneWidth(HWND,LPCTSTR);
 
-int Toolbar_GetButtons(HWND,int,LPWSTR,int);
-int Toolbar_SetButtons(HWND,int,LPCWSTR,void*,int);
+int Toolbar_GetButtons(HWND,int,LPTSTR,int);
+int Toolbar_SetButtons(HWND,int,LPCTSTR, LPCTBBUTTON,int);
 
 LRESULT SendWMSize(HWND);
 
@@ -130,27 +127,39 @@ LRESULT SendWMSize(HWND);
 
 BOOL IsCmdEnabled(HWND, UINT);
 
+#define GetStringA(id,pb,cb) LoadStringA(g_hInstance,id,pb,cb)
+#define GetStringW(id,pb,cb) LoadStringW(g_hInstance,id,pb,cb)
+#if _UNICODE
+#define GetString_ GetStringW
+#else
+#define GetString_ GetStringA
+#endif
 
-#define GetString(id,pb,cb) LoadString(g_hInstance,id,pb,cb)
+#define StrEndA(pszStart) (pszStart + lstrlenA(pszStart))
+#define StrEndW(pwszStart) (pwszStart + lstrlenW(pwszStart))
+#if _UNICODE
+#define StrEnd_ StrEndW
+#else
+#define StrEnd_ StrEndA
+#endif
 
-#define StrEnd(pStart) (pStart + lstrlen(pStart))
+int FormatString(LPTSTR,int,UINT,...);
 
-int FormatString(LPWSTR,int,UINT,...);
+///void PathRelativeToApp(LPTSTR, LPTSTR, int, BOOL, BOOL, BOOL);
+void PathRelativeToAppA(LPSTR, LPSTR, int, BOOL, BOOL, BOOL);
+void PathRelativeToAppW(LPWSTR, LPWSTR, int, BOOL, BOOL, BOOL);
 
+void PathAbsoluteFromAppA(LPSTR, LPSTR, int, BOOL);
+void PathAbsoluteFromAppW(LPWSTR, LPWSTR, int, BOOL);
 
-void PathRelativeToApp(LPWSTR,LPWSTR,int,BOOL,BOOL,BOOL);
-void PathAbsoluteFromApp(LPWSTR,LPWSTR,int,BOOL);
+BOOL PathIsLnkFile(LPCTSTR);
+BOOL PathGetLnkPath(LPCTSTR,LPTSTR,int);
+BOOL PathIsLnkToDirectory(LPCTSTR,LPTSTR,int);
+BOOL PathCreateDeskLnk(LPCTSTR);
+BOOL PathCreateFavLnk(LPCTSTR,LPCTSTR,LPCTSTR);
 
-
-BOOL PathIsLnkFile(LPCWSTR);
-BOOL PathGetLnkPath(LPCWSTR,LPWSTR,int);
-BOOL PathIsLnkToDirectory(LPCWSTR,LPWSTR,int);
-BOOL PathCreateDeskLnk(LPCWSTR);
-BOOL PathCreateFavLnk(LPCWSTR,LPCWSTR,LPCWSTR);
-
-
-BOOL StrLTrim(LPWSTR,LPCWSTR);
-BOOL TrimString(LPWSTR);
+BOOL StrLTrim(LPTSTR,LPCTSTR);
+BOOL TrimString(LPTSTR);
 BOOL ExtractFirstArgument(LPCWSTR, LPWSTR, LPWSTR);
 
 void PrepareFilterStr(LPWSTR);
@@ -158,16 +167,13 @@ void PrepareFilterStr(LPWSTR);
 void StrTab2Space(LPWSTR);
 void PathFixBackslashes(LPWSTR);
 
-
 void  ExpandEnvironmentStringsEx(LPWSTR,DWORD);
 void  PathCanonicalizeEx(LPWSTR);
 DWORD GetLongPathNameEx(LPWSTR,DWORD);
 DWORD_PTR SHGetFileInfo2(LPCWSTR,DWORD,SHFILEINFO*,UINT,UINT);
 
-
 int  FormatNumberStr(LPWSTR);
 BOOL SetDlgItemIntEx(HWND,int,UINT);
-
 
 #define MBCSToWChar(c,a,w,i) MultiByteToWideChar(c,0,a,-1,w,i)
 #define WCharToMBCS(c,w,a,i) WideCharToMultiByte(c,0,w,-1,a,i,NULL,NULL)
@@ -176,9 +182,7 @@ UINT    GetDlgItemTextA2W(UINT,HWND,int,LPSTR,int);
 UINT    SetDlgItemTextA2W(UINT,HWND,int,LPSTR);
 LRESULT ComboBox_AddStringA2W(UINT,HWND,LPCSTR);
 
-
 UINT CodePageFromCharSet(UINT);
-
 
 //==== MRU Functions ==========================================================
 #define MRU_MAXITEMS 24
@@ -187,10 +191,10 @@ UINT CodePageFromCharSet(UINT);
 
 typedef struct _mrulist {
 
-  WCHAR  szRegKey[256];
+  WCHAR  wszRegKey[256];
   int   iFlags;
   int   iSize;
-  LPWSTR pszItems[MRU_MAXITEMS];
+  LPWSTR pwszItems[MRU_MAXITEMS];
 
 } MRULIST, *PMRULIST, *LPMRULIST;
 
@@ -206,7 +210,6 @@ int       MRU_Enum(LPMRULIST,int,LPWSTR,int);
 BOOL      MRU_Load(LPMRULIST);
 BOOL      MRU_Save(LPMRULIST);
 BOOL      MRU_MergeSave(LPMRULIST,BOOL,BOOL,BOOL);
-
 
 //==== Themed Dialogs =========================================================
 #ifndef DLGTEMPLATEEX
@@ -237,10 +240,8 @@ HWND    CreateThemedDialogParam(HINSTANCE,LPCTSTR,HWND,DLGPROC,LPARAM);
 HWND CreateToolTipW(int toolID, HWND hDlg, PWSTR pwszText);
 #endif
 
-
 //==== UnSlash Functions ======================================================
 void TransformBackslashes(char*,BOOL,UINT);
-
 
 //==== MinimizeToTray Functions - see comments in Helpers.c ===================
 BOOL GetDoAnimateMinimize(VOID);

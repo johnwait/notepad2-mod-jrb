@@ -31,21 +31,21 @@
 #define MB_TITLE_MAXLEN  64
 #define MB_MSG_MAXLEN  1024
 
-int _MsgBox(int iType, UINT uIdMsg, ...);
+int _MsgBoxW(int iType, UINT uIdMsg, ...);
 #ifdef FEAT_REPLACE_MSGBOX_BY_TASKDLG
 int TaskBox(int iMBType, UINT uIdMsg, ...);
-inline int MsgBox(int iType, UINT uIdMsg, ...) { return TaskBox(iType, uIdMsg); };
+inline int MsgBoxW(int iType, UINT uIdMsg, ...) { return TaskBox(iType, uIdMsg); };
 #else
-inline int MsgBox(int iType, UINT uIdMsg, ...) { return _MsgBox(iType, uIdMsg); };
+inline int MsgBoxW(int iType, UINT uIdMsg, ...) { return _MsgBoxW(iType, uIdMsg); };
 #endif
 void DisplayCmdLineHelp(HWND hwnd);
-BOOL GetDirectory(HWND,int,LPWSTR,LPCWSTR,BOOL);
+BOOL GetDirectory(HWND,int,LPTSTR,LPCTSTR,BOOL);
 INT_PTR CALLBACK AboutDlgProc(HWND,UINT,WPARAM,LPARAM);
-void RunDlg(HWND,LPCWSTR);
-BOOL OpenWithDlg(HWND,LPCWSTR);
-BOOL FavoritesDlg(HWND,LPWSTR);
-BOOL AddToFavDlg(HWND,LPCWSTR,LPCWSTR);
-BOOL FileMRUDlg(HWND,LPWSTR);
+void RunDlg(HWND,LPCTSTR);
+BOOL OpenWithDlg(HWND,LPCTSTR);
+BOOL FavoritesDlg(HWND,LPTSTR);
+BOOL AddToFavDlg(HWND,LPCTSTR,LPCTSTR);
+BOOL FileMRUDlg(HWND,LPTSTR);
 BOOL ChangeNotifyDlg(HWND);
 BOOL ColumnWrapDlg(HWND,UINT,int *);
 BOOL WordWrapSettingsDlg(HWND,UINT,int *);
@@ -55,7 +55,7 @@ BOOL SelectDefEncodingDlg(HWND,int *);
 BOOL SelectEncodingDlg(HWND,int *);
 BOOL RecodeDlg(HWND,int *);
 BOOL SelectDefLineEndingDlg(HWND,int *);
-INT_PTR InfoBox(int,LPCWSTR,int,...);
+INT_PTR InfoBox(int,LPCTSTR,int,...);
 
 #ifdef FEAT_REPLACE_MSGBOX_BY_TASKDLG
 

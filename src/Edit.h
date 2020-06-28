@@ -130,6 +130,8 @@ void EditMarkAll(HWND, int, BOOL, BOOL);
 void CompleteWord(HWND, BOOL);
 
 #ifdef JRB_BUILD
+#define RTF_RECT_MARGIN_X  0
+#define RTF_RECT_MARGIN_Y 20
 HWND RegexSyntaxDlg(HWND, UINT);
 HWND EditInsertCtlCharDlg(HWND);
 #endif

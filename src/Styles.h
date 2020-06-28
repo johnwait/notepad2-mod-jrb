@@ -45,9 +45,9 @@ typedef struct _editlexer
 {
   int iLexer;
   int rid;
-  WCHAR* pszName;
-  WCHAR* pszDefExt;
-  WCHAR  szExtensions[128];
+  TCHAR* ptszName;
+  TCHAR* ptszDefExt;
+  TCHAR  tszExtensions[128];
   PKEYWORDLIST pKeyWords;
   EDITSTYLE    Styles[];
 

@@ -21,26 +21,26 @@
 
 
 //==== Main Window ============================================================
-#define WC_NOTEPAD2 L"Notepad2"
+#define WC_NOTEPAD2 _T("Notepad2")
 
 
 //==== Data Type for WM_COPYDATA ==============================================
 #define DATA_NOTEPAD2_PARAMS 0xFB10
 typedef struct np2params {
 
-  int   flagFileSpecified;
-  int   flagChangeNotify;
-  int   flagLexerSpecified;
-  int   iInitialLexer;
-  int   flagQuietCreate;
-  int   flagJumpTo;
-  int   iInitialLine;
-  int   iInitialColumn;
-  int   iSrcEncoding;
-  int   flagSetEncoding;
-  int   flagSetEOLMode;
-  int   flagTitleExcerpt;
-  WCHAR wchData;
+    int   flagFileSpecified;
+    int   flagChangeNotify;
+    int   flagLexerSpecified;
+    int   iInitialLexer;
+    int   flagQuietCreate;
+    int   flagJumpTo;
+    int   iInitialLine;
+    int   iInitialColumn;
+    int   iSrcEncoding;
+    int   flagSetEncoding;
+    int   flagSetEOLMode;
+    int   flagTitleExcerpt;
+    TCHAR tchData;
 
 } NP2PARAMS, *LPNP2PARAMS;
 
@@ -110,7 +110,7 @@ BOOL RelaunchElevated();
 void SnapToDefaultPos(HWND);
 void ShowNotifyIcon(HWND,BOOL);
 void SetNotifyIconTitle(HWND);
-void InstallFileWatching(LPCWSTR);
+void InstallFileWatching(LPCTSTR);
 void CALLBACK WatchTimerProc(HWND,UINT,UINT_PTR,DWORD);
 void CALLBACK PasteBoardTimer(HWND,UINT,UINT_PTR,DWORD);
 
@@ -119,12 +119,12 @@ void LoadSettings();
 BOOL SaveSettings(BOOL);
 void ParseCommandLine();
 void LoadFlags();
-int  CheckIniFile(LPWSTR,LPCWSTR);
-int  CheckIniFileRedirect(LPWSTR,LPCWSTR);
+int  CheckIniFile(LPWSTR,LPCTSTR);
+int  CheckIniFileRedirect(LPTSTR,LPCTSTR);
 int  FindIniFile();
 int  TestIniFile();
 int  CreateIniFile();
-int  CreateIniFileEx(LPCWSTR);
+int  CreateIniFileEx(LPCTSTR);
 
 
 void UpdateStatusbar();
@@ -132,11 +132,11 @@ void UpdateToolbar();
 void UpdateLineNumberWidth();
 
 
-BOOL FileIO(BOOL,LPCWSTR,BOOL,int*,int*,BOOL*,BOOL*,BOOL*,BOOL);
-BOOL FileLoad(BOOL,BOOL,BOOL,BOOL,LPCWSTR);
+BOOL FileIO(BOOL,LPCTSTR,BOOL,int*,int*,BOOL*,BOOL*,BOOL*,BOOL);
+BOOL FileLoad(BOOL,BOOL,BOOL,BOOL,LPCTSTR);
 BOOL FileSave(BOOL,BOOL,BOOL,BOOL);
-BOOL OpenFileDlg(HWND,LPWSTR,int,LPCWSTR);
-BOOL SaveFileDlg(HWND,LPWSTR,int,LPCWSTR);
+BOOL OpenFileDlg(HWND,LPTSTR,int,LPCTSTR);
+BOOL SaveFileDlg(HWND,LPTSTR,int,LPCTSTR);
 
 
 LRESULT CALLBACK MainWndProc(HWND,UINT,WPARAM,LPARAM);

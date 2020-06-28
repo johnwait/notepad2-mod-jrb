@@ -41,47 +41,47 @@ extern int fNoFileVariables;
 extern BOOL bNoEncodingTags;
 extern BOOL bFixLineEndings;
 extern BOOL bAutoStripBlanks;
-extern WCHAR szCurFile[MAX_PATH + 40];
+extern TCHAR g_tszCurFile[MAX_PATH + 40];
 
 //=============================================================================
 //
 //  MsgBox()
 //
-int _MsgBox(int iType, UINT uIdMsg, ...)
+int _MsgBoxA(int iType, UINT uIdMsg, ...)
 {
 
-    WCHAR szText[MB_MSG_MAXLEN];
-    WCHAR szBuf[MB_MSG_MAXLEN];
-    WCHAR szTitle[MB_TITLE_MAXLEN];
+    char szText[MB_MSG_MAXLEN];
+    char szBuf[MB_MSG_MAXLEN];
+    char szTitle[MB_TITLE_MAXLEN];
     int iIcon = 0;
     HWND hwnd;
 
-    if (!GetString(uIdMsg, szBuf, COUNTOF(szBuf)))
+    if (!GetStringA(uIdMsg, szBuf, COUNTOF(szBuf)))
         return (0);
 
-    wvsprintf(szText, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1));
+    wvsprintfA(szText, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1));
 
     if (uIdMsg == IDS_ERR_LOADFILE || uIdMsg == IDS_ERR_SAVEFILE || uIdMsg == IDS_CREATEINI_FAIL || uIdMsg == IDS_WRITEINI_FAIL || uIdMsg == IDS_EXPORT_FAIL) {
         LPVOID lpMsgBuf;
-        WCHAR wcht;
-        FormatMessage(
+        char ch;
+        FormatMessageA(
             FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
             NULL,
             dwLastIOError,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            (LPTSTR)&lpMsgBuf,
+            (LPSTR)&lpMsgBuf,
             0,
             NULL);
-        StrTrim(lpMsgBuf, L" \a\b\f\n\r\t\v");
-        StrCatBuff(szText, L"\n", COUNTOF(szText));
-        StrCatBuff(szText, lpMsgBuf, COUNTOF(szText));
+        StrTrimA(lpMsgBuf, " \a\b\f\n\r\t\v");
+        StrCatBuffA(szText, "\n", COUNTOF(szText));
+        StrCatBuffA(szText, lpMsgBuf, COUNTOF(szText));
         LocalFree(lpMsgBuf);
-        wcht = *CharPrev(szText, StrEnd(szText));
-        if (IsCharAlphaNumeric(wcht) || wcht == '"' || wcht == '\'')
-            StrCatBuff(szText, L".", COUNTOF(szText));
+        ch = *CharPrevA(szText, StrEndA(szText));
+        if (IsCharAlphaNumericA(ch) || ch == '"' || ch == '\'')
+            StrCatBuffA(szText, ".", COUNTOF(szText));
     }
 
-    GetString(IDS_APPTITLE, szTitle, COUNTOF(szTitle));
+    GetStringA(IDS_APPTITLE, szTitle, COUNTOF(szTitle));
 
     switch (iType) {
     case MBINFO:
@@ -110,8 +110,77 @@ int _MsgBox(int iType, UINT uIdMsg, ...)
     if (!(hwnd = GetFocus()))
         hwnd = hwndMain;
 
-    return MessageBoxEx(hwnd,
+    return MessageBoxExA(hwnd,
         szText, szTitle,
+        MB_SETFOREGROUND | iIcon,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT));
+}
+
+int _MsgBoxW(int iType, UINT uIdMsg, ...)
+{
+
+    WCHAR wszText[MB_MSG_MAXLEN];
+    WCHAR wszBuf[MB_MSG_MAXLEN];
+    WCHAR wszTitle[MB_TITLE_MAXLEN];
+    int iIcon = 0;
+    HWND hwnd;
+
+    if (!GetStringW(uIdMsg, wszBuf, COUNTOF(wszBuf)))
+        return (0);
+
+    wvsprintfW(wszText, wszBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1));
+
+    if (uIdMsg == IDS_ERR_LOADFILE || uIdMsg == IDS_ERR_SAVEFILE || uIdMsg == IDS_CREATEINI_FAIL || uIdMsg == IDS_WRITEINI_FAIL || uIdMsg == IDS_EXPORT_FAIL) {
+        LPVOID lpwMsgBuf;
+        WCHAR wch;
+        FormatMessageW(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL,
+            dwLastIOError,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPWSTR)&lpwMsgBuf,
+            0,
+            NULL);
+        StrTrimW(lpwMsgBuf, L" \a\b\f\n\r\t\v");
+        StrCatBuffW(wszText, L"\n", COUNTOF(wszText));
+        StrCatBuffW(wszText, lpwMsgBuf, COUNTOF(wszText));
+        LocalFree(lpwMsgBuf);
+        wch = *CharPrevW(wszText, StrEndW(wszText));
+        if (IsCharAlphaNumericW(wch) || wch == L'"' || wch == L'\'')
+            StrCatBuffW(wszText, L".", COUNTOF(wszText));
+    }
+
+    GetStringW(IDS_APPTITLE, wszTitle, COUNTOF(wszTitle));
+
+    switch (iType) {
+    case MBINFO:
+        iIcon = MB_ICONINFORMATION;
+        break;
+    case MBWARN:
+        iIcon = MB_ICONEXCLAMATION;
+        break;
+    case MBYESNO:
+        iIcon = MB_ICONEXCLAMATION | MB_YESNO;
+        break;
+    case MBYESNOCANCEL:
+        iIcon = MB_ICONEXCLAMATION | MB_YESNOCANCEL;
+        break;
+    case MBYESNOWARN:
+        iIcon = MB_ICONEXCLAMATION | MB_YESNO;
+        break;
+    case MBFATAL:
+        iIcon = MB_ICONSTOP;
+        break;
+    case MBOKCANCEL:
+        iIcon = MB_ICONEXCLAMATION | MB_OKCANCEL;
+        break;
+    }
+
+    if (!(hwnd = GetFocus()))
+        hwnd = hwndMain;
+
+    return MessageBoxExW(hwnd,
+        wszText, wszTitle,
         MB_SETFOREGROUND | iIcon,
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT));
 }
@@ -125,38 +194,38 @@ int _MsgBox(int iType, UINT uIdMsg, ...)
 //  Requires: #include <ommctrl.h>
 //
 int TaskBox(int iMBType, UINT uIdMsg, ...) {
-	WCHAR szText[TASKDLGBOX_STR_MAXLEN] = L"";
-	WCHAR szBuf[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR wszText[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR wszBuf[TASKDLGBOX_STR_MAXLEN] = L"";
 	PCWSTR iIcon = 0;
 	TASKDIALOG_COMMON_BUTTON_FLAGS tdcbfCommonBtns = 0;
 	TASKDIALOG_FLAGS tdfFlags = 0;
 	int cxDlgWidth = 0;
 
-	if (!GetString(uIdMsg, szBuf, COUNTOF(szBuf)))
+	if (!GetStringW(uIdMsg, wszBuf, COUNTOF(wszBuf)))
 		return (0);
 
 	// Caller's example call: MsgBox(MBINFO, IDS_SAVEDSETTINGS, &szIniFile);
-	wvsprintf(szText, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1));
+	wvsprintfW(wszText, wszBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1));
 	// Also: consider switching to StringCbVPrintfW()
 
 	if (uIdMsg == IDS_ERR_LOADFILE || uIdMsg == IDS_ERR_SAVEFILE || uIdMsg == IDS_CREATEINI_FAIL || uIdMsg == IDS_WRITEINI_FAIL || uIdMsg == IDS_EXPORT_FAIL) {
-		LPVOID lpMsgBuf;
-		WCHAR wcht;
-		FormatMessage(
+		LPVOID lpwMsgBuf;
+		WCHAR wch;
+		FormatMessageW(
 			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL,
 			dwLastIOError,
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			(LPTSTR)&lpMsgBuf,
+			(LPWSTR)&lpwMsgBuf,
 			0,
 			NULL);
-		StrTrim(lpMsgBuf, L" \a\b\f\n\r\t\v");
-		StrCatBuff(szText, L"\n", COUNTOF(szText));
-		StrCatBuff(szText, lpMsgBuf, COUNTOF(szText));
-		LocalFree(lpMsgBuf);
-		wcht = *CharPrev(szText, StrEnd(szText));
-		if (IsCharAlphaNumeric(wcht) || wcht == '"' || wcht == '\'')
-			StrCatBuff(szText, L".", COUNTOF(szText));
+		StrTrimW(lpwMsgBuf, L" \a\b\f\n\r\t\v");
+		StrCatBuffW(wszText, L"\n", COUNTOF(wszText));
+		StrCatBuffW(wszText, lpwMsgBuf, COUNTOF(wszText));
+		LocalFree(lpwMsgBuf);
+		wch = *CharPrevW(wszText, StrEndW(wszText));
+		if (IsCharAlphaNumericW(wch) || wch == L'"' || wch == L'\'')
+			StrCatBuffW(wszText, L".", COUNTOF(wszText));
 	}
 
 	// Common flags:
@@ -218,9 +287,9 @@ int TaskBox(int iMBType, UINT uIdMsg, ...) {
 #ifdef USE_NATIVE_TASKDLG
 
 #ifdef USE_CONTENT_FOR_MSG
-	lResult = TaskDialog(hwnd, g_hInstance, MAKEINTRESOURCE(IDS_APPTITLE), NULL, szText, tdcbfCommonBtns, iIcon, &nButtonPressed);
+	lResult = TaskDialog(hwnd, g_hInstance, MAKEINTRESOURCE(IDS_APPTITLE), NULL, wszText, tdcbfCommonBtns, iIcon, &nButtonPressed);
 #else
-	lResult = TaskDialog(hwnd, g_hInstance, MAKEINTRESOURCE(IDS_APPTITLE), szText, NULL, tdcbfCommonBtns, iIcon, &nButtonPressed);
+	lResult = TaskDialog(hwnd, g_hInstance, MAKEINTRESOURCE(IDS_APPTITLE), wszText, NULL, tdcbfCommonBtns, iIcon, &nButtonPressed);
 #endif
 	if (S_OK == lResult)
 		return nButtonPressed;
@@ -238,9 +307,9 @@ int TaskBox(int iMBType, UINT uIdMsg, ...) {
 #else
 
 #ifdef USE_CONTENT_FOR_MSG then
-	return TaskDlg((LPWSTR)iIcon, 0, 0, szText, 0, 0, tdcbfCommonBtns, tdfFlags, 0, 0, 0, 0, 0, cxDlgWidth);
+	return TaskDlg((LPWSTR)iIcon, 0, 0, wszText, 0, 0, tdcbfCommonBtns, tdfFlags, 0, 0, 0, 0, 0, cxDlgWidth);
 #else
-	return TaskDlg((LPWSTR)iIcon, 0, szText,0,  0, 0, tdcbfCommonBtns, tdfFlags, 0, 0, 0, 0, 0, cxDlgWidth);
+	return TaskDlg((LPWSTR)iIcon, 0, wszText,0,  0, 0, tdcbfCommonBtns, tdfFlags, 0, 0, 0, 0, 0, cxDlgWidth);
 #endif
 
 #endif
@@ -263,36 +332,36 @@ int TaskDialogEx(PCWSTR                         pwszIcon,
 ) {
 	HWND hwnd;
 	TASKDIALOGCONFIG tdConfig = { 0 };
-	WCHAR szMainInstr[TASKDLGBOX_STR_MAXLEN] = L"";
-	WCHAR szContent[TASKDLGBOX_STR_MAXLEN] = L"";
-	WCHAR szVerifText[TASKDLGBOX_STR_MAXLEN] = L"";
-	WCHAR szExpandedInfo[TASKDLGBOX_STR_MAXLEN] = L"";
-	WCHAR szExpandedCtlText[TASKDLGBOX_STR_MAXLEN] = L"";
-	WCHAR szCollapsedCtlText[TASKDLGBOX_STR_MAXLEN] = L"";
-	WCHAR szFooter[TASKDLGBOX_STR_MAXLEN] = L"";
-	WCHAR szTitle[64] = L"";
+	WCHAR wszMainInstr[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR wszContent[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR wszVerifText[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR wszExpandedInfo[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR wszExpandedCtlText[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR wszCollapsedCtlText[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR wszFooter[TASKDLGBOX_STR_MAXLEN] = L"";
+	WCHAR wszTitle[64] = L"";
 
-	tdConfig.cbSize				= sizeof(tdConfig);
+	tdConfig.cbSize = sizeof(tdConfig);
 	if (!(hwnd = GetFocus()))
 		hwnd = hwndMain;
-	tdConfig.hwndParent			= hwnd;
-	if (GetString(IDS_APPTITLE, szTitle, COUNTOF(szTitle)))
-		tdConfig.pszWindowTitle = szTitle;
-	tdConfig.hInstance          = g_hInstance;
-	tdConfig.pszMainIcon        = (pwszIcon ? pwszIcon : TD_INFORMATION_ICON);
+	tdConfig.hwndParent = hwnd;
+	if (GetStringW(IDS_APPTITLE, wszTitle, COUNTOF(wszTitle)))
+		tdConfig.pszWindowTitle = wszTitle;
+	tdConfig.hInstance = g_hInstance;
+	tdConfig.pszMainIcon = (pwszIcon ? pwszIcon : TD_INFORMATION_ICON);
 	if (pwszMainInstr) {
 		if (!(PtrToUint(pwszMainInstr) >> 31) && PtrToUint(pwszMainInstr) < 65536) {
 			UINT uIdMsg = PtrToUint(pwszMainInstr);
-			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
-			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
-				if (S_OK == StringCbVPrintfW(szMainInstr, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
-					tdConfig.pszMainInstruction = szMainInstr;
+			WCHAR wszBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetStringW(uIdMsg, wszBuf, COUNTOF(wszBuf))) {
+				if (S_OK == StringCbVPrintfW(wszMainInstr, TASKDLGBOX_STR_MAXLEN, wszBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszMainInstruction = wszMainInstr;
 				else
-					tdConfig.pszMainInstruction = szBuf;
+					tdConfig.pszMainInstruction = wszBuf;
 			}
 		} else {
-			if (S_OK == StringCbVPrintf(szMainInstr, TASKDLGBOX_STR_MAXLEN, pwszMainInstr, (LPVOID)((PUINT_PTR)&pwszMainInstr + 1)))
-				tdConfig.pszMainInstruction = szMainInstr;
+			if (S_OK == StringCbVPrintfW(wszMainInstr, TASKDLGBOX_STR_MAXLEN, pwszMainInstr, (LPVOID)((PUINT_PTR)&pwszMainInstr + 1)))
+				tdConfig.pszMainInstruction = wszMainInstr;
 			else
 				tdConfig.pszMainInstruction = pwszMainInstr;
 		}
@@ -300,16 +369,16 @@ int TaskDialogEx(PCWSTR                         pwszIcon,
 	if (pwszContent) {
 		if (!(PtrToUint(pwszContent) >> 31) && PtrToUint(pwszContent) < 65536) {
 			UINT uIdMsg = PtrToUint(pwszContent);
-			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
-			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
-				if (S_OK == StringCbVPrintf(szContent, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
-					tdConfig.pszContent = szContent;
+			WCHAR wszBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetStringW(uIdMsg, wszBuf, COUNTOF(wszBuf))) {
+				if (S_OK == StringCbVPrintfW(wszContent, TASKDLGBOX_STR_MAXLEN, wszBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszContent = wszContent;
 				else
-					tdConfig.pszContent = szBuf;
+					tdConfig.pszContent = wszBuf;
 			}
 		} else {
-			if (S_OK == StringCbVPrintf(szContent, TASKDLGBOX_STR_MAXLEN, pwszContent, (LPVOID)((PUINT_PTR)&pwszContent + 1)))
-				tdConfig.pszContent = szContent;
+			if (S_OK == StringCbVPrintfW(wszContent, TASKDLGBOX_STR_MAXLEN, pwszContent, (LPVOID)((PUINT_PTR)&pwszContent + 1)))
+				tdConfig.pszContent = wszContent;
 			else
 				tdConfig.pszContent = pwszContent;
 		}
@@ -335,16 +404,16 @@ int TaskDialogEx(PCWSTR                         pwszIcon,
 	if (pwszVerificationText) {
 		if (!(PtrToUint(pwszVerificationText) >> 31) && PtrToUint(pwszVerificationText) < 65536) {
 			UINT uIdMsg = PtrToUint(pwszVerificationText);
-			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
-			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
-				if (S_OK == StringCbVPrintf(szVerifText, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
-					tdConfig.pszVerificationText = szVerifText;
+			WCHAR wszBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetStringW(uIdMsg, wszBuf, COUNTOF(wszBuf))) {
+				if (S_OK == StringCbVPrintfW(wszVerifText, TASKDLGBOX_STR_MAXLEN, wszBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszVerificationText = wszVerifText;
 				else
-					tdConfig.pszVerificationText = szBuf;
+					tdConfig.pszVerificationText = wszBuf;
 			}
 		} else {
-			if (S_OK == StringCbVPrintf(szVerifText, TASKDLGBOX_STR_MAXLEN, pwszVerificationText, (LPVOID)((PUINT_PTR)&pwszVerificationText + 1)))
-				tdConfig.pszVerificationText = szVerifText;
+			if (S_OK == StringCbVPrintfW(wszVerifText, TASKDLGBOX_STR_MAXLEN, pwszVerificationText, (LPVOID)((PUINT_PTR)&pwszVerificationText + 1)))
+				tdConfig.pszVerificationText = wszVerifText;
 			else
 				tdConfig.pszVerificationText = pwszVerificationText;
 		}
@@ -352,16 +421,16 @@ int TaskDialogEx(PCWSTR                         pwszIcon,
 	if (pwszExpandedInformation) {
 		if (!(PtrToUint(pwszExpandedInformation) >> 31) && PtrToUint(pwszExpandedInformation) < 65536) {
 			UINT uIdMsg = PtrToUint(pwszExpandedInformation);
-			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
-			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
-				if (S_OK == StringCbVPrintf(szExpandedInfo, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
-					tdConfig.pszExpandedInformation = szExpandedInfo;
+			WCHAR wszBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetStringW(uIdMsg, wszBuf, COUNTOF(wszBuf))) {
+				if (S_OK == StringCbVPrintfW(wszExpandedInfo, TASKDLGBOX_STR_MAXLEN, wszBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszExpandedInformation = wszExpandedInfo;
 				else
-					tdConfig.pszVerificationText = szBuf;
+					tdConfig.pszVerificationText = wszBuf;
 			}
 		} else {
-			if (S_OK == StringCbVPrintf(szExpandedInfo, TASKDLGBOX_STR_MAXLEN, pwszExpandedInformation, (LPVOID)((PUINT_PTR)&pwszExpandedInformation + 1)))
-				tdConfig.pszExpandedInformation = szExpandedInfo;
+			if (S_OK == StringCbVPrintfW(wszExpandedInfo, TASKDLGBOX_STR_MAXLEN, pwszExpandedInformation, (LPVOID)((PUINT_PTR)&pwszExpandedInformation + 1)))
+				tdConfig.pszExpandedInformation = wszExpandedInfo;
 			else
 				tdConfig.pszFooter = pwszExpandedInformation;
 		}
@@ -369,16 +438,16 @@ int TaskDialogEx(PCWSTR                         pwszIcon,
 	if (pwszExpandedControlText) {
 		if (!(PtrToUint(pwszExpandedControlText) >> 31) && PtrToUint(pwszExpandedControlText) < 65536) {
 			UINT uIdMsg = PtrToUint(pwszExpandedControlText);
-			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
-			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
-				if (S_OK == StringCbVPrintf(szExpandedCtlText, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
-					tdConfig.pszExpandedControlText = szExpandedCtlText;
+			WCHAR wszBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetStringW(uIdMsg, wszBuf, COUNTOF(wszBuf))) {
+				if (S_OK == StringCbVPrintfW(wszExpandedCtlText, TASKDLGBOX_STR_MAXLEN, wszBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszExpandedControlText = wszExpandedCtlText;
 				else
-					tdConfig.pszVerificationText = szBuf;
+					tdConfig.pszVerificationText = wszBuf;
 			}
 		} else {
-			if (S_OK == StringCbVPrintf(szExpandedCtlText, TASKDLGBOX_STR_MAXLEN, pwszExpandedControlText, (LPVOID)((PUINT_PTR)&pwszExpandedControlText + 1)))
-				tdConfig.pszExpandedControlText = szExpandedCtlText;
+			if (S_OK == StringCbVPrintfW(wszExpandedCtlText, TASKDLGBOX_STR_MAXLEN, pwszExpandedControlText, (LPVOID)((PUINT_PTR)&pwszExpandedControlText + 1)))
+				tdConfig.pszExpandedControlText = wszExpandedCtlText;
 			else
 				tdConfig.pszFooter = pwszExpandedControlText;
 		}
@@ -386,16 +455,16 @@ int TaskDialogEx(PCWSTR                         pwszIcon,
 	if (pwszCollapsedControlText) {
 		if (!(PtrToUint(pwszCollapsedControlText) >> 31) && PtrToUint(pwszCollapsedControlText) < 65536) {
 			UINT uIdMsg = PtrToUint(pwszCollapsedControlText);
-			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
-			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
-				if (S_OK == StringCbVPrintf(szCollapsedCtlText, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
-					tdConfig.pszCollapsedControlText = szCollapsedCtlText;
+			WCHAR wszBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetStringW(uIdMsg, wszBuf, COUNTOF(wszBuf))) {
+				if (S_OK == StringCbVPrintfW(wszCollapsedCtlText, TASKDLGBOX_STR_MAXLEN, wszBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszCollapsedControlText = wszCollapsedCtlText;
 				else
-					tdConfig.pszVerificationText = szBuf;
+					tdConfig.pszVerificationText = wszBuf;
 			}
 		} else {
-			if (S_OK == StringCbVPrintf(szCollapsedCtlText, TASKDLGBOX_STR_MAXLEN, pwszCollapsedControlText, (LPVOID)((PUINT_PTR)&pwszCollapsedControlText + 1)))
-				tdConfig.pszCollapsedControlText = szCollapsedCtlText;
+			if (S_OK == StringCbVPrintfW(wszCollapsedCtlText, TASKDLGBOX_STR_MAXLEN, pwszCollapsedControlText, (LPVOID)((PUINT_PTR)&pwszCollapsedControlText + 1)))
+				tdConfig.pszCollapsedControlText = wszCollapsedCtlText;
 			else
 				tdConfig.pszFooter = pwszCollapsedControlText;
 		}
@@ -403,16 +472,16 @@ int TaskDialogEx(PCWSTR                         pwszIcon,
 	if (pwszFooter) {
 		if (!(PtrToUint(pwszFooter) >> 31) && PtrToUint(pwszFooter) < 65536) {
 			UINT uIdMsg = PtrToUint(pwszFooter);
-			WCHAR szBuf[TASKDLGBOX_STR_MAXLEN];
-			if (GetString(uIdMsg, szBuf, COUNTOF(szBuf))) {
-				if (S_OK == StringCbVPrintf(szFooter, TASKDLGBOX_STR_MAXLEN, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
-					tdConfig.pszFooter = szFooter;
+			WCHAR wszBuf[TASKDLGBOX_STR_MAXLEN];
+			if (GetStringW(uIdMsg, wszBuf, COUNTOF(wszBuf))) {
+				if (S_OK == StringCbVPrintfW(wszFooter, TASKDLGBOX_STR_MAXLEN, wszBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1)))
+					tdConfig.pszFooter = wszFooter;
 				else
-					tdConfig.pszVerificationText = szBuf;
+					tdConfig.pszVerificationText = wszBuf;
 			}
 		} else {
-			if (S_OK == StringCbVPrintf(szFooter, TASKDLGBOX_STR_MAXLEN, pwszFooter, (LPVOID)((PUINT_PTR)&pwszFooter + 1)))
-				tdConfig.pszFooter = szFooter;
+			if (S_OK == StringCbVPrintfW(wszFooter, TASKDLGBOX_STR_MAXLEN, pwszFooter, (LPVOID)((PUINT_PTR)&pwszFooter + 1)))
+				tdConfig.pszFooter = wszFooter;
 			else
 				tdConfig.pszFooter = pwszFooter;
 		}
@@ -452,17 +521,17 @@ void DisplayCmdLineHelp(HWND hwnd)
 {
     MSGBOXPARAMS mbp;
 
-    WCHAR szTitle[MB_TITLE_MAXLEN];
-    WCHAR szText[MB_MSG_MAXLEN]; // was previously set as ..[2048], but the API's limit is 1023+z anyway...
+    TCHAR tszTitle[MB_TITLE_MAXLEN];
+    TCHAR tszText[MB_MSG_MAXLEN]; // was previously set as ..[2048], but the API's limit is 1023+z anyway...
 
-    GetString(IDS_APPTITLE, szTitle, COUNTOF(szTitle));
-    GetString(IDS_CMDLINEHELP, szText, COUNTOF(szText));
+    GetString(IDS_APPTITLE, tszTitle, COUNTOF(tszTitle));
+    GetString(IDS_CMDLINEHELP, tszText, COUNTOF(tszText));
 
     mbp.cbSize = sizeof(MSGBOXPARAMS);
     mbp.hwndOwner = hwnd;
     mbp.hInstance = g_hInstance;
-    mbp.lpszText = szText;
-    mbp.lpszCaption = szTitle;
+    mbp.lpszText = tszText;
+    mbp.lpszCaption = tszTitle;
     mbp.dwStyle = MB_OK | MB_USERICON | MB_SETFOREGROUND;
     mbp.lpszIcon = MAKEINTRESOURCE(IDR_MAINWND);
     mbp.dwContextHelpId = 0;
@@ -490,37 +559,37 @@ int CALLBACK BFFCallBack(HWND hwnd, UINT umsg, LPARAM lParam, LPARAM lpData)
 //
 //  GetDirectory()
 //
-BOOL GetDirectory(HWND hwndParent, int iTitle, LPWSTR pszFolder, LPCWSTR pszBase, BOOL bNewDialogStyle)
+BOOL GetDirectory(HWND hwndParent, int iTitle, LPTSTR ptszFolder, LPCTSTR ptszBase, BOOL bNewDialogStyle)
 {
 
     BROWSEINFO bi;
     LPITEMIDLIST pidl;
-    WCHAR szTitle[256];
-    WCHAR szBase[MAX_PATH];
+    TCHAR tszTitle[256];
+    TCHAR tszBase[MAX_PATH];
     BOOL fOk = FALSE;
 
-    lstrcpy(szTitle, L"");
-    GetString(iTitle, szTitle, COUNTOF(szTitle));
+    lstrcpy(tszTitle, _T(""));
+    GetString(iTitle, tszTitle, COUNTOF(tszTitle));
 
-    if (!pszBase || !*pszBase)
-        GetCurrentDirectory(MAX_PATH, szBase);
+    if (!ptszBase || !*ptszBase)
+        GetCurrentDirectory(MAX_PATH, tszBase);
     else
-        lstrcpy(szBase, pszBase);
+        lstrcpy(tszBase, ptszBase);
 
     bi.hwndOwner = hwndParent;
     bi.pidlRoot = NULL;
-    bi.pszDisplayName = pszFolder;
-    bi.lpszTitle = szTitle;
+    bi.pszDisplayName = ptszFolder;
+    bi.lpszTitle = tszTitle;
     bi.ulFlags = BIF_RETURNONLYFSDIRS;
     if (bNewDialogStyle)
         bi.ulFlags |= BIF_NEWDIALOGSTYLE;
     bi.lpfn = &BFFCallBack;
-    bi.lParam = (LPARAM)szBase;
+    bi.lParam = (LPARAM)tszBase;
     bi.iImage = 0;
 
     pidl = SHBrowseForFolder(&bi);
     if (pidl) {
-        SHGetPathFromIDList(pidl, pszFolder);
+        SHGetPathFromIDList(pidl, ptszFolder);
         CoTaskMemFree(pidl);
         fOk = TRUE;
     }
@@ -542,7 +611,7 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
 
     switch (umsg) {
     case WM_INITDIALOG: {
-        WCHAR wch[256];
+        TCHAR tch[256];
         LOGFONT lf;
 
         SetDlgItemText(hwnd, IDC_VERSION, VERSION_FILEVERSION_LONG);
@@ -568,8 +637,8 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
             SetDlgItemText(hwnd, IDC_JRB_PAGE2, VERSION_JRB_PAGEDISPLAY);
             ShowWindow(GetDlgItem(hwnd, IDC_JRB_PAGE2), SW_SHOWNORMAL);
         } else {
-            wsprintf(wch, L"<A>%s</A>", VERSION_JRB_PAGEDISPLAY);
-            SetDlgItemText(hwnd, IDC_JRB_PAGE, wch);
+            wsprintf(tch, _T("<A>%s</A>"), VERSION_JRB_PAGEDISPLAY);
+            SetDlgItemText(hwnd, IDC_JRB_PAGE, tch);
         }
 /*
         if (hFontJrbAbout)
@@ -591,8 +660,8 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
             SetDlgItemText(hwnd, IDC_MOD_PAGE, VERSION_MOD_PAGEDISPLAY);
             ShowWindow(GetDlgItem(hwnd, IDC_MOD_PAGE2), SW_SHOWNORMAL);
         } else {
-            wsprintf(wch, L"<A>%s</A>", VERSION_MOD_PAGEDISPLAY);
-            SetDlgItemText(hwnd, IDC_MOD_PAGE, wch);
+            wsprintf(tch, _T("<A>%s</A>"), VERSION_MOD_PAGEDISPLAY);
+            SetDlgItemText(hwnd, IDC_MOD_PAGE, tch);
         }
 
 #ifdef JRB_BUILD
@@ -605,16 +674,16 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
             SetDlgItemText(hwnd, IDC_WEBPAGE2, VERSION_WEBPAGEDISPLAY);
             ShowWindow(GetDlgItem(hwnd, IDC_WEBPAGE2), SW_SHOWNORMAL);
         } else {
-            wsprintf(wch, L"<A>%s</A>", VERSION_WEBPAGEDISPLAY);
-            SetDlgItemText(hwnd, IDC_WEBPAGE, wch);
+            wsprintf(tch, _T("<A>%s</A>"), VERSION_WEBPAGEDISPLAY);
+            SetDlgItemText(hwnd, IDC_WEBPAGE, tch);
         }
 
         if (GetDlgItem(hwnd, IDC_EMAIL) == NULL) {
             SetDlgItemText(hwnd, IDC_EMAIL2, VERSION_EMAILDISPLAY);
             ShowWindow(GetDlgItem(hwnd, IDC_EMAIL2), SW_SHOWNORMAL);
         } else {
-            wsprintf(wch, L"<A>%s</A>", VERSION_EMAILDISPLAY);
-            SetDlgItemText(hwnd, IDC_EMAIL, wch);
+            wsprintf(tch, _T("<A>%s</A>"), VERSION_EMAILDISPLAY);
+            SetDlgItemText(hwnd, IDC_EMAIL, tch);
         }
 
         CenterDlgInParent(hwnd);
@@ -628,11 +697,11 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         case NM_CLICK:
         case NM_RETURN: {
             if (pnmhdr->idFrom == IDC_WEBPAGE) {
-                ShellExecute(hwnd, L"open", L"http://www.flos-freeware.ch", NULL, NULL, SW_SHOWNORMAL);
+                ShellExecute(hwnd, _T("open"), _T("http://www.flos-freeware.ch"), NULL, NULL, SW_SHOWNORMAL);
             } else if (pnmhdr->idFrom == IDC_EMAIL) {
-                ShellExecute(hwnd, L"open", L"mailto:florian.balmer@gmail.com", NULL, NULL, SW_SHOWNORMAL);
+                ShellExecute(hwnd, _T("open"), T("mailto:florian.balmer@gmail.com"), NULL, NULL, SW_SHOWNORMAL);
             } else if (pnmhdr->idFrom == IDC_MOD_PAGE) {
-                ShellExecute(hwnd, L"open", L"https://xhmikosr.github.io/notepad2-mod/", NULL, NULL, SW_SHOWNORMAL);
+                ShellExecute(hwnd, _T("open"), _T("https://xhmikosr.github.io/notepad2-mod/"), NULL, NULL, SW_SHOWNORMAL);
             }
         } break;
         }
@@ -660,15 +729,16 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
     switch (umsg) {
 
-    case WM_INITDIALOG: {
-        MakeBitmapButton(hwnd, IDC_SEARCHEXE, g_hInstance, IDB_OPEN);
+    case WM_INITDIALOG:
+        {
+            MakeBitmapButton(hwnd, IDC_SEARCHEXE, g_hInstance, IDB_OPEN);
 
-        SendDlgItemMessage(hwnd, IDC_COMMANDLINE, EM_LIMITTEXT, MAX_PATH - 1, 0);
-        SetDlgItemText(hwnd, IDC_COMMANDLINE, (LPCWSTR)lParam);
-        SHAutoComplete(GetDlgItem(hwnd, IDC_COMMANDLINE), SHACF_FILESYSTEM);
+            SendDlgItemMessage(hwnd, IDC_COMMANDLINE, EM_LIMITTEXT, MAX_PATH - 1, 0);
+            SetDlgItemText(hwnd, IDC_COMMANDLINE, (LPCWSTR)lParam);
+            SHAutoComplete(GetDlgItem(hwnd, IDC_COMMANDLINE), SHACF_FILESYSTEM);
 
-        CenterDlgInParent(hwnd);
-    }
+            CenterDlgInParent(hwnd);
+        }
         return TRUE;
 
     case WM_DESTROY:
@@ -679,108 +749,108 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
         switch (LOWORD(wParam)) {
 
-        case IDC_SEARCHEXE: {
-            WCHAR szArgs[MAX_PATH];
-            WCHAR szArg2[MAX_PATH];
-            WCHAR szFile[MAX_PATH * 2];
-            WCHAR szFilter[256];
-            OPENFILENAME ofn;
-            ZeroMemory(&ofn, sizeof(OPENFILENAME));
+            case IDC_SEARCHEXE: {
+                TCHAR tszArgs[MAX_PATH];
+                TCHAR tszArg2[MAX_PATH];
+                TCHAR tszFile[MAX_PATH * 2];
+                TCHAR tszFilter[256];
+                OPENFILENAME ofn;
+                ZeroMemory(&ofn, sizeof(OPENFILENAME));
 
-            GetDlgItemText(hwnd, IDC_COMMANDLINE, szArgs, COUNTOF(szArgs));
-            ExpandEnvironmentStringsEx(szArgs, COUNTOF(szArgs));
-            ExtractFirstArgument(szArgs, szFile, szArg2);
+                GetDlgItemText(hwnd, IDC_COMMANDLINE, tszArgs, COUNTOF(tszArgs));
+                ExpandEnvironmentStringsEx(tszArgs, COUNTOF(tszArgs));
+                ExtractFirstArgument(tszArgs, tszFile, tszArg2);
 
-            GetString(IDS_FILTER_EXE, szFilter, COUNTOF(szFilter));
-            PrepareFilterStr(szFilter);
+                GetString(IDS_FILTER_EXE, tszFilter, COUNTOF(tszFilter));
+                PrepareFilterStr(tszFilter);
 
-            ofn.lStructSize = sizeof(OPENFILENAME);
-            ofn.hwndOwner = hwnd;
-            ofn.lpstrFilter = szFilter;
-            ofn.lpstrFile = szFile;
-            ofn.nMaxFile = COUNTOF(szFile);
-            ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT
-                | OFN_PATHMUSTEXIST | OFN_SHAREAWARE | OFN_NODEREFERENCELINKS;
+                ofn.lStructSize = sizeof(OPENFILENAME);
+                ofn.hwndOwner = hwnd;
+                ofn.lpstrFilter = tszFilter;
+                ofn.lpstrFile = tszFile;
+                ofn.nMaxFile = COUNTOF(tszFile);
+                ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT
+                    | OFN_PATHMUSTEXIST | OFN_SHAREAWARE | OFN_NODEREFERENCELINKS;
 
-            if (GetOpenFileName(&ofn)) {
-                PathQuoteSpaces(szFile);
-                if (lstrlen(szArg2)) {
-                    lstrcat(szFile, L" ");
-                    lstrcat(szFile, szArg2);
-                }
-                SetDlgItemText(hwnd, IDC_COMMANDLINE, szFile);
-            }
-
-            PostMessage(hwnd, WM_NEXTDLGCTL, 1, 0);
-        } break;
-
-        case IDC_COMMANDLINE: {
-            BOOL bEnableOK = FALSE;
-            WCHAR args[MAX_PATH];
-
-            if (GetDlgItemText(hwnd, IDC_COMMANDLINE, args, MAX_PATH))
-                if (ExtractFirstArgument(args, args, NULL))
-                    if (lstrlen(args))
-                        bEnableOK = TRUE;
-
-            EnableWindow(GetDlgItem(hwnd, IDOK), bEnableOK);
-        } break;
-
-        case IDOK: {
-            WCHAR arg1[MAX_PATH];
-            WCHAR arg2[MAX_PATH];
-            SHELLEXECUTEINFO sei;
-            WCHAR wchDirectory[MAX_PATH] = L"";
-
-            if (GetDlgItemText(hwnd, IDC_COMMANDLINE, arg1, MAX_PATH)) {
-                BOOL bQuickExit = FALSE;
-
-                ExpandEnvironmentStringsEx(arg1, COUNTOF(arg1));
-                ExtractFirstArgument(arg1, arg1, arg2);
-
-                if (lstrcmpi(arg1, L"notepad2") == 0 || lstrcmpi(arg1, L"notepad2.exe") == 0) {
-                    GetModuleFileName(NULL, arg1, COUNTOF(arg1));
-                    bQuickExit = TRUE;
+                if (GetOpenFileName(&ofn)) {
+                    PathQuoteSpaces(tszFile);
+                    if (lstrlen(tszArg2)) {
+                        lstrcat(tszFile, _T(" "));
+                        lstrcat(tszFile, tszArg2);
+                    }
+                    SetDlgItemText(hwnd, IDC_COMMANDLINE, tszFile);
                 }
 
-                if (lstrlen(szCurFile)) {
-                    lstrcpy(wchDirectory, szCurFile);
-                    PathRemoveFileSpec(wchDirectory);
-                }
+                PostMessage(hwnd, WM_NEXTDLGCTL, 1, 0);
+            } break;
 
-                ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
+            case IDC_COMMANDLINE: {
+                BOOL bEnableOK = FALSE;
+                TCHAR tchArgs[MAX_PATH];
 
-                sei.cbSize = sizeof(SHELLEXECUTEINFO);
-                sei.fMask = 0;
-                sei.hwnd = hwnd;
-                sei.lpVerb = NULL;
-                sei.lpFile = arg1;
-                sei.lpParameters = arg2;
-                sei.lpDirectory = wchDirectory;
-                sei.nShow = SW_SHOWNORMAL;
+                if (GetDlgItemText(hwnd, IDC_COMMANDLINE, tchArgs, MAX_PATH))
+                    if (ExtractFirstArgument(tchArgs, tchArgs, NULL))
+                        if (lstrlen(tchArgs))
+                            bEnableOK = TRUE;
 
-                if (bQuickExit) {
-                    sei.fMask |= /*SEE_MASK_NOZONECHECKS*/ 0x00800000;
-                    EndDialog(hwnd, IDOK);
-                    ShellExecuteEx(&sei);
-                }
+                EnableWindow(GetDlgItem(hwnd, IDOK), bEnableOK);
+            } break;
 
-                else {
+            case IDOK: {
+                TCHAR tchArg1[MAX_PATH];
+                TCHAR tchArg2[MAX_PATH];
+                SHELLEXECUTEINFO sei;
+                TCHAR tchDirectory[MAX_PATH] = _T("");
 
-                    if (ShellExecuteEx(&sei))
+                if (GetDlgItemText(hwnd, IDC_COMMANDLINE, tchArg1, MAX_PATH)) {
+                    BOOL bQuickExit = FALSE;
+
+                    ExpandEnvironmentStringsEx(tchArg1, COUNTOF(tchArg1));
+                    ExtractFirstArgument(tchArg1, tchArg1, tchArg2);
+
+                    if (lstrcmpi(tchArg1, _T("notepad2")) == 0 || lstrcmpi(tchArg1, _T("notepad2.exe")) == 0) {
+                        GetModuleFileName(NULL, tchArg1, COUNTOF(tchArg1));
+                        bQuickExit = TRUE;
+                    }
+
+                    if (lstrlen(g_tszCurFile)) {
+                        lstrcpy(tchDirectory, g_tszCurFile);
+                        PathRemoveFileSpec(tchDirectory);
+                    }
+
+                    ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
+
+                    sei.cbSize = sizeof(SHELLEXECUTEINFO);
+                    sei.fMask = 0;
+                    sei.hwnd = hwnd;
+                    sei.lpVerb = NULL;
+                    sei.lpFile = tchArg1;
+                    sei.lpParameters = tchArg2;
+                    sei.lpDirectory = tchDirectory;
+                    sei.nShow = SW_SHOWNORMAL;
+
+                    if (bQuickExit) {
+                        sei.fMask |= /*SEE_MASK_NOZONECHECKS*/ 0x00800000;
                         EndDialog(hwnd, IDOK);
+                        ShellExecuteEx(&sei);
+                    }
 
-                    else
-                        PostMessage(hwnd, WM_NEXTDLGCTL,
-                            (WPARAM)(GetDlgItem(hwnd, IDC_COMMANDLINE)), 1);
+                    else {
+
+                        if (ShellExecuteEx(&sei))
+                            EndDialog(hwnd, IDOK);
+
+                        else
+                            PostMessage(hwnd, WM_NEXTDLGCTL,
+                                (WPARAM)(GetDlgItem(hwnd, IDC_COMMANDLINE)), 1);
+                    }
                 }
-            }
-        } break;
+            } break;
 
-        case IDCANCEL:
-            EndDialog(hwnd, IDCANCEL);
-            break;
-        }
+            case IDCANCEL:
+                EndDialog(hwnd, IDCANCEL);
+                break;
+            }
 
         return TRUE;
     }
@@ -803,7 +873,7 @@ void RunDlg(HWND hwnd, LPCWSTR lpstrDefault)
 //
 //  OpenWithDlgProc()
 //
-extern WCHAR tchOpenWithDir[MAX_PATH];
+extern TCHAR tchOpenWithDir[MAX_PATH];
 extern int flagNoFadeHidden;
 
 extern int cxOpenWithDlg;
@@ -815,7 +885,7 @@ INT_PTR CALLBACK OpenWithDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
     switch (umsg) {
 
     case WM_INITDIALOG: {
-        LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
+        LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, _T(""), -1, 0, 0, 0 };
 
         ResizeDlg_Init(hwnd, cxOpenWithDlg, cyOpenWithDlg, IDC_RESIZEGRIP3);
 
@@ -942,12 +1012,12 @@ BOOL OpenWithDlg(HWND hwnd, LPCWSTR lpstrFile)
 
     if (IDOK == ThemedDialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_OPENWITH), hwnd, OpenWithDlgProc, (LPARAM)&dliOpenWith)) {
         SHELLEXECUTEINFO sei;
-        WCHAR szParam[MAX_PATH];
-        WCHAR wchDirectory[MAX_PATH] = L"";
+        TCHAR tszParam[MAX_PATH];
+        TCHAR tchDirectory[MAX_PATH] = _T("");
 
-        if (lstrlen(szCurFile)) {
-            lstrcpy(wchDirectory, szCurFile);
-            PathRemoveFileSpec(wchDirectory);
+        if (lstrlen(g_tszCurFile)) {
+            lstrcpy(tchDirectory, g_tszCurFile);
+            PathRemoveFileSpec(tchDirectory);
         }
 
         ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
@@ -956,15 +1026,15 @@ BOOL OpenWithDlg(HWND hwnd, LPCWSTR lpstrFile)
         sei.hwnd = hwnd;
         sei.lpVerb = NULL;
         sei.lpFile = dliOpenWith.szFileName;
-        sei.lpParameters = szParam;
-        sei.lpDirectory = wchDirectory;
+        sei.lpParameters = tszParam;
+        sei.lpDirectory = tchDirectory;
         sei.nShow = SW_SHOWNORMAL;
 
         // resolve links and get short path name
-        if (!(PathIsLnkFile(lpstrFile) && PathGetLnkPath(lpstrFile, szParam, COUNTOF(szParam))))
-            lstrcpy(szParam, lpstrFile);
-        //GetShortPathName(szParam,szParam,sizeof(WCHAR)*COUNTOF(szParam));
-        PathQuoteSpaces(szParam);
+        if (!(PathIsLnkFile(lpstrFile) && PathGetLnkPath(lpstrFile, tszParam, COUNTOF(tszParam))))
+            lstrcpy(tszParam, lpstrFile);
+        ///GetShortPathName(tszParam, tszParam, sizeof(TCHAR) * COUNTOF(tszParam));
+        PathQuoteSpaces(tszParam);
 
         ShellExecuteEx(&sei);
 
@@ -992,13 +1062,13 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
     switch (umsg) {
 
     case WM_INITDIALOG: {
-        LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
+        LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, _T(""), -1, 0, 0, 0 };
 
         ResizeDlg_Init(hwnd, cxFavoritesDlg, cyFavoritesDlg, IDC_RESIZEGRIP3);
 
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
 
-        //SetExplorerTheme(GetDlgItem(hwnd,IDC_FAVORITESDIR));
+        ///SetExplorerTheme(GetDlgItem(hwnd,IDC_FAVORITESDIR));
         ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_FAVORITESDIR), /*LVS_EX_FULLROWSELECT|*/ LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(GetDlgItem(hwnd, IDC_FAVORITESDIR), 0, &lvc);
         DirList_Init(GetDlgItem(hwnd, IDC_FAVORITESDIR), NULL);
@@ -1110,14 +1180,14 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
 //
 //  FavoritesDlg()
 //
-BOOL FavoritesDlg(HWND hwnd, LPWSTR lpstrFile)
+BOOL FavoritesDlg(HWND hwnd, LPTSTR lptstrFile)
 {
 
     DLITEM dliFavorite;
     dliFavorite.mask = DLI_FILENAME;
 
     if (IDOK == ThemedDialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_FAVORITES), hwnd, FavoritesDlgProc, (LPARAM)&dliFavorite)) {
-        return (lstrcpyn(lpstrFile, dliFavorite.szFileName, MAX_PATH) != 0);
+        return (lstrcpyn(lptstrFile, dliFavorite.szFileName, MAX_PATH) != 0);
     }
 
     return (FALSE);
