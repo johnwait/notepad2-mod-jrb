@@ -2885,9 +2885,9 @@ extern BOOL bHiliteCurrentLine;
 //
 void Style_Load() {
     int i, iLexer;
-    TCHAR tch[32];
-    TCHAR *pIniSection = LocalAlloc(LPTR, sizeof(TCHAR) * 32 * 1024);
-    int   cchIniSection = (int)LocalSize(pIniSection) / sizeof(TCHAR);
+    WCHAR tch[32];
+    WCHAR *pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
+    int   cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
 
     // Custom colors
     crCustom[0] = RGB(0x00, 0x00, 0x00);
@@ -3171,7 +3171,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew) {
 
     // Font quality setup, check availability of Consolas
     Style_SetFontQuality(hwnd, lexDefault.Styles[0 + iIdx].szValue);
-    fIsConsolasAvailable = IsFontAvailableW(L"Consolas");
+    fIsConsolasAvailable = IsFontAvailable(L"Consolas");
 
     // Clear
     SendMessage(hwnd, SCI_CLEARDOCUMENTSTYLE, 0, 0);
@@ -3598,25 +3598,25 @@ PEDITLEXER __fastcall Style_SniffShebang(char *pchText) {
 //
 //  Style_MatchLexer()
 //
-PEDITLEXER __fastcall Style_MatchLexer(LPCTSTR lptszMatch, BOOL bCheckNames) {
+PEDITLEXER __fastcall Style_MatchLexer(LPCWSTR lpszMatch, BOOL bCheckNames) {
     int i;
-    TCHAR  tch[256 + 16];
-    TCHAR  *p1, *p2;
+    WCHAR  tch[256 + 16];
+    WCHAR  *p1, *p2;
 
     if (!bCheckNames) {
 
         for (i = 0; i < NUMLEXERS; i++) {
 
-            ZeroMemory(tch, sizeof(TCHAR)*COUNTOF(tch));
-            lstrcpy(tch, pLexArray[i]->tszExtensions);
+            ZeroMemory(tch, sizeof(WCHAR)*COUNTOF(tch));
+            lstrcpy(tch, pLexArray[i]->szExtensions);
             p1 = tch;
             while (*p1) {
-                if (p2 = StrChr(p1, _T(';')))
-                    *p2 = _T('\0');
+                if (p2 = StrChr(p1, L';'))
+                    *p2 = L'\0';
                 else
                     p2 = StrEnd(p1);
-                StrTrim(p1, _T(" ."));
-                if (lstrcmpi(p1, lptszMatch) == 0)
+                StrTrim(p1, L" .");
+                if (lstrcmpi(p1, lpszMatch) == 0)
                     return(pLexArray[i]);
                 p1 = p2 + 1;
             }
@@ -3625,11 +3625,11 @@ PEDITLEXER __fastcall Style_MatchLexer(LPCTSTR lptszMatch, BOOL bCheckNames) {
 
     else {
 
-        int cch = lstrlen(lptszMatch);
+        int cch = lstrlen(lpszMatch);
         if (cch >= 3) {
 
             for (i = 0; i < NUMLEXERS; i++) {
-                if (StrCmpNI(pLexArray[i]->ptszName, lptszMatch, cch) == 0)
+                if (StrCmpNI(pLexArray[i]->pszName, lpszMatch, cch) == 0)
                     return(pLexArray[i]);
             }
         }
@@ -3646,27 +3646,26 @@ extern int fNoHTMLGuess;
 extern int fNoCGIGuess;
 extern FILEVARS fvCurFile;
 
-void Style_SetLexerFromFile(HWND hwnd, LPCTSTR lptszFile) {
-    LPTSTR lptszExt = PathFindExtension(lptszFile);
+void Style_SetLexerFromFile(HWND hwnd, LPCWSTR lpszFile) {
+    LPWSTR lpszExt = PathFindExtension(lpszFile);
     BOOL  bFound = FALSE;
     PEDITLEXER pLexNew = pLexArray[iDefaultLexer];
     PEDITLEXER pLexSniffed;
 
     if ((fvCurFile.mask & FV_MODE) && fvCurFile.tchMode[0]) {
 
-        TCHAR tchMode[32];
+        WCHAR wchMode[32];
         PEDITLEXER pLexMode;
         UINT cp = (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0);
-        ///MultiByteToWideChar(cp, 0, fvCurFile.tchMode, -1, wchMode, COUNTOF(wchMode));
-        StrCpyN(tchMode, fvCurFile.tchMode, 31);
+        MultiByteToWideChar(cp, 0, fvCurFile.tchMode, -1, wchMode, COUNTOF(wchMode));
 
-        if (!fNoCGIGuess && (lstrcmpi(tchMode, _T("cgi")) == 0 || lstrcmpi(tchMode, _T("fcgi")) == 0)) {
-            char chText[256];
-            SendMessage(hwnd, SCI_GETTEXT, (WPARAM)COUNTOF(chText) - 1, (LPARAM)chText);
-            StrTrimA(chText, " \t\n\r");
-            if (pLexSniffed = Style_SniffShebang(chText)) {
+        if (!fNoCGIGuess && (lstrcmpi(wchMode, L"cgi") == 0 || lstrcmpi(wchMode, L"fcgi") == 0)) {
+            char tchText[256];
+            SendMessage(hwnd, SCI_GETTEXT, (WPARAM)COUNTOF(tchText) - 1, (LPARAM)tchText);
+            StrTrimA(tchText, " \t\n\r");
+            if (pLexSniffed = Style_SniffShebang(tchText)) {
                 if (iEncoding != g_DOSEncoding || pLexSniffed != &lexDefault || (
-                    lstrcmpi(lptszExt, _T("nfo")) && lstrcmpi(lptszExt, _T("diz")))) {
+                    lstrcmpi(lpszExt, L"nfo") && lstrcmpi(lpszExt, L"diz"))) {
                     // Although .nfo and .diz were removed from the default lexer's
                     // default extensions list, they may still presist in the user's INI
                     pLexNew = pLexSniffed;
@@ -3676,10 +3675,10 @@ void Style_SetLexerFromFile(HWND hwnd, LPCTSTR lptszFile) {
         }
 
         if (!bFound) {
-            if (pLexMode = Style_MatchLexer(tchMode, FALSE)) {
+            if (pLexMode = Style_MatchLexer(wchMode, FALSE)) {
                 pLexNew = pLexMode;
                 bFound = TRUE;
-            } else if (pLexMode = Style_MatchLexer(tchMode, TRUE)) {
+            } else if (pLexMode = Style_MatchLexer(wchMode, TRUE)) {
                 pLexNew = pLexMode;
                 bFound = TRUE;
             }
@@ -3687,22 +3686,22 @@ void Style_SetLexerFromFile(HWND hwnd, LPCTSTR lptszFile) {
     }
 
     if (!bFound && bAutoSelect && /* bAutoSelect == FALSE skips lexer search */
-        (lptszFile && lstrlen(lptszFile) > 0 && *lptszExt)) {
+        (lpszFile && lstrlen(lpszFile) > 0 && *lpszExt)) {
 
-        if (*lptszExt == _T('.'))
-            lptszExt += sizeof(TCHAR);
+        if (*lpszExt == L'.')
+            lpszExt++;
 
-        if (!fNoCGIGuess && (lstrcmpi(lptszExt, _T("cgi")) == 0 || lstrcmpi(lptszExt, _T("fcgi")) == 0)) {
-            char chText[256];
-            SendMessage(hwnd, SCI_GETTEXT, (WPARAM)COUNTOF(chText) - 1, (LPARAM)chText);
-            StrTrimA(chText, " \t\n\r");
-            if (pLexSniffed = Style_SniffShebang(chText)) {
+        if (!fNoCGIGuess && (lstrcmpi(lpszExt, L"cgi") == 0 || lstrcmpi(lpszExt, L"fcgi") == 0)) {
+            char tchText[256];
+            SendMessage(hwnd, SCI_GETTEXT, (WPARAM)COUNTOF(tchText) - 1, (LPARAM)tchText);
+            StrTrimA(tchText, " \t\n\r");
+            if (pLexSniffed = Style_SniffShebang(tchText)) {
                 pLexNew = pLexSniffed;
                 bFound = TRUE;
             }
         }
 
-        if (!bFound && lstrcmpi(PathFindFileName(lptszFile), _T("cmakelists.txt")) == 0) {
+        if (!bFound && lstrcmpi(PathFindFileName(lpszFile), L"cmakelists.txt") == 0) {
             pLexNew = &lexCmake;
             bFound = TRUE;
         }
@@ -3871,9 +3870,9 @@ void Style_SetIndentGuides(HWND hwnd, BOOL bShow) {
 //
 //  Style_GetFileOpenDlgFilter()
 //
-extern TCHAR tchFileDlgFilters[5 * 1024];
+extern WCHAR tchFileDlgFilters[5 * 1024];
 
-BOOL Style_GetOpenDlgFilterStr(LPTSTR lpszFilter, int cchFilter) {
+BOOL Style_GetOpenDlgFilterStr(LPWSTR lpszFilter, int cchFilter) {
     if (lstrlen(tchFileDlgFilters) == 0)
         GetString(IDS_FILTER_ALL, lpszFilter, cchFilter);
     else {

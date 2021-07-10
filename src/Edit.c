@@ -68,7 +68,7 @@ extern int iWeakSrcEncoding;
 int g_DOSEncoding;
 
 #ifdef JRB_BUILD
-#define RE_REGEX_SYNTAX_RTF_MAXLEN 0x4000 // 16kb for regex syntax' RTF code ought to be enough
+#define RE_REGEX_SYNTAX_RTF_MAXLEN 0x4000
 char szRESyntaxRtf[RE_REGEX_SYNTAX_RTF_MAXLEN] = "";
 extern HWND hDlgRegexSyntax;
 extern int cxRegexSyntaxDlg;
@@ -6886,15 +6886,6 @@ BOOL RegexSyntaxDlg_LoadRtfRes(HWND hRichEditCtlWnd, LPARAM lParam, BOOL bInvert
 
 		} break; // <= no-man's-land
 	}
-
-	// 2020-04-19: Offset control's rectangle with left and right margins
-	RECT rc;
-	SendMessage(hRichEditCtlWnd, EM_GETRECT, 0, (LPARAM)&rc);
-	rc.left += RTF_RECT_MARGIN_X;
-	rc.top += RTF_RECT_MARGIN_Y;
-	rc.right -= RTF_RECT_MARGIN_X;
-	rc.bottom -= RTF_RECT_MARGIN_Y;
-	SendMessage(hRichEditCtlWnd, EM_SETRECT, 0, (LPARAM)&rc);
 
 	// Set content of RichEdit control
 	SendMessage(hRichEditCtlWnd, EM_SETTEXTEX, (WPARAM)&se, (LPARAM)(LPSTR)&szRESyntaxRtf);
