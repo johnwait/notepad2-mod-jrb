@@ -519,6 +519,12 @@
 #define IDS_UCN_ACTION_NONE             50044
 #define IDS_FCN_ACTION_RELOAD           50045
 #define IDS_FCN_ACTION_NONE             50046
+#ifdef JRB_BUILD
+#define IDS_BTN_CANCEL                  50060
+#define IDS_BTN_SAVE                    50061
+#define IDS_BTN_SAVE_OTHERLOC           50062
+#define IDS_BTN_DONTSAVE                50063
+#endif // JRB_BUILD
 #endif // FEAT_REPLACE_MSGBOX_BY_TASKDLG
 #ifdef JRB_BUILD
 #define IDS_CTLCHAR_00_TOOLTIP          50100

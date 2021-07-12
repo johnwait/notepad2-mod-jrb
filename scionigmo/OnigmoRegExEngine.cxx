@@ -32,15 +32,31 @@
 #include <string>
 #include <vector>
 #include <sstream>
-// 2020-01-30: Added for std::transform() in OnigmoRegExEngine::SubstituteByPosition()
+// 2020-01-30: Below: added for std::transform() in OnigmoRegExEngine::SubstituteByPosition()
 #include <algorithm>
 #include <locale>
 
+// 2021-07-10: Feature flag for backref transforms until implementation if complete
+//             NOTE: Does not control inclusion (oe exclusion) of their documentation
+//                   within the regex syntax (RTF) file
+#define X_ONIG_BACKREF_TRANSFORMS
+
+// 2020-01-30: Implemented as a helper for backref transforms
 std::string toTitle( std::string s, const std::locale& loc = std::locale() ) {
     bool last = true;
     for (char& ch : s) {
         ch = last ? std::toupper( ch, loc ) : std::tolower( ch, loc );
         last = std::isspace( ch, loc );
+    }
+    return s;
+}
+
+// 2021-07-09: Implemented as (yet) another helper for backref transforms
+std::string toProper( std::string s, const std::locale& loc = std::locale() ) {
+    bool last = true;
+    for (char& ch : s) {
+        ch = last ? std::toupper( ch, loc ) : std::tolower( ch, loc );
+        last = std::isspace( ch, loc ) || std::ispunct( ch, loc );
     }
     return s;
 }
@@ -413,22 +429,58 @@ static int GrpNameCallback(const UChar* name, const UChar* name_end,
 //   called by:  int r = onig_foreach_name(m_RegExpr, GrpNameCallback, (void*)this);
 */
 
+#ifdef X_ONIG_BACKREF_TRANSFORMS
 std::string applyTransform( std::string s, const char chTransform ) {
     switch(chTransform) {
-        case 'L':
-        case 'F':
-            std::transform(s.begin(), s.end(), s.begin(), towlower);
-            if (chTransform == 'F') s[0] = towupper(s[0]);
+        /*
+         * Upper-case letter metas for which a feature/behaviour already exists:
+         *   \A..\Z     => as buffer anchors
+         *   \B         => non-word boundary
+         *   \C         => C-bar control
+         *   \D \S \W   => as negated versions of their respective char classes
+         *   \E         => unescaped sequence end
+         *   \G         => begin anchor
+         *   \H         => hex sequence (reserved)
+         *   \H         => horizontal whitespace (not implemented)
+         *   \K         => "keep"
+         *   \M         => M-bar meta
+         *   \P
+         *   \Q         => unescaped sequence start
+         *   \R         => line-break sequence i.e. (?>\x0D\x0A|[\x0A-\x0D\x{85}\x{2028}\x{2029}])
+         *   \V         => vertical whitespace (not implemented)
+         *   \X         => extended grapheme cluster
+         *
+         * Upper-case letter metas otherwise available:
+         *  \F \I \J \L \N \O \T \U \Y
+         *
+         * [Personally, I would keep the \Y as a multiplexer/branching meta,
+         *  since we'll run out of letters quick if we intend to implement
+         *  other features]
+         */
+        case 'L': // lower-case:  llll lll-ll llllll
+        case 'F': // Phrase-case: Ulll lll-ll llllll
+            std::transform(s.begin(), s.end(), s.begin(), tolower);
+            if (chTransform == 'F') s[0] = toupper(s[0]);
             break;
-        case 'U': std::transform(s.begin(), s.end(), s.begin(), towupper); break;
-        case 'l': s[0] = towlower(s[0]); break;
-        case 'u': s[0] = towupper(s[0]); break;
-        case 'I':
+        case 'I': // Title-case:  Ulll Ull-ll Ulllll
             s = toTitle(s);
+            break;
+        case 'N': // Name-Case:  Ulll Ull-Ul Ulllll
+            s = toProper(s);
+            break;
+        case 'U': // UPPER-CASE:  UUUU UUU-UU UUUUUU
+            std::transform(s.begin(), s.end(), s.begin(), toupper);
+            break;
+        case 'l': // lower-case, first letter only:  lxxx xxx-xx xxxxxx
+            s[0] = tolower(s[0]);
+            break;
+        case 'u': // UPPER-CASE, first letter only:  Uxxx xxx-xx xxxxxx
+            s[0] = toupper(s[0]);
             break;
     }
     return s;
 }
+#endif // X_ONIG_BACKREF_TRANSFORMS
 
 // ============================================================================
 
@@ -441,7 +493,9 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
     }
     std::string sText(text, *length);
     std::string const& rawReplStrg = convertReplExpr(sText);
+#ifdef X_ONIG_BACKREF_TRANSFORMS
     char chCaseXform = '\0';
+#endif // X_ONIG_BACKREF_TRANSFORMS
 
     m_SubstBuffer.clear();
 
@@ -449,20 +503,39 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
 
     for (size_t j = 0; j < rawReplStrg.length(); j++) {
         bool bReplaced = false;
+#ifdef X_ONIG_BACKREF_TRANSFORMS
         int grpNum = -1;
+#endif // X_ONIG_BACKREF_TRANSFORMS
         if ((rawReplStrg[j] == '\\') || (rawReplStrg[j] == '$')) {
             // here, allowing either forms: \0 .. \9 or $0 .. $9
             if ((rawReplStrg[j + 1] >= '0') && (rawReplStrg[j + 1] <= '9')) {
+#ifdef X_ONIG_BACKREF_TRANSFORMS
+                // only evaluate the backreference index for now (we'll process it later on)
                 grpNum = rawReplStrg[j + 1] - '0';
+#else // !X_ONIG_BACKREF_TRANSFORMS
+                // evaluate capturing group number and perform the substitution
+                int const grpNum = rawReplStrg[j + 1] - '0';
+                if (grpNum < m_Region.num_regs) {
+                    auto const rBeg = SciPos(m_Region.beg[grpNum]);
+                    auto const len = SciPos(m_Region.end[grpNum] - rBeg);
+
+                    m_SubstBuffer.append(doc->RangePointer(rBeg, len), static_cast<size_t>(len));
+                }
+                // mark as replaced
                 bReplaced = true;
+#endif // X_ONIG_BACKREF_TRANSFORMS
                 ++j;
+#ifdef X_ONIG_BACKREF_TRANSFORMS
+            // anything else that starts with a "\" that we might support
             } else if (rawReplStrg[j] == '\\') {
+                // backreferences like \{#}
                 if ((rawReplStrg[j + 1] == '{') &&
                     (rawReplStrg[j + 2] >= '0') && (rawReplStrg[j + 2] <= '9') &&
                     (rawReplStrg[j + 3] == '}')) {
                     grpNum = rawReplStrg[j + 2] - '0';
                     bReplaced = true;
                     j += 3;
+                // backreferences like \{##}
                 } else if ((rawReplStrg[j + 1] == '{') &&
                     (rawReplStrg[j + 2] >= '0') && (rawReplStrg[j + 2] <= '9') &&
                            (rawReplStrg[j + 3] >= '0') && (rawReplStrg[j + 3] <= '9') &&
@@ -470,18 +543,55 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
                     grpNum = (rawReplStrg[j + 2] - '0') * 10 + (rawReplStrg[j + 3] - '0');
                     bReplaced = true;
                     j += 4;
+                // literals "\"
                 } else if (rawReplStrg[j + 1] == '\\') {
                     m_SubstBuffer.push_back('\\');
                     bReplaced = true;
                     ++j;
                 } else {
                     switch (rawReplStrg[j + 1]) {
+                        /*
+                         * Support for backref transforms
+                         *
+                         * What do that do?
+                         *
+                         *   Let's say you have in you replacement string (for a regex
+                         *   search-and-replace operaton) some backreferences (captured
+                         *   or named groups you want to insert back); well, if you
+                         *   want to alter the text of the backreference you're putting
+                         *   back, you now have, with "backref transforms", a new
+                         *   albeit limited set of options.
+                         *
+                         * An example?
+                         *
+                         *   Normally, the best you can do is move text around without
+                         *   altering it; consider the following:
+                         *
+                         *     Text being searched:   JONATHAN|RICHARD-BROCHU
+                         *     Search pattern:        ^([^\|]+)\|([^\|]+)$
+                         *     Replace with:          \2, \1
+                         *     Result:                RICHARD-BROCHU, JONATHAN
+                         *
+                         *   Now, if you wanted to alter the casing of the text in the
+                         *   same operation as the search-and-replace one but could not,
+                         *   now you can:
+                         *
+                         *     Text being searched:   JONATHAN|RICHARD-BROCHU
+                         *     Search pattern:        ^([^\|]+)\|([^\|]+)$
+                         *     Replace with:          \N\2, \1\E
+                         *     Result:                Richard-Brochu, Jonathan
+                         *
+                         */
+                        // TODO: Since we're modifying the Onigmo regex engine,
+                        //       me might as well define new option / behaviour
+                        //       flag for those new features
                         case 'L': // all-lowercase transform
                         case 'U': // all-uppercase transform
                         case 'l': // only-first-letter-lowercase transform
                         case 'u': // only-first-letter-uppercase transform
                         case 'F': // phrase-case transform
                         case 'I': // title-case transform
+                        case 'N': // name-case transform
                             chCaseXform = rawReplStrg[j + 1];
                             bReplaced = true;
                             ++j;
@@ -493,12 +603,15 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
                             break;
                         default:
                             // add as literal?
-                            m_SubstBuffer.push_back('\\');
+                            // 2021-07-09: Fixed the fact that a literal backslash was being
+                            //             pushed instead of the char itself (copy-paste mistake)
+                            m_SubstBuffer.push_back(rawReplStrg[j + 1]);
                             // let the if (!bReplaced) {} block append rawReplStrg[j+1]
                             ++j;
                             // TODO: Confirm code above represents the desired behaviour
                     } // switch()
                 } // if ( == "\{#}" || == "\{##}")
+#endif // X_ONIG_BACKREF_TRANSFORMS
             } else if (rawReplStrg[j] == '$') {
                 size_t k = ((rawReplStrg[j + 1] == '+') && (rawReplStrg[j + 2] == '{')) ? (j + 3) : ((rawReplStrg[j + 1] == '{') ? (j + 2) : 0);
                 if (k > 0) {
@@ -508,11 +621,25 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
                         ++k;
                     }
                     if (rawReplStrg[k] == '}') {
+#ifdef X_ONIG_BACKREF_TRANSFORMS
+                        // only evaluate the backreference index for now (we'll process it later on)
                         grpNum = onig_name_to_backref_number(m_RegExpr, name_beg, UCharCPtr(&(rawReplStrg[k])), &m_Region);
+#else // !X_ONIG_BACKREF_TRANSFORMS
+                        // evaluate capturing group number and perform the substitution
+                        int const grpNum = onig_name_to_backref_number(m_RegExpr, name_beg, UCharCPtr(&(rawReplStrg[k])), &m_Region);
+                        if ((grpNum >= 0) && (grpNum < m_Region.num_regs)) {
+                            auto const rBeg = SciPos(m_Region.beg[grpNum]);
+                            auto const len = SciPos(m_Region.end[grpNum] - rBeg);
+
+                            m_SubstBuffer.append(doc->RangePointer(rBeg, len), static_cast<size_t>(len));
+                        }
+                        // mark as replaced
                         bReplaced = true;
+#endif // X_ONIG_BACKREF_TRANSFORMS
                         j = k;
                     }
                 }
+#ifdef X_ONIG_BACKREF_TRANSFORMS
             }
             // check if we got a valid backreference
             if ((grpNum >= 0) && (grpNum < m_Region.num_regs)) {
@@ -530,7 +657,7 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
      *             string buffers sometimes causing an expected match to fail;
      *             It now bears the question: shouldn't be also be using it here?!?
      */
-#if FALSE then
+#if FALSE
                     m_SubstBuffer.append(doc->RangePointer(rBeg, len), static_cast<size_t>(len));
 #else
                     m_SubstBuffer.append(doc->ContentPointer(rBeg, len), static_cast<size_t>(len));
@@ -538,9 +665,17 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
                 }
                 bReplaced = true;
             }
+#else // !X_ONIG_BACKREF_TRANSFORMS
+            } else if ((rawReplStrg[j] == '\\') && (rawReplStrg[j + 1] == '\\')) {
+                m_SubstBuffer.push_back('\\');
+                bReplaced = true;
+                ++j;
+            }
+#endif // X_ONIG_BACKREF_TRANSFORMS
         } // if ((rawReplStrg[j] == '\\') || (rawReplStrg[j] == '$'))
         // append anything that wasn't escaped
         if (!bReplaced) {
+#ifdef X_ONIG_BACKREF_TRANSFORMS
             // check for case transforms
             if (!chCaseXform) // no transform
                 m_SubstBuffer.push_back(rawReplStrg[j]);
@@ -551,6 +686,9 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
                 //       provided literally).
                 m_SubstBuffer.push_back(rawReplStrg[j]);
             }
+#else // !X_ONIG_BACKREF_TRANSFORMS
+            m_SubstBuffer.push_back(rawReplStrg[j]);
+#endif // X_ONIG_BACKREF_TRANSFORMS
         }
     }
 
@@ -669,14 +807,20 @@ std::string& OnigmoRegExEngine::convertReplExpr(std::string& replStr)
                 // default: clause of the next switch() block
             }
             switch (ch) {
+#ifdef X_ONIG_BACKREF_TRANSFORMS
                 // 2020-01-30: Added preliminary support for backreferences with
                 //             transforms
                 case 'L': // all-lowercase transform
                 case 'U': // all-uppercase transform
                 case 'l': // only-first-ltr-lowercase transform
+                // NOTE: We abstain from processing \u[..] here (i.e. first) as
+                //       we still want to support \uFFFF escape sequences;
+                //       only if hex-char checks fail then we'll consider \u
+                //       as introducing an only-first-ltr-uppercase transform
                 ///case 'u': // only-first-ltr-uppercase transform
-                case 'F': // phrase-case transform (e.g. Ulll llll)
-                case 'I': // title-case transform (e.g. Ulll Ulll)
+                case 'F': // phrase-case transform (e.g. Ulll lll-ll)
+                case 'I': // title-case transform (e.g. Ulll Ull-ll)
+                case 'N': // namee-case transform (e.g. Ulll Ull-Ul)
                 {
                     // push modifier (we needed to make sure we had digits first)
                     tmpStr.push_back('\\'); tmpStr.push_back(ch);
@@ -685,6 +829,7 @@ std::string& OnigmoRegExEngine::convertReplExpr(std::string& replStr)
                     // - \L1 .. \L99  =>  \L\1\E .. \L\{99}\E
                     // - \F1 .. \F99  =>  \F\1\E .. \F\{99}\E
                     // - \I1 .. \I99  =>  \I\1\E .. \I\{99}\E
+                    // - \N1 .. \N99  =>  \N\1\E .. \N\{99}\E
                     char ch2 = replStr[i + 1];
                     if (ch2 >= '1' && ch2 <= '9') {
                         i++;
@@ -702,15 +847,15 @@ std::string& OnigmoRegExEngine::convertReplExpr(std::string& replStr)
                         // close transform sequence
                         tmpStr.push_back('\\'); tmpStr.push_back('E');
                     } else {
-                        // sequences \U, \L, \F, & \I kept as-is
+                        // sequences \L, \U, \l, \F, \I & \N kept as-is
                     }
                     break;
-                } // case 'U'/'L'/'F'/'I'
+                } // case 'L'/'U'/'l'/'F'/'I'/'N'
 
                 case 'E': // end of transform sequence
                     tmpStr.push_back('\\'); tmpStr.push_back('E');
                     break;
-                
+#endif // X_ONIG_BACKREF_TRANSFORMS
                     // check for escape seq:
                 case 'a':
                     tmpStr.push_back('\a');
@@ -778,7 +923,7 @@ std::string& OnigmoRegExEngine::convertReplExpr(std::string& replStr)
                                 tmpStr.push_back(*pch++);
                         } else
                             tmpStr.push_back(ch); // unknown ctrl seq
-                    // could be the \u one-letter uppercase transform
+                    // not hex; could still be the \u one-letter uppercase transform
                     } else if (ch == 'u') {
                         // preserve as literal
                         tmpStr.push_back('\\'); tmpStr.push_back(ch);

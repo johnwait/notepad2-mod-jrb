@@ -210,7 +210,7 @@ LPMRULIST mruFind;
 LPMRULIST mruReplace;
 
 DWORD dwLastIOError;
-WCHAR szCurFile[MAX_PATH + 40];
+WCHAR g_wszCurFile[MAX_PATH + 40];
 FILEVARS fvCurFile;
 BOOL bModified;
 BOOL bReadOnly = FALSE;
@@ -548,8 +548,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
     g_hInstance = hInstance;
 
     // Set the Windows version global variable
+#pragma warning(disable: 4996)
     g_uWinVer = LOWORD(GetVersion());
     g_uWinVer = MAKEWORD(HIBYTE(g_uWinVer), LOBYTE(g_uWinVer));
+#pragma warning(default: 4996)
 
     // Don't keep working directory locked
     GetCurrentDirectory(COUNTOF(g_wchWorkingDirectory), g_wchWorkingDirectory);
@@ -858,11 +860,11 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
             if (flagChangeNotify == 1) {
                 iFileWatchingMode = 0;
                 bResetFileWatching = TRUE;
-                InstallFileWatching(szCurFile);
+                InstallFileWatching(g_wszCurFile);
             } else if (flagChangeNotify == 2) {
                 iFileWatchingMode = 2;
                 bResetFileWatching = TRUE;
-                InstallFileWatching(szCurFile);
+                InstallFileWatching(g_wszCurFile);
             }
         }
     }
@@ -953,7 +955,7 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
         bLastCopyFromMe = TRUE;
         hwndNextCBChain = SetClipboardViewer(hwndMain);
         uidsAppTitle = IDS_APPTITLE_PASTEBOARD;
-        SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+        SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
             iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
             IDS_READONLY, bReadOnly, szTitleExcerpt);
         bLastCopyFromMe = FALSE;
@@ -965,7 +967,7 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
     // check if a lexer was specified from the command line
     if (flagLexerSpecified) {
         if (lpSchemeArg) {
-            Style_SetLexerFromName(hwndEdit, szCurFile, lpSchemeArg);
+            Style_SetLexerFromName(hwndEdit, g_wszCurFile, lpSchemeArg);
             LocalFree(lpSchemeArg);
         } else if (iInitialLexer >= 0 && iInitialLexer < NUMLEXERS)
             Style_SetLexerFromID(hwndEdit, iInitialLexer);
@@ -1192,11 +1194,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
                     if (params->flagChangeNotify == 1) {
                         iFileWatchingMode = 0;
                         bResetFileWatching = TRUE;
-                        InstallFileWatching(szCurFile);
+                        InstallFileWatching(g_wszCurFile);
                     } else if (params->flagChangeNotify == 2) {
                         iFileWatchingMode = 2;
                         bResetFileWatching = TRUE;
-                        InstallFileWatching(szCurFile);
+                        InstallFileWatching(g_wszCurFile);
                     }
 
                     if (0 != params->flagSetEncoding) {
@@ -1230,7 +1232,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
                     if (params->flagTitleExcerpt) {
                         lstrcpyn(szTitleExcerpt, StrEnd(&params->wchData) + 1, COUNTOF(szTitleExcerpt));
-                        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+                        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
                             iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                             IDS_READONLY, bReadOnly, szTitleExcerpt);
                     }
@@ -1364,7 +1366,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         if (iFileWatchingMode == 1 || bModified || iEncoding != iOriginalEncoding)
             SetForegroundWindow(hwnd);
 
-        if (PathFileExists(szCurFile)) {
+        if (PathFileExists(g_wszCurFile)) {
 
             if ((iFileWatchingMode == 2 && !bModified && iEncoding == iOriginalEncoding) || MsgBox(MBYESNO, IDS_FILECHANGENOTIFY) == IDYES) {
 
@@ -1376,7 +1378,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
                 BOOL bIsTail = (iCurPos == iAnchorPos) && (iCurPos == SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0));
 
                 iWeakSrcEncoding = iEncoding;
-                if (FileLoad(TRUE, FALSE, TRUE, FALSE, szCurFile)) {
+                if (FileLoad(TRUE, FALSE, TRUE, FALSE, g_wszCurFile)) {
 
                     if (bIsTail && iFileWatchingMode == 2) {
                         EditJumpTo(hwndEdit, -1, 0);
@@ -1404,7 +1406,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         }
         // Re-establish file change monitoring
         if (!bRunningWatch)
-            InstallFileWatching(szCurFile);
+            InstallFileWatching(g_wszCurFile);
 
         break;
 #endif
@@ -1657,7 +1659,7 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
         hInstance,
         NULL);
 
-    SetDlgItemText(hwnd, IDC_FILENAME, szCurFile);
+    SetDlgItemText(hwnd, IDC_FILENAME, g_wszCurFile);
 
     CreateWindow(
         WC_STATIC,
@@ -2005,7 +2007,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
     int i, i2;
     HMENU hmenu = (HMENU)wParam;
 
-    i = lstrlen(szCurFile);
+    i = lstrlen(g_wszCurFile);
     EnableCmd(hmenu, IDM_FILE_REVERT, i);
     EnableCmd(hmenu, CMD_RELOADASCIIASUTF8, i);
     EnableCmd(hmenu, CMD_RELOADANSI, i);
@@ -2269,7 +2271,7 @@ void MsgChangeNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 	// Reset PendingChangeNotify before showing any messagebox
 	g_bPendingChangeNotify = FALSE;
 
-	if (PathFileExists(szCurFile)) {
+	if (PathFileExists(g_wszCurFile)) {
 
 		// Auto-reload if (1) we're allowed to, per the "File Change Notification" setting;
 		//            and (2) there aren't any unsaved changes we risk losing;
@@ -2300,7 +2302,9 @@ void MsgChangeNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 					szSaveCopy, ID_SAVECOPY,
 					szNoAction, ID_NOACTION
 				);
+#pragma warning(disable: 4047)
 				tdbaButtons = TASKDLGBOX_BTNARRAY(ID_NOACTION, &buttons);
+#pragma warning(default: 4047)
 #endif
 			} else {
 				// Will be using message IDS_FILECHANGENOTIFY
@@ -2312,7 +2316,9 @@ void MsgChangeNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 					szReload,  ID_RELOAD,
 					szNoAction, ID_NOACTION
 				);
+#pragma warning(disable: 4047)
 				tdbaButtons = TASKDLGBOX_BTNARRAY(ID_RELOAD, &buttons);
+#pragma warning(default: 4047)
 #endif
 			}
 #ifdef FEAT_REPLACE_MSGBOX_BY_TASKDLG
@@ -2342,7 +2348,7 @@ void MsgChangeNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 			BOOL bIsTail = (iCurPos == iAnchorPos) && (iCurPos == SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0));
 
 			iWeakSrcEncoding = iEncoding;
-			if (FileLoad(TRUE, FALSE, TRUE, FALSE, szCurFile)) {
+			if (FileLoad(TRUE, FALSE, TRUE, FALSE, g_wszCurFile)) {
 
 				if (bIsTail && iFileWatchingMode == 2) {
 					EditJumpTo(hwndEdit, -1, 0);
@@ -2371,7 +2377,7 @@ void MsgChangeNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 	// Re-establish file change monitoring
 	if (!bRunningWatch)
-		InstallFileWatching(szCurFile);
+		InstallFileWatching(g_wszCurFile);
 }
 #endif
 
@@ -2412,7 +2418,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 		break;
 
     case IDM_FILE_REVERT: {
-        if (lstrlen(szCurFile)) {
+        if (lstrlen(g_wszCurFile)) {
 
             WCHAR tchCurFile2[MAX_PATH];
 
@@ -2425,7 +2431,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             if ((bModified || iEncoding != iOriginalEncoding) && MsgBox(MBYESNO, IDS_ASK_REVERT) != IDYES)
                 return (0);
 
-            lstrcpy(tchCurFile2, szCurFile);
+            lstrcpy(tchCurFile2, g_wszCurFile);
 
             iWeakSrcEncoding = iEncoding;
             if (FileLoad(TRUE, FALSE, TRUE, FALSE, tchCurFile2)) {
@@ -2484,23 +2490,23 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         //SendMessage(hwndEdit,SCI_SETREADONLY,bReadOnly,0);
         //UpdateToolbar();
         //UpdateStatusbar();
-        if (lstrlen(szCurFile)) {
-            DWORD dwFileAttributes = GetFileAttributes(szCurFile);
+        if (lstrlen(g_wszCurFile)) {
+            DWORD dwFileAttributes = GetFileAttributes(g_wszCurFile);
             if (dwFileAttributes != INVALID_FILE_ATTRIBUTES) {
                 if (bReadOnly)
                     dwFileAttributes = (dwFileAttributes & ~FILE_ATTRIBUTE_READONLY);
                 else
                     dwFileAttributes |= FILE_ATTRIBUTE_READONLY;
-                if (!SetFileAttributes(szCurFile, dwFileAttributes))
-                    MsgBox(MBWARN, IDS_READONLY_MODIFY, szCurFile);
+                if (!SetFileAttributes(g_wszCurFile, dwFileAttributes))
+                    MsgBox(MBWARN, IDS_READONLY_MODIFY, g_wszCurFile);
             } else
-                MsgBox(MBWARN, IDS_READONLY_MODIFY, szCurFile);
+                MsgBox(MBWARN, IDS_READONLY_MODIFY, g_wszCurFile);
 
-            dwFileAttributes = GetFileAttributes(szCurFile);
+            dwFileAttributes = GetFileAttributes(g_wszCurFile);
             if (dwFileAttributes != INVALID_FILE_ATTRIBUTES)
                 bReadOnly = (dwFileAttributes & FILE_ATTRIBUTE_READONLY);
 
-            SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+            SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
                 iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                 IDS_READONLY, bReadOnly, szTitleExcerpt);
         }
@@ -2532,11 +2538,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             }
         }
 
-        if (lstrlen(tchParam) && lstrlen(szCurFile))
+        if (lstrlen(tchParam) && lstrlen(g_wszCurFile))
             StrCatBuff(tchParam, L" ", COUNTOF(tchParam));
 
-        if (lstrlen(szCurFile)) {
-            lstrcpy(tchTemp, szCurFile);
+        if (lstrlen(g_wszCurFile)) {
+            lstrcpy(tchTemp, g_wszCurFile);
             PathQuoteSpaces(tchTemp);
             StrCatBuff(tchParam, tchTemp, COUNTOF(tchParam));
         }
@@ -2616,8 +2622,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         wsprintf(tch, L" -pos %i,%i,%i,%i,%i", x, y, cx, cy, imax);
         lstrcat(szParameters, tch);
 
-        if (LOWORD(wParam) != IDM_FILE_NEWWINDOW2 && lstrlen(szCurFile)) {
-            lstrcpy(szFileName, szCurFile);
+        if (LOWORD(wParam) != IDM_FILE_NEWWINDOW2 && lstrlen(g_wszCurFile)) {
+            lstrcpy(szFileName, g_wszCurFile);
             PathQuoteSpaces(szFileName);
             lstrcat(szParameters, L" ");
             lstrcat(szParameters, szFileName);
@@ -2641,14 +2647,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         SHELLEXECUTEINFO sei;
         WCHAR wchDirectory[MAX_PATH] = L"";
 
-        if (!lstrlen(szCurFile))
+        if (!lstrlen(g_wszCurFile))
             break;
 
         if (bSaveBeforeRunningTools && !FileSave(FALSE, TRUE, FALSE, FALSE))
             break;
 
-        if (lstrlen(szCurFile)) {
-            lstrcpy(wchDirectory, szCurFile);
+        if (lstrlen(g_wszCurFile)) {
+            lstrcpy(wchDirectory, g_wszCurFile);
             PathRemoveFileSpec(wchDirectory);
         }
 
@@ -2658,7 +2664,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         sei.fMask = 0;
         sei.hwnd = hwnd;
         sei.lpVerb = NULL;
-        sei.lpFile = szCurFile;
+        sei.lpFile = g_wszCurFile;
         sei.lpParameters = NULL;
         sei.lpDirectory = wchDirectory;
         sei.nShow = SW_SHOWNORMAL;
@@ -2672,7 +2678,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (bSaveBeforeRunningTools && !FileSave(FALSE, TRUE, FALSE, FALSE))
             break;
 
-        lstrcpy(tchCmdLine, szCurFile);
+        lstrcpy(tchCmdLine, g_wszCurFile);
         PathQuoteSpaces(tchCmdLine);
 
         RunDlg(hwnd, tchCmdLine);
@@ -2681,7 +2687,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_FILE_OPENWITH:
         if (bSaveBeforeRunningTools && !FileSave(FALSE, TRUE, FALSE, FALSE))
             break;
-        OpenWithDlg(hwnd, szCurFile);
+        OpenWithDlg(hwnd, g_wszCurFile);
         break;
 
     case IDM_FILE_PAGESETUP:
@@ -2694,8 +2700,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         WCHAR tchUntitled[32];
         WCHAR tchPageFmt[32];
 
-        if (lstrlen(szCurFile)) {
-            SHGetFileInfo2(szCurFile, 0, &shfi, sizeof(SHFILEINFO), SHGFI_DISPLAYNAME);
+        if (lstrlen(g_wszCurFile)) {
+            SHGetFileInfo2(g_wszCurFile, 0, &shfi, sizeof(SHFILEINFO), SHGFI_DISPLAYNAME);
             pszTitle = shfi.szDisplayName;
         } else {
             GetString(IDS_UNTITLED, tchUntitled, COUNTOF(tchUntitled));
@@ -2711,7 +2717,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_FILE_PROPERTIES: {
         SHELLEXECUTEINFO sei;
 
-        if (lstrlen(szCurFile) == 0)
+        if (lstrlen(g_wszCurFile) == 0)
             break;
 
         ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
@@ -2720,17 +2726,17 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         sei.fMask = SEE_MASK_INVOKEIDLIST;
         sei.hwnd = hwnd;
         sei.lpVerb = L"properties";
-        sei.lpFile = szCurFile;
+        sei.lpFile = g_wszCurFile;
         sei.nShow = SW_SHOWNORMAL;
 
         ShellExecuteEx(&sei);
     } break;
 
     case IDM_FILE_CREATELINK: {
-        if (!lstrlen(szCurFile))
+        if (!lstrlen(g_wszCurFile))
             break;
 
-        if (!PathCreateDeskLnk(szCurFile))
+        if (!PathCreateDeskLnk(g_wszCurFile))
             MsgBox(MBWARN, IDS_ERR_CREATELINK);
     } break;
 
@@ -2755,10 +2761,10 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         break;
 
     case IDM_FILE_ADDTOFAV:
-        if (lstrlen(szCurFile)) {
+        if (lstrlen(g_wszCurFile)) {
             SHFILEINFO shfi;
-            SHGetFileInfo2(szCurFile, 0, &shfi, sizeof(SHFILEINFO), SHGFI_DISPLAYNAME);
-            AddToFavDlg(hwnd, shfi.szDisplayName, szCurFile);
+            SHGetFileInfo2(g_wszCurFile, 0, &shfi, sizeof(SHFILEINFO), SHGFI_DISPLAYNAME);
+            AddToFavDlg(hwnd, shfi.szDisplayName, g_wszCurFile);
         }
         break;
 
@@ -2824,7 +2830,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         if (EditSetNewEncoding(hwndEdit,
                 iEncoding, iNewEncoding,
-                (flagSetEncoding), lstrlen(szCurFile) == 0)) {
+                (flagSetEncoding), lstrlen(g_wszCurFile) == 0)) {
 
             if (SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0) == 0) {
                 iEncoding = iNewEncoding;
@@ -2838,14 +2844,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             UpdateToolbar();
             UpdateStatusbar();
 
-            SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+            SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
                 iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                 IDS_READONLY, bReadOnly, szTitleExcerpt);
         }
     } break;
 
     case IDM_ENCODING_RECODE: {
-        if (lstrlen(szCurFile)) {
+        if (lstrlen(g_wszCurFile)) {
 
             WCHAR tchCurFile2[MAX_PATH];
 
@@ -2864,7 +2870,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
             if (RecodeDlg(hwnd, &iNewEncoding)) {
 
-                lstrcpy(tchCurFile2, szCurFile);
+                lstrcpy(tchCurFile2, g_wszCurFile);
                 iSrcEncoding = iNewEncoding;
                 FileLoad(TRUE, FALSE, TRUE, FALSE, tchCurFile2);
             }
@@ -2885,7 +2891,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         EditFixPositions(hwndEdit);
         UpdateToolbar();
         UpdateStatusbar();
-        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
             iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
             IDS_READONLY, bReadOnly, szTitleExcerpt);
     } break;
@@ -3360,12 +3366,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         UINT uCP;
         //int   iSelStart;
 
-        if (lstrlen(szCurFile)) {
+        if (lstrlen(g_wszCurFile)) {
             if (LOWORD(wParam) == IDM_EDIT_INSERT_FILENAME) {
-                SHGetFileInfo2(szCurFile, 0, &shfi, sizeof(SHFILEINFO), SHGFI_DISPLAYNAME);
+                SHGetFileInfo2(g_wszCurFile, 0, &shfi, sizeof(SHFILEINFO), SHGFI_DISPLAYNAME);
                 pszInsert = shfi.szDisplayName;
             } else
-                pszInsert = szCurFile;
+                pszInsert = g_wszCurFile;
         }
 
         else {
@@ -4176,7 +4182,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_VIEW_SHOWFILENAMEONLY:
         iPathNameFormat = 0;
         lstrcpy(szTitleExcerpt, L"");
-        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
             iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
             IDS_READONLY, bReadOnly, szTitleExcerpt);
         break;
@@ -4184,7 +4190,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_VIEW_SHOWFILENAMEFIRST:
         iPathNameFormat = 1;
         lstrcpy(szTitleExcerpt, L"");
-        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
             iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
             IDS_READONLY, bReadOnly, szTitleExcerpt);
         break;
@@ -4192,14 +4198,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_VIEW_SHOWFULLPATH:
         iPathNameFormat = 2;
         lstrcpy(szTitleExcerpt, L"");
-        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
             iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
             IDS_READONLY, bReadOnly, szTitleExcerpt);
         break;
 
     case IDM_VIEW_SHOWEXCERPT:
         EditGetExcerpt(hwndEdit, szTitleExcerpt, COUNTOF(szTitleExcerpt));
-        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
             iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
             IDS_READONLY, bReadOnly, szTitleExcerpt);
         break;
@@ -4218,7 +4224,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_CHANGENOTIFY:
         if (ChangeNotifyDlg(hwnd))
-            InstallFileWatching(szCurFile);
+            InstallFileWatching(g_wszCurFile);
         break;
 
     case IDM_VIEW_NOESCFUNC:
@@ -4356,7 +4362,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case CMD_RECODEDEFAULT: {
         WCHAR tchCurFile2[MAX_PATH];
-        if (lstrlen(szCurFile)) {
+        if (lstrlen(g_wszCurFile)) {
             if (iDefaultEncoding == CPI_UNICODEBOM)
                 iSrcEncoding = CPI_UNICODE;
             else if (iDefaultEncoding == CPI_UNICODEBEBOM)
@@ -4365,25 +4371,25 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 iSrcEncoding = CPI_UTF8;
             else
                 iSrcEncoding = iDefaultEncoding;
-            lstrcpy(tchCurFile2, szCurFile);
+            lstrcpy(tchCurFile2, g_wszCurFile);
             FileLoad(FALSE, FALSE, TRUE, FALSE, tchCurFile2);
         }
     } break;
 
     case CMD_RELOADANSI: {
         WCHAR tchCurFile2[MAX_PATH];
-        if (lstrlen(szCurFile)) {
+        if (lstrlen(g_wszCurFile)) {
             iSrcEncoding = CPI_DEFAULT;
-            lstrcpy(tchCurFile2, szCurFile);
+            lstrcpy(tchCurFile2, g_wszCurFile);
             FileLoad(FALSE, FALSE, TRUE, FALSE, tchCurFile2);
         }
     } break;
 
     case CMD_RELOADOEM: {
         WCHAR tchCurFile2[MAX_PATH];
-        if (lstrlen(szCurFile)) {
+        if (lstrlen(g_wszCurFile)) {
             iSrcEncoding = CPI_OEM;
-            lstrcpy(tchCurFile2, szCurFile);
+            lstrcpy(tchCurFile2, g_wszCurFile);
             FileLoad(FALSE, FALSE, TRUE, FALSE, tchCurFile2);
         }
     } break;
@@ -4391,9 +4397,9 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case CMD_RELOADASCIIASUTF8: {
         WCHAR tchCurFile2[MAX_PATH];
         BOOL _bLoadASCIIasUTF8 = bLoadASCIIasUTF8;
-        if (lstrlen(szCurFile)) {
+        if (lstrlen(g_wszCurFile)) {
             bLoadASCIIasUTF8 = 1;
-            lstrcpy(tchCurFile2, szCurFile);
+            lstrcpy(tchCurFile2, g_wszCurFile);
             FileLoad(FALSE, FALSE, TRUE, FALSE, tchCurFile2);
             bLoadASCIIasUTF8 = _bLoadASCIIasUTF8;
         }
@@ -4401,12 +4407,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case CMD_RELOADNOFILEVARS: {
         WCHAR tchCurFile2[MAX_PATH];
-        if (lstrlen(szCurFile)) {
+        if (lstrlen(g_wszCurFile)) {
             int _fNoFileVariables = fNoFileVariables;
             BOOL _bNoEncodingTags = bNoEncodingTags;
             fNoFileVariables = 1;
             bNoEncodingTags = 1;
-            lstrcpy(tchCurFile2, szCurFile);
+            lstrcpy(tchCurFile2, g_wszCurFile);
             FileLoad(FALSE, FALSE, TRUE, FALSE, tchCurFile2);
             fNoFileVariables = _fNoFileVariables;
             bNoEncodingTags = _bNoEncodingTags;
@@ -4529,8 +4535,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                     lpszArgs = GlobalAlloc(GPTR, GlobalSize(lpszCommand));
                     ExtractFirstArgument(lpszCommand, lpszCommand, lpszArgs);
 
-                    if (lstrlen(szCurFile)) {
-                        lstrcpy(wchDirectory, szCurFile);
+                    if (lstrlen(g_wszCurFile)) {
+                        lstrcpy(wchDirectory, g_wszCurFile);
                         PathRemoveFileSpec(wchDirectory);
                     }
 
@@ -4660,7 +4666,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case CMD_TOGGLETITLE:
         EditGetExcerpt(hwndEdit, szTitleExcerpt, COUNTOF(szTitleExcerpt));
-        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
             iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
             IDS_READONLY, bReadOnly, szTitleExcerpt);
         break;
@@ -4691,8 +4697,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         WCHAR* pszCopy;
         WCHAR tchUntitled[32];
-        if (lstrlen(szCurFile))
-            pszCopy = szCurFile;
+        if (lstrlen(g_wszCurFile))
+            pszCopy = g_wszCurFile;
         else {
             GetString(IDS_UNTITLED, tchUntitled, COUNTOF(tchUntitled));
             pszCopy = tchUntitled;
@@ -5140,7 +5146,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         case SCN_SAVEPOINTREACHED:
             bModified = FALSE;
-            SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+            SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
                 iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                 IDS_READONLY, bReadOnly, szTitleExcerpt);
             break;
@@ -5157,7 +5163,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         case SCN_SAVEPOINTLEFT:
             bModified = TRUE;
-            SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+            SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
                 iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                 IDS_READONLY, bReadOnly, szTitleExcerpt);
             break;
@@ -6438,7 +6444,7 @@ void UpdateToolbar()
     if (!bShowToolbar)
         return;
 
-    EnableTool(IDT_FILE_ADDTOFAV, lstrlen(szCurFile));
+    EnableTool(IDT_FILE_ADDTOFAV, lstrlen(g_wszCurFile));
 
     EnableTool(IDT_EDIT_UNDO, SendMessage(hwndEdit, SCI_CANUNDO, 0, 0) /*&& !bReadOnly*/);
     EnableTool(IDT_EDIT_REDO, SendMessage(hwndEdit, SCI_CANREDO, 0, 0) /*&& !bReadOnly*/);
@@ -6670,8 +6676,8 @@ BOOL FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWST
     }
 
     if (bNew) {
-        lstrcpy(szCurFile, L"");
-        SetDlgItemText(hwndMain, IDC_FILENAME, szCurFile);
+        lstrcpy(g_wszCurFile, L"");
+        SetDlgItemText(hwndMain, IDC_FILENAME, g_wszCurFile);
         SetDlgItemInt(hwndMain, IDC_REUSELOCK, GetTickCount(), FALSE);
         if (!fKeepTitleExcerpt)
             lstrcpy(szTitleExcerpt, L"");
@@ -6687,7 +6693,7 @@ BOOL FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWST
         iOriginalEncoding = iDefaultEncoding;
         SendMessage(hwndEdit, SCI_SETCODEPAGE, (iDefaultEncoding == CPI_DEFAULT) ? iDefaultCodePage : SC_CP_UTF8, 0);
         EditSetNewText(hwndEdit, "", 0);
-        SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+        SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
             iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
             IDS_READONLY, bReadOnly, szTitleExcerpt);
 
@@ -6807,13 +6813,13 @@ BOOL FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWST
         fSuccess = FileIO(TRUE, szFileName, bNoEncDetect, &iEncoding, &iEOLMode, &bUnicodeErr, &bFileTooBig, NULL, FALSE);
 
     if (fSuccess) {
-        lstrcpy(szCurFile, szFileName);
-        SetDlgItemText(hwndMain, IDC_FILENAME, szCurFile);
+        lstrcpy(g_wszCurFile, szFileName);
+        SetDlgItemText(hwndMain, IDC_FILENAME, g_wszCurFile);
         SetDlgItemInt(hwndMain, IDC_REUSELOCK, GetTickCount(), FALSE);
         if (!fKeepTitleExcerpt)
             lstrcpy(szTitleExcerpt, L"");
         if (!flagLexerSpecified) // flag will be cleared
-            Style_SetLexerFromFile(hwndEdit, szCurFile);
+            Style_SetLexerFromFile(hwndEdit, g_wszCurFile);
         UpdateLineNumberWidth();
         iOriginalEncoding = iEncoding;
         bModified = FALSE;
@@ -6829,7 +6835,7 @@ BOOL FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWST
         // Install watching of the current file
         if (!bReload && bResetFileWatching)
             iFileWatchingMode = 0;
-        InstallFileWatching(szCurFile);
+        InstallFileWatching(g_wszCurFile);
 
         // the .LOG feature ...
         if (SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0) >= 4) {
@@ -6871,7 +6877,7 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy)
     BOOL bCancelDataLoss = FALSE;
 
     BOOL bIsEmptyNewFile = FALSE;
-    if (lstrlen(szCurFile) == 0) {
+    if (lstrlen(g_wszCurFile) == 0) {
         int cchText = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
         if (cchText == 0)
             bIsEmptyNewFile = TRUE;
@@ -6894,57 +6900,139 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy)
     if (!bSaveAlways && (!bModified && iEncoding == iOriginalEncoding || bIsEmptyNewFile) && !bSaveAs)
         return TRUE;
 
+    UINT uIdMsg = 0;
+    int nResult = 0;
+
     if (bAsk) {
         // File or "Untitled" ...
-        WCHAR tch[MAX_PATH];
-        if (lstrlen(szCurFile))
-            lstrcpy(tch, szCurFile);
+        WCHAR wchCurFile[MAX_PATH];
+        if (lstrlen(g_wszCurFile))
+            lstrcpy(wchCurFile, g_wszCurFile);
         else
-            GetString(IDS_UNTITLED, tch, COUNTOF(tch));
+            GetString(IDS_UNTITLED, wchCurFile, COUNTOF(wchCurFile));
 
-        switch (MsgBox(MBYESNOCANCEL, IDS_ASK_SAVE, tch)) {
-        case IDCANCEL:
-            return FALSE;
-        case IDNO:
-            return TRUE;
+        // The should-I-save message resource ID
+        uIdMsg = IDS_ASK_SAVE;
+
+#if defined(JRB_BUILD) && defined(FEAT_REPLACE_MSGBOX_BY_TASKDLG)
+
+        // Load save message string and insert currently open file path
+        WCHAR wszMsg1P[128] = L"";
+        WCHAR wszMsgAskSave[MAX_PATH + 128] = L"";
+        GetString(uIdMsg, wszMsg1P, COUNTOF(wszMsg1P));
+        swprintf_s(wszMsgAskSave, COUNTOF(wszMsgAskSave), wszMsg1P, wchCurFile);
+        // Load button strings
+        WCHAR wszBtnSave[64]; // 64 chars should be enough for button captions
+        WCHAR wszBtnDontSave[64];
+        WCHAR wszBtnCancel[64];
+        GetString(IDS_BTN_SAVE, wszBtnSave, COUNTOF(wszBtnSave));
+        GetString(IDS_BTN_DONTSAVE, wszBtnDontSave, COUNTOF(wszBtnDontSave));
+        GetString(IDS_BTN_CANCEL, wszBtnCancel, COUNTOF(wszBtnCancel));
+        const TASKDIALOG_BUTTON buttons[] = TASKDLGBOX_3BTNS_WITHIDS(
+            wszBtnSave, IDYES,
+            wszBtnDontSave, IDNO,
+            wszBtnCancel, IDCANCEL
+        );
+#pragma warning(disable: 4047)
+        TASKDIALOGBOX_BTN_ARRAY tdbaButtons = TASKDLGBOX_BTNARRAY(IDYES, &buttons);
+#pragma warning(default: 4047)
+        // Show task dialog asking whether to save the file
+        nResult = SimpleTaskDlg(0, 0, wszMsgAskSave, &tdbaButtons, 0, 0);
+        if (nResult <= 0) {
+            // Error; Revet back to using the _MsgBox() helper
+            nResult = _MsgBox(MBYESNOCANCEL, uIdMsg, wchCurFile);
         }
+
+#else // !defined(JRB_BUILD) || !defined(FEAT_REPLACE_MSGBOX_BY_TASKDLG)
+
+        // Show message box asking whether to save the file
+        nResult = MsgBox(MBYESNOCANCEL, uIdMsg, wchCurFile);
+
+#endif // defined(JRB_BUILD) && defined(FEAT_REPLACE_MSGBOX_BY_TASKDLG)
+
+        switch (nResult) {
+            case IDCANCEL:
+                // FileSave() failure; will abort closure if initiated
+                return FALSE;
+            case IDNO:
+                // FileSave() considered a success; will continue with closure if initiated
+                return TRUE;
+        }
+        // got here? continue and save the file
     }
 
     // Read only...
-    if (!bSaveAs && !bSaveCopy && lstrlen(szCurFile)) {
-        DWORD dwFileAttributes = GetFileAttributes(szCurFile);
+    if (!bSaveAs && !bSaveCopy && lstrlen(g_wszCurFile)) {
+        DWORD dwFileAttributes = GetFileAttributes(g_wszCurFile);
         if (dwFileAttributes != INVALID_FILE_ATTRIBUTES)
             bReadOnly = (dwFileAttributes & FILE_ATTRIBUTE_READONLY);
         if (bReadOnly) {
-            SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+            SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
                 iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                 IDS_READONLY, bReadOnly, szTitleExcerpt);
-            if (MsgBox(MBYESNOWARN, IDS_READONLY_SAVE, szCurFile) == IDYES)
+            
+            // The should-I-save message resource ID
+            uIdMsg = IDS_READONLY_SAVE;
+
+#if defined(JRB_BUILD) && defined(FEAT_REPLACE_MSGBOX_BY_TASKDLG)
+
+            // Load save message string and insert currently open file path
+            WCHAR wszMsg1P[128] = L"";
+            WCHAR wszMsgReadonlySave[MAX_PATH + 128] = L"";
+            GetString(uIdMsg, wszMsg1P, COUNTOF(wszMsg1P));
+            swprintf_s(wszMsgReadonlySave, COUNTOF(wszMsgReadonlySave), wszMsg1P, g_wszCurFile);
+            // Load button strings
+            WCHAR wszBtnSaveOtherLoc[64]; // 64 chars should be enough for button captions
+            WCHAR wszBtnCancel[64];
+            GetString(IDS_BTN_SAVE_OTHERLOC, wszBtnSaveOtherLoc, COUNTOF(wszBtnSaveOtherLoc));
+            GetString(IDS_BTN_CANCEL, wszBtnCancel, COUNTOF(wszBtnCancel));
+            const TASKDIALOG_BUTTON buttons[] = TASKDLGBOX_2BTNS_WITHIDS(
+                wszBtnSaveOtherLoc, IDYES,
+                wszBtnCancel, IDNO // native MsgBox() using 'yes'/'no' for this, with 'no' treated as cancel
+            );
+#pragma warning(disable: 4047)
+            TASKDIALOGBOX_BTN_ARRAY tdbaButtons = TASKDLGBOX_BTNARRAY(IDYES, &buttons);
+#pragma warning(default: 4047)
+            // Show task dialog asking whether to save the read-only file to another location
+            nResult = SimpleTaskDlg(0, 0, wszMsgReadonlySave, &tdbaButtons, 0, 0);
+            if (nResult <= 0) {
+                // Error; Revet back to using the _MsgBox() helper
+                nResult = _MsgBox(MBYESNOWARN, uIdMsg, g_wszCurFile);
+            }
+
+#else // !defined(JRB_BUILD) || !defined(FEAT_REPLACE_MSGBOX_BY_TASKDLG)
+
+            // Show task dialog asking whether to save the read-only file to another location
+            nResult = MsgBox(MBYESNOWARN, uIdMsg, g_wszCurFile);
+
+#endif // defined(JRB_BUILD) && defined(FEAT_REPLACE_MSGBOX_BY_TASKDLG)
+
+            if (nResult == IDYES)
                 bSaveAs = TRUE;
             else
-                return FALSE;
+                return FALSE; // FileSave() failure; will abort closure if initiated
         }
     }
 
     // Save As...
-    if (bSaveAs || bSaveCopy || lstrlen(szCurFile) == 0) {
+    if (bSaveAs || bSaveCopy || lstrlen(g_wszCurFile) == 0) {
         WCHAR tchInitialDir[MAX_PATH] = L"";
         if (bSaveCopy && lstrlen(tchLastSaveCopyDir)) {
             lstrcpy(tchInitialDir, tchLastSaveCopyDir);
             lstrcpy(tchFile, tchLastSaveCopyDir);
-            PathAppend(tchFile, PathFindFileName(szCurFile));
+            PathAppend(tchFile, PathFindFileName(g_wszCurFile));
         } else
-            lstrcpy(tchFile, szCurFile);
+            lstrcpy(tchFile, g_wszCurFile);
 
         if (SaveFileDlg(hwndMain, tchFile, COUNTOF(tchFile), tchInitialDir)) {
             if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy)) {
                 if (!bSaveCopy) {
-                    lstrcpy(szCurFile, tchFile);
-                    SetDlgItemText(hwndMain, IDC_FILENAME, szCurFile);
+                    lstrcpy(g_wszCurFile, tchFile);
+                    SetDlgItemText(hwndMain, IDC_FILENAME, g_wszCurFile);
                     SetDlgItemInt(hwndMain, IDC_REUSELOCK, GetTickCount(), FALSE);
                     if (!fKeepTitleExcerpt)
                         lstrcpy(szTitleExcerpt, L"");
-                    Style_SetLexerFromFile(hwndEdit, szCurFile);
+                    Style_SetLexerFromFile(hwndEdit, g_wszCurFile);
                     UpdateStatusbar();
                     UpdateLineNumberWidth();
                 } else {
@@ -6957,31 +7045,31 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy)
     }
 
     else
-        fSuccess = FileIO(FALSE, szCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE);
+        fSuccess = FileIO(FALSE, g_wszCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE);
 
     if (fSuccess) {
         if (!bSaveCopy) {
             bModified = FALSE;
             iOriginalEncoding = iEncoding;
-            MRU_AddFile(pFileMRU, szCurFile, flagRelativeFileMRU, flagPortableMyDocs);
+            MRU_AddFile(pFileMRU, g_wszCurFile, flagRelativeFileMRU, flagPortableMyDocs);
             if (flagUseSystemMRU == 2)
-                SHAddToRecentDocs(SHARD_PATHW, szCurFile);
-            SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+                SHAddToRecentDocs(SHARD_PATHW, g_wszCurFile);
+            SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
                 iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                 IDS_READONLY, bReadOnly, szTitleExcerpt);
 
             // Install watching of the current file
             if (bSaveAs && bResetFileWatching)
                 iFileWatchingMode = 0;
-            InstallFileWatching(szCurFile);
+            InstallFileWatching(g_wszCurFile);
         }
     }
 
     else if (!bCancelDataLoss) {
-        if (lstrlen(szCurFile) != 0)
-            lstrcpy(tchFile, szCurFile);
+        if (lstrlen(g_wszCurFile) != 0)
+            lstrcpy(tchFile, g_wszCurFile);
 
-        SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+        SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, g_wszCurFile,
             iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
             IDS_READONLY, bReadOnly, szTitleExcerpt);
 
@@ -7007,8 +7095,8 @@ BOOL OpenFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
     Style_GetOpenDlgFilterStr(szFilter, COUNTOF(szFilter));
 
     if (!lpstrInitialDir) {
-        if (lstrlen(szCurFile)) {
-            lstrcpy(tchInitialDir, szCurFile);
+        if (lstrlen(g_wszCurFile)) {
+            lstrcpy(tchInitialDir, g_wszCurFile);
             PathRemoveFileSpec(tchInitialDir);
         } else if (lstrlen(tchDefaultDir)) {
             ExpandEnvironmentStrings(tchDefaultDir, tchInitialDir, COUNTOF(tchInitialDir));
@@ -7060,8 +7148,8 @@ BOOL SaveFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
 
     if (lstrlen(lpstrInitialDir))
         lstrcpy(tchInitialDir, lpstrInitialDir);
-    else if (lstrlen(szCurFile)) {
-        lstrcpy(tchInitialDir, szCurFile);
+    else if (lstrlen(g_wszCurFile)) {
+        lstrcpy(tchInitialDir, g_wszCurFile);
         PathRemoveFileSpec(tchInitialDir);
     } else if (lstrlen(tchDefaultDir)) {
         ExpandEnvironmentStrings(tchDefaultDir, tchInitialDir, COUNTOF(tchInitialDir));
@@ -7567,8 +7655,8 @@ void SetNotifyIconTitle(HWND hwnd)
         wsprintf(tchTitle, tchFormat, szTitleExcerpt);
     }
 
-    else if (lstrlen(szCurFile)) {
-        SHGetFileInfo2(szCurFile, 0, &shfi, sizeof(SHFILEINFO), SHGFI_DISPLAYNAME);
+    else if (lstrlen(g_wszCurFile)) {
+        SHGetFileInfo2(g_wszCurFile, 0, &shfi, sizeof(SHFILEINFO), SHGFI_DISPLAYNAME);
         PathCompactPathEx(tchTitle, shfi.szDisplayName, COUNTOF(tchTitle) - 4, 0);
     } else
         GetString(IDS_UNTITLED, tchTitle, COUNTOF(tchTitle) - 4);
@@ -7626,7 +7714,7 @@ void InstallFileWatching(LPCWSTR lpszFile)
         PathRemoveFileSpec(tchDirectory);
 
         // Save data of current file
-        hFind = FindFirstFile(szCurFile, &fdCurFile);
+        hFind = FindFirstFile(g_wszCurFile, &fdCurFile);
         if (hFind != INVALID_HANDLE_VALUE)
             FindClose(hFind);
         else
@@ -7662,7 +7750,7 @@ void CALLBACK WatchTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTim
         else if (WAIT_OBJECT_0 == WaitForSingleObject(hChangeHandle, 0)) {
             // Check if the changes affect the current file
             WIN32_FIND_DATA fdUpdated;
-            HANDLE hFind = FindFirstFile(szCurFile, &fdUpdated);
+            HANDLE hFind = FindFirstFile(g_wszCurFile, &fdUpdated);
             if (INVALID_HANDLE_VALUE != hFind)
                 FindClose(hFind);
             else

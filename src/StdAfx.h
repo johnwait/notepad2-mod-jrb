@@ -21,9 +21,9 @@
 // In-dev feature flags; to be decided on on the next feature-set freeze
 #define FEAT_RTFDLG_REGEX_SYNTAX
 #define FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
-#if FALSE
+///#if FALSE
 #define FEAT_REPLACE_MSGBOX_BY_TASKDLG
-#endif
+///#endif
 
 #endif // JRB_BUILD
 
@@ -43,7 +43,7 @@
 #include <limits.h>     // Edit.c
 #include <uxtheme.h>    // Helpers.c
 
-#define PARTIAL_SUCCESS(hr)   (((HRESULT)(hr)) >= 0 || (HRESULT)(hr) == 0x8007007a)
+#define PARTIAL_SUCCESS(hr)   (((HRESULT)(hr)) == S_OK || (HRESULT)(hr) == STRSAFE_E_INSUFFICIENT_BUFFER)
 
 // (Re-)Implement lstrcpynW() & lstrcpynA() as wrappers around more safer StringCchCopy*()
 #define lstrcpynW(dst, src, max_buffer_size) \

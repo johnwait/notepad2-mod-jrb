@@ -41,7 +41,7 @@ extern int fNoFileVariables;
 extern BOOL bNoEncodingTags;
 extern BOOL bFixLineEndings;
 extern BOOL bAutoStripBlanks;
-extern WCHAR szCurFile[MAX_PATH + 40];
+extern WCHAR g_wszCurFile[MAX_PATH + 40];
 
 //=============================================================================
 //
@@ -50,20 +50,20 @@ extern WCHAR szCurFile[MAX_PATH + 40];
 int _MsgBox(int iType, UINT uIdMsg, ...)
 {
 
-    WCHAR szText[MB_MSG_MAXLEN];
-    WCHAR szBuf[MB_MSG_MAXLEN];
-    WCHAR szTitle[MB_TITLE_MAXLEN];
+    TCHAR tszText[MB_MSG_MAXLEN];
+    TCHAR tszBuf[MB_MSG_MAXLEN];
+    TCHAR tszTitle[MB_TITLE_MAXLEN];
     int iIcon = 0;
     HWND hwnd;
 
-    if (!GetString(uIdMsg, szBuf, COUNTOF(szBuf)))
+    if (!GetString(uIdMsg, tszBuf, COUNTOF(tszBuf)))
         return (0);
 
-    wvsprintf(szText, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1));
+    wvsprintf(tszText, tszBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1));
 
     if (uIdMsg == IDS_ERR_LOADFILE || uIdMsg == IDS_ERR_SAVEFILE || uIdMsg == IDS_CREATEINI_FAIL || uIdMsg == IDS_WRITEINI_FAIL || uIdMsg == IDS_EXPORT_FAIL) {
         LPVOID lpMsgBuf;
-        WCHAR wcht;
+        TCHAR tcht;
         FormatMessage(
             FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
             NULL,
@@ -72,16 +72,16 @@ int _MsgBox(int iType, UINT uIdMsg, ...)
             (LPTSTR)&lpMsgBuf,
             0,
             NULL);
-        StrTrim(lpMsgBuf, L" \a\b\f\n\r\t\v");
-        StrCatBuff(szText, L"\n", COUNTOF(szText));
-        StrCatBuff(szText, lpMsgBuf, COUNTOF(szText));
+        StrTrim(lpMsgBuf, _T(" \a\b\f\n\r\t\v"));
+        StrCatBuff(tszText, _T("\n"), COUNTOF(tszText));
+        StrCatBuff(tszText, lpMsgBuf, COUNTOF(tszText));
         LocalFree(lpMsgBuf);
-        wcht = *CharPrev(szText, StrEnd(szText));
-        if (IsCharAlphaNumeric(wcht) || wcht == '"' || wcht == '\'')
-            StrCatBuff(szText, L".", COUNTOF(szText));
+        tcht = *CharPrev(tszText, StrEnd(tszText));
+        if (IsCharAlphaNumeric(tcht) || tcht == _T('"') || tcht == _T('\''))
+            StrCatBuff(tszText, _T("."), COUNTOF(tszText));
     }
 
-    GetString(IDS_APPTITLE, szTitle, COUNTOF(szTitle));
+    GetString(IDS_APPTITLE, tszTitle, COUNTOF(tszTitle));
 
     switch (iType) {
     case MBINFO:
@@ -91,18 +91,27 @@ int _MsgBox(int iType, UINT uIdMsg, ...)
         iIcon = MB_ICONEXCLAMATION;
         break;
     case MBYESNO:
-        iIcon = MB_ICONEXCLAMATION | MB_YESNO;
-        break;
-    case MBYESNOCANCEL:
-        iIcon = MB_ICONEXCLAMATION | MB_YESNOCANCEL;
+        // 2021-07-11: Previously using MB_ICONEXCLAMATION
+        iIcon = MB_ICONINFORMATION | MB_YESNO;
         break;
     case MBYESNOWARN:
         iIcon = MB_ICONEXCLAMATION | MB_YESNO;
+        break;
+    case MBYESNOCANCEL:
+        // 2021-07-11: Previously using MB_ICONEXCLAMATION
+        iIcon = MB_ICONINFORMATION | MB_YESNOCANCEL;
+        break;
+    case MBYESNOCANCELWARN:
+        iIcon = MB_ICONEXCLAMATION | MB_YESNOCANCEL;
         break;
     case MBFATAL:
         iIcon = MB_ICONSTOP;
         break;
     case MBOKCANCEL:
+        // 2021-07-11: Previously using MB_ICONEXCLAMATION
+        iIcon = MB_ICONINFORMATION | MB_OKCANCEL;
+        break;
+    case MBOKCANCELWARN:
         iIcon = MB_ICONEXCLAMATION | MB_OKCANCEL;
         break;
     }
@@ -111,7 +120,7 @@ int _MsgBox(int iType, UINT uIdMsg, ...)
         hwnd = hwndMain;
 
     return MessageBoxEx(hwnd,
-        szText, szTitle,
+        tszText, tszTitle,
         MB_SETFOREGROUND | iIcon,
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT));
 }
@@ -125,23 +134,23 @@ int _MsgBox(int iType, UINT uIdMsg, ...)
 //  Requires: #include <ommctrl.h>
 //
 int TaskBox(int iMBType, UINT uIdMsg, ...) {
-	WCHAR szText[TASKDLGBOX_STR_MAXLEN] = L"";
-	WCHAR szBuf[TASKDLGBOX_STR_MAXLEN] = L"";
-	PCWSTR iIcon = 0;
+	TCHAR tszText[TASKDLGBOX_STR_MAXLEN] = _T("");
+	TCHAR tszBuf[TASKDLGBOX_STR_MAXLEN] = _T("");
+	PCTSTR iIcon = 0;
 	TASKDIALOG_COMMON_BUTTON_FLAGS tdcbfCommonBtns = 0;
 	TASKDIALOG_FLAGS tdfFlags = 0;
 	int cxDlgWidth = 0;
 
-	if (!GetString(uIdMsg, szBuf, COUNTOF(szBuf)))
+	if (!GetString(uIdMsg, tszBuf, COUNTOF(tszBuf)))
 		return (0);
 
 	// Caller's example call: MsgBox(MBINFO, IDS_SAVEDSETTINGS, &szIniFile);
-	wvsprintf(szText, szBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1));
+	wvsprintf(tszText, tszBuf, (LPVOID)((PUINT_PTR)&uIdMsg + 1));
 	// Also: consider switching to StringCbVPrintfW()
 
 	if (uIdMsg == IDS_ERR_LOADFILE || uIdMsg == IDS_ERR_SAVEFILE || uIdMsg == IDS_CREATEINI_FAIL || uIdMsg == IDS_WRITEINI_FAIL || uIdMsg == IDS_EXPORT_FAIL) {
 		LPVOID lpMsgBuf;
-		WCHAR wcht;
+		TCHAR tcht;
 		FormatMessage(
 			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL,
@@ -150,13 +159,13 @@ int TaskBox(int iMBType, UINT uIdMsg, ...) {
 			(LPTSTR)&lpMsgBuf,
 			0,
 			NULL);
-		StrTrim(lpMsgBuf, L" \a\b\f\n\r\t\v");
-		StrCatBuff(szText, L"\n", COUNTOF(szText));
-		StrCatBuff(szText, lpMsgBuf, COUNTOF(szText));
+		StrTrim(lpMsgBuf, _T(" \a\b\f\n\r\t\v"));
+		StrCatBuff(tszText, _T("\n"), COUNTOF(tszText));
+		StrCatBuff(tszText, lpMsgBuf, COUNTOF(tszText));
 		LocalFree(lpMsgBuf);
-		wcht = *CharPrev(szText, StrEnd(szText));
-		if (IsCharAlphaNumeric(wcht) || wcht == '"' || wcht == '\'')
-			StrCatBuff(szText, L".", COUNTOF(szText));
+		tcht = *CharPrev(tszText, StrEnd(tszText));
+		if (IsCharAlphaNumeric(tcht) || tcht == _T('"') || tcht == _T('\''))
+			StrCatBuff(tszText, _T("."), COUNTOF(tszText));
 	}
 
 	// Common flags:
@@ -173,6 +182,7 @@ int TaskBox(int iMBType, UINT uIdMsg, ...) {
 		case MBWARN:
 		case MBYESNOWARN:
 		case MBOKCANCELWARN:
+        case MBYESNOCANCELWARN:
 			iIcon = TD_WARNING_ICON;
 			break;
 		case MBFATAL:
@@ -192,6 +202,7 @@ int TaskBox(int iMBType, UINT uIdMsg, ...) {
 			tdcbfCommonBtns = TDCBF_YES_BUTTON | TDCBF_NO_BUTTON;
 			break;
 		case MBYESNOCANCEL:
+        case MBYESNOCANCELWARN:
 			tdcbfCommonBtns = TDCBF_YES_BUTTON | TDCBF_NO_BUTTON | TDCBF_CANCEL_BUTTON;
 			break;
 		case MBOKCANCEL:
@@ -215,12 +226,22 @@ int TaskBox(int iMBType, UINT uIdMsg, ...) {
 #undef USE_CONTENT_FOR_MSG
 #define USE_NATIVE_TASKDLG
 
+	// Because TaskDialog*() APIs only use WCHARs (and our own TaskDialogEx()
+	// reflects this), we need to convert
+#ifdef UNICODE
+	///StrCpyW(wszText, tszText);
+	LPWSTR wszText = tszText;
+#else
+	WCHAR wszText[TASKDLGBOX_STR_MAXLEN] = L"\0";
+	MBCSToWChar(CP_ACP, tszText, wszText, TASKDLGBOX_STR_MAXLEN);
+#endif
+
 #ifdef USE_NATIVE_TASKDLG
 
 #ifdef USE_CONTENT_FOR_MSG
 	lResult = TaskDialog(hwnd, g_hInstance, MAKEINTRESOURCE(IDS_APPTITLE), NULL, szText, tdcbfCommonBtns, iIcon, &nButtonPressed);
 #else
-	lResult = TaskDialog(hwnd, g_hInstance, MAKEINTRESOURCE(IDS_APPTITLE), szText, NULL, tdcbfCommonBtns, iIcon, &nButtonPressed);
+	lResult = TaskDialog(hwnd, g_hInstance, MAKEINTRESOURCE(IDS_APPTITLE), wszText, NULL, tdcbfCommonBtns, iIcon, &nButtonPressed);
 #endif
 	if (S_OK == lResult)
 		return nButtonPressed;
@@ -235,12 +256,12 @@ int TaskBox(int iMBType, UINT uIdMsg, ...) {
 			return TASKDLGBOX_ERR_UNKNOWN;
 	};
 
-#else
+#else // Not USE_NATIVE_TASKDLG
 
 #ifdef USE_CONTENT_FOR_MSG then
-	return TaskDlg((LPWSTR)iIcon, 0, 0, szText, 0, 0, tdcbfCommonBtns, tdfFlags, 0, 0, 0, 0, 0, cxDlgWidth);
+	return TaskDialogEx(iIcon, 0, 0, wszText, 0, 0, tdcbfCommonBtns, tdfFlags, 0, 0, 0, 0, 0, cxDlgWidth);
 #else
-	return TaskDlg((LPWSTR)iIcon, 0, szText,0,  0, 0, tdcbfCommonBtns, tdfFlags, 0, 0, 0, 0, 0, cxDlgWidth);
+	return TaskDialogEx(iIcon, 0, wszText, 0, 0, 0, tdcbfCommonBtns, tdfFlags, 0, 0, 0, 0, 0, cxDlgWidth);
 #endif
 
 #endif
@@ -279,7 +300,8 @@ int TaskDialogEx(PCWSTR                         pwszIcon,
 	if (GetString(IDS_APPTITLE, szTitle, COUNTOF(szTitle)))
 		tdConfig.pszWindowTitle = szTitle;
 	tdConfig.hInstance          = g_hInstance;
-	tdConfig.pszMainIcon        = (pwszIcon ? pwszIcon : TD_INFORMATION_ICON);
+	// 2021-07-11: Now allowing task dialogs not to have any icon
+	tdConfig.pszMainIcon        = pwszIcon; ///(pwszIcon ? pwszIcon : TD_INFORMATION_ICON);
 	if (pwszMainInstr) {
 		if (!(PtrToUint(pwszMainInstr) >> 31) && PtrToUint(pwszMainInstr) < 65536) {
 			UINT uIdMsg = PtrToUint(pwszMainInstr);
@@ -597,9 +619,10 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
 
 #ifdef JRB_BUILD
         SetDlgItemText(hwnd, IDC_COPYRIGHT, VERSION_ORG_COPYRIGHT);
-#else // !defined(JRB_BUILD)
+#else
         SetDlgItemText(hwnd, IDC_COPYRIGHT, VERSION_COPYRIGHT);
-#endif // JRB_BUILD
+#endif
+        ///SetDlgItemText(hwnd, IDC_AUTHORNAME, VERSION_AUTHORNAME);
 
         if (GetDlgItem(hwnd, IDC_WEBPAGE) == NULL) {
             SetDlgItemText(hwnd, IDC_WEBPAGE2, VERSION_WEBPAGEDISPLAY);
@@ -628,11 +651,15 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         case NM_CLICK:
         case NM_RETURN: {
             if (pnmhdr->idFrom == IDC_WEBPAGE) {
-                ShellExecute(hwnd, L"open", L"http://www.flos-freeware.ch", NULL, NULL, SW_SHOWNORMAL);
+                ShellExecute(hwnd, L"open", VERSION_PAGEDISPLAY, NULL, NULL, SW_SHOWNORMAL);
             } else if (pnmhdr->idFrom == IDC_EMAIL) {
-                ShellExecute(hwnd, L"open", L"mailto:florian.balmer@gmail.com", NULL, NULL, SW_SHOWNORMAL);
+                ShellExecute(hwnd, L"open", VERSION_EMAILLINK, NULL, NULL, SW_SHOWNORMAL);
             } else if (pnmhdr->idFrom == IDC_MOD_PAGE) {
-                ShellExecute(hwnd, L"open", L"https://xhmikosr.github.io/notepad2-mod/", NULL, NULL, SW_SHOWNORMAL);
+                ShellExecute(hwnd, L"open", VERSION_MOD_PAGEDISPLAY, NULL, NULL, SW_SHOWNORMAL);
+#ifdef JRB_BUILD
+            } else if (pnmhdr->idFrom == IDC_JRB_PAGE) {
+                ShellExecute(hwnd, L"open", VERSION_JRB_PAGEDISPLAY, NULL, NULL, SW_SHOWNORMAL);
+#endif // JRB_BUILD
             }
         } break;
         }
@@ -743,8 +770,8 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
                     bQuickExit = TRUE;
                 }
 
-                if (lstrlen(szCurFile)) {
-                    lstrcpy(wchDirectory, szCurFile);
+                if (lstrlen(g_wszCurFile)) {
+                    lstrcpy(wchDirectory, g_wszCurFile);
                     PathRemoveFileSpec(wchDirectory);
                 }
 
@@ -945,8 +972,8 @@ BOOL OpenWithDlg(HWND hwnd, LPCWSTR lpstrFile)
         WCHAR szParam[MAX_PATH];
         WCHAR wchDirectory[MAX_PATH] = L"";
 
-        if (lstrlen(szCurFile)) {
-            lstrcpy(wchDirectory, szCurFile);
+        if (lstrlen(g_wszCurFile)) {
+            lstrcpy(wchDirectory, g_wszCurFile);
             PathRemoveFileSpec(wchDirectory);
         }
 

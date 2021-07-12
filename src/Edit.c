@@ -68,7 +68,7 @@ extern int iWeakSrcEncoding;
 int g_DOSEncoding;
 
 #ifdef JRB_BUILD
-#define RE_REGEX_SYNTAX_RTF_MAXLEN 0x4000
+#define RE_REGEX_SYNTAX_RTF_MAXLEN 0x4000 // 16kb for regex syntax' RTF code ought to be enough
 char szRESyntaxRtf[RE_REGEX_SYNTAX_RTF_MAXLEN] = "";
 extern HWND hDlgRegexSyntax;
 extern int cxRegexSyntaxDlg;
@@ -6694,14 +6694,26 @@ LRESULT CALLBACK RegexRichEditSubclassProc(HWND hwnd, UINT uiMsg, WPARAM wParam,
 
 		// Hide caret
 		case WM_SETFOCUS:
-			lReturn = DefSubclassProc(hwnd, uiMsg, wParam, lParam);
+			///lReturn = DefSubclassProc(hwnd, uiMsg, wParam, lParam);
 			HideCaret(hwnd);
-			return lReturn;
+			return TRUE;
 		
 		// Have both scroll bars show at all times
 		case EN_UPDATE:
 			PostMessage(hwnd, EM_SHOWSCROLLBAR, SB_HORZ, 1);
 			PostMessage(hwnd, EM_SHOWSCROLLBAR, SB_VERT, 1);
+			break;
+
+		case WM_SIZE:
+			// 2020-04-19: Offset control's rectangle with left and right margins
+			lReturn = DefSubclassProc(hwnd, uiMsg, wParam, lParam);
+			RECT rc;
+			GetClientRect(hwnd, &rc);
+			rc.left += RTF_RECT_MARGIN_LEFT;
+			rc.top += RTF_RECT_MARGIN_TOP;
+			rc.right -= RTF_RECT_MARGIN_RIGHT;
+			rc.bottom -= RTF_RECT_MARGIN_BOTTOM;
+			SendMessage(hwnd, EM_SETRECT, 0, (LPARAM)&rc);
 			break;
 
 		// Make sure we unsubclass the control upon its desctruction
@@ -6919,6 +6931,11 @@ INT_PTR CALLBACK RegexSyntaxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 
 			// Center dialog
 			CenterDlgInParent(hwnd);
+
+			// Trigger a WM_SIZE
+			RECT rc;
+			GetWindowRect(hRichEditCtlWnd, &rc);
+			PostMessage(hRichEditCtlWnd, WM_SIZE, 0, MAKELPARAM(rc.right - rc.left, rc.bottom - rc.top));
 
 			return TRUE;
 		}

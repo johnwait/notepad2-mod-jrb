@@ -19,14 +19,15 @@
 ******************************************************************************/
 
 
-#define MBINFO         0
-#define MBWARN         1
-#define MBYESNO        2
-#define MBYESNOWARN    3
-#define MBYESNOCANCEL  4
-#define MBFATAL        5
-#define MBOKCANCEL     6
-#define MBOKCANCELWARN 7
+#define MBINFO              0
+#define MBWARN              1
+#define MBYESNO             2
+#define MBYESNOWARN         3
+#define MBYESNOCANCEL       4
+#define MBFATAL             5
+#define MBOKCANCEL          6
+#define MBOKCANCELWARN      7
+#define MBYESNOCANCELWARN   8
 
 #define MB_TITLE_MAXLEN  64
 #define MB_MSG_MAXLEN  1024
@@ -34,9 +35,9 @@
 int _MsgBox(int iType, UINT uIdMsg, ...);
 #ifdef FEAT_REPLACE_MSGBOX_BY_TASKDLG
 int TaskBox(int iMBType, UINT uIdMsg, ...);
-inline int MsgBox(int iType, UINT uIdMsg, ...) { return TaskBox(iType, uIdMsg); };
+#define MsgBox TaskBox
 #else
-inline int MsgBox(int iType, UINT uIdMsg, ...) { return _MsgBox(iType, uIdMsg); };
+#define MsgBox _MsgBox
 #endif
 void DisplayCmdLineHelp(HWND hwnd);
 BOOL GetDirectory(HWND,int,LPWSTR,LPCWSTR,BOOL);

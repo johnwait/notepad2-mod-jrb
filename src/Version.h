@@ -37,7 +37,7 @@
     #define MY_APPNAME                   L"Notepad2-mod-jrb"
     #define VERSION_FILENAME             L"Notepad2-jrb"
     #define VERSION_DESCRIPTION          MY_APPNAME ///L"Notepad2-mod-jrb, a personal fork of XhmikosR's Notepad2-mod"
-    #define VERSION_JRB_COPYRIGHT        L"Notepad2-mod-jrb © 2019-2020 Contributors; see Readme-mod-jrb.txt"
+    #define VERSION_JRB_COPYRIGHT        L"Notepad2-mod-jrb © 2019-2021 Contributors; see Readme-mod-jrb.txt"
     #define VERSION_JRB_PAGEDISPLAY      L"https://github.com/johnwait/notepad2-mod/"
     #define VERSION_MOD_COPYRIGHT        L"Notepad2-mod © 2010-2017 All contributors; see Readme-mod.txt"
     #define VERSION_MOD_PAGEDISPLAY      L"https://xhmikosr.github.io/notepad2-mod/"
@@ -61,8 +61,10 @@
 #define VERSION_FILEVERSION          STRINGIFY(VERSION_MAJOR) L"." STRINGIFY(VERSION_MINOR) L"." \
                                      STRINGIFY(VERSION_BUILD) L"." STRINGIFY(VERSION_REV)
 #define VERSION_AUTHORNAME           L"Florian Balmer"
-#define VERSION_WEBPAGEDISPLAY       L"flo's freeware - http://www.flos-freeware.ch"
+#define VERSION_PAGEDISPLAY          L"http://www.flos-freeware.ch"
+#define VERSION_WEBPAGEDISPLAY       L"flo's freeware - " VERSION_PAGEDISPLAY
 #define VERSION_EMAILDISPLAY         L"florian.balmer@gmail.com"
+#define VERSION_EMAILLINK            L"mailto:" VERSION_EMAILDISPLAY
 
 #if defined(_WIN64)
     #define VERSION_FILEVERSION_LONG  MY_APPNAME L" (64-bit) " STRINGIFY(VERSION_MAJOR) L"." \
