@@ -19,14 +19,14 @@
              from \000 to \777
     \x{#}    Unicode character by its hexadecimal codepoint value,
              for # => 0 to FFFF
-    \a       Bell character, i.e. \x07
-  *** \b does NOT match backspace chars, i.e. \x08
     \t       Horizontal tab, i.e. \x09
-    \n       Line feed, i.e. \x0A
     \v       Vertical tab, i.e. \x0B
-    \f       Form feed, i.e. \x0C
+    \n       Line feed, i.e. \x0A
     \r       Carriage return, i.e. \x0D
+    \a       Bell character, i.e. \x07
     \e       Escape char, i.e. \x1B
+    \f       Form feed, i.e. \x0C
+  *** \b does NOT match backspace chars, i.e. \x08
 
   Anchors:
     \A ; \Z  Start of text ; End of text
@@ -55,6 +55,16 @@
     (?:..)  Non-capturing group                 \k'#'    For # => 1 to 99
     (?>..)  Atomic group (non-capturing)        (?P=#)   For # => 1 to 99
     (#..)   Comment
+
+  Backref Transforms: *BETA*
+       change the letter casing of backreferences found in between...
+    \U … \E  Change all letters to upper case
+    \L … \E  Change all letters to lower case
+    \F … \E  Use phrase-casing, e.g. Ulll-ll lll
+    \I … \E  Use title-casing,  e.g. Ulll-ll Ull
+    \N … \E  Use name-casing,   e.g. Ulll-Ul Ull
+    \u       First letter (only) to upper case
+    \l       First letter (only) to lower case
 
   Named Capturing Groups (any of the following):
     (?<name>/regex/)

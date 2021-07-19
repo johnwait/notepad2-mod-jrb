@@ -34,7 +34,13 @@ Subexpressions:	Backreferences:
 (..)	Capturing group	\k<#>	For # => 1 to 99
 (?:..)	Non-capturing group	\k'#'	For # => 1 to 99
 (?>..)	Atomic group (non-capturing)	(?P=#)	For # => 1 to 99
-(?#..)	Comment	
+(?#..)	Comment
+
+Backref Transforms: BETA	Change the letter casing of backreferences found in between…
+\U …	\E	Change all letters to upper case	\F …	\E	Use phrase-casing,	e.g. Ulll-ll lll
+\L …	\E	Change all letters to lower case	\I …	\E	Use title-casing,	e.g. Ulll-ll Ull
+\u		First letter (only) to upper case	\N …	\E	Use name-casing,	e.g. Ulll-Ul Ull
+\l		First letter (only) to lower case
 
 Named Capturing Groups:
 (?<name>/regex/)	/or/	(?'name'/regex/)	/or/	(?P<name>/regex/)
