@@ -5145,36 +5145,36 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 #ifdef BOOKMARK_EDITION
                     // Display help messages in the find/replace windows
                     else if (pnmhdr->idFrom == IDC_BACKSLASHHELP) {
-                        MsgBox(MBINFO, IDS_BACKSLASHHELP);
+                        _MsgBox(MBINFO, IDS_BACKSLASHHELP);
                     } else if (pnmhdr->idFrom == IDC_REGEXPHELP) {
 #ifdef JRB_BUILD
-                        if (IsDlgButtonChecked(hwnd, IDC_DOTMATCHALL) == BST_CHECKED) {
-                            MsgBox(MBINFO, IDS_REGEXPHELP_DOTALL);
-                        } else {
 #ifdef FEAT_REGEX_SYNTAX_RTFDLG
-                            // 2019-10-22: Replace message box with RTF-based dialog
-                            ///MsgBox(MBINFO, IDS_REGEXPHELP);
-                            if (!IsWindow(hDlgRegexSyntax))
+                        // 2019-10-22: Replace message box with RTF-based dialog
+                        ///MsgBox(MBINFO, IDS_REGEXPHELP);
+                        if (!IsWindow(hDlgRegexSyntax))
+                            hDlgRegexSyntax = RegexSyntaxDlg(hwnd, IDR_RTFREGEXSYNTAX);
+                        else {
+                            if (GetDlgItem(hDlgRegexSyntax, IDC_REGEXSYNTAXRICHEDIT)) {
+                                SetForegroundWindow(hDlgRegexSyntax);
+                                PostMessage(hDlgRegexSyntax, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hDlgRegexSyntax, IDC_REGEXSYNTAXRICHEDIT)), 1);
+                            } else {
+                                DestroyWindow(hDlgRegexSyntax);
                                 hDlgRegexSyntax = RegexSyntaxDlg(hwnd, IDR_RTFREGEXSYNTAX);
-                            else {
-                                if (GetDlgItem(hDlgRegexSyntax, IDC_REGEXSYNTAXRICHEDIT)) {
-                                    SetForegroundWindow(hDlgRegexSyntax);
-                                    PostMessage(hDlgRegexSyntax, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hDlgRegexSyntax, IDC_REGEXSYNTAXRICHEDIT)), 1);
-                                } else {
-                                    DestroyWindow(hDlgRegexSyntax);
-                                    hDlgRegexSyntax = RegexSyntaxDlg(hwnd, IDR_RTFREGEXSYNTAX);
-                                }
                             }
-                            break;
-#else // !defined(FEAT_REGEX_SYNTAX_RTFDLG)
-                            MsgBox(MBINFO, IDS_REGEXPHELP);
-#endif // FEAT_REGEX_SYNTAX_RTFDLG
                         }
+                        break;
+#else // !defined(FEAT_REGEX_SYNTAX_RTFDLG)
+                        if (IsDlgButtonChecked(hwnd, IDC_DOTMATCHALL) == BST_CHECKED) {
+                            _MsgBox(MBINFO, IDS_REGEXPHELP_DOTALL);
+                        } else {
+                            _MsgBox(MBINFO, IDS_REGEXPHELP);
+                        }
+#endif // FEAT_REGEX_SYNTAX_RTFDLG
 #else // !defined(JRB_BUILD)
-                        MsgBox(MBINFO, IDS_REGEXPHELP);
+                        _MsgBox(MBINFO, IDS_REGEXPHELP);
 #endif // JRB_BUILD
                     } else if (pnmhdr->idFrom == IDC_WILDCARDHELP) {
-                        MsgBox(MBINFO, IDS_WILDCARDHELP);
+                        _MsgBox(MBINFO, IDS_WILDCARDHELP);
                     }
 #endif // BOOKMARK_EDITION
                     break;
