@@ -30,8 +30,8 @@
 #define STRINGIFY(x)    DO_STRINGIFY(x)
 
 #define VERSION_MAJOR   4
-#define VERSION_MINOR   2
-#define VERSION_BUILD   25
+#define VERSION_MINOR   3
+#define VERSION_BUILD   0
 
 #ifdef JRB_BUILD
     #define MY_APPNAME                   L"Notepad2-mod-jrb"

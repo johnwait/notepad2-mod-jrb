@@ -26,7 +26,7 @@ Description
   Notepad2 by Florian Balmer as well as the Notepad2-mod fork.
 
 
-Features
+Features [Notepad2-mod]
 
   - Syntax highlighting: HTML, XML, PHP, ASP (JS, VBS), CSS, Javascript,
     AutoHotKey & AutoIt3 Scripts, Lua Scripts, CoffeeScript, VBScript,
@@ -47,11 +47,36 @@ Features
   - Support for Unicode, UTF-8, Unix and Mac text files, whatever the
     character encoding and line-ending settings used
 
-New in Notepad2-mod-jrb v4.3.0 (released XXXXXXX ##, 2020)
+New in Notepad2-mod-jrb v4.3.0.1082 (released September 26, 2021)
 
-  - First official release of the Notepad2-mod-jrb fork, based on the last
-    version of Notepad2-mod (4.2.25.998)
-  - 
+  - Added keyboard shortcut for showing file properties (Alt+Enter)
+  - Fix: "Replace All" with an invalid regex pattern no longer locks app
+  - Find/Replace: A warning is now shown if regex pattern is invalid
+  - Find/Replace: Added shortcut for showing the regex syntax dialog (F1)
+  - Find/Replace: New shortcut for "Transform backslashes" help (Shift+F1)
+  - Find/Replace: New shortcut for "Wildcards search" help (Ctrl+Shift+F1)
+  - It is now possible to copy parts of the regex syntax help's content
+
+New in Notepad2-mod-jrb v4.2.25.1073 (released July 12, 2021)
+
+  - Mostly under-the-hood changes & further finishing touches
+
+New in Notepad2-mod-jrb v4.2.25.1068 (released February 14, 2020)
+
+  - Replacement strings for regex search & replace now support transforms
+  - Notepad2-mod-jrb has a new app icon!
+
+New in Notepad2-mod-jrb v4.2.25.1061 (released January 30, 2020)
+
+  - Updated Scintilla's code base to v3.10.6
+  - Switched to Onigmo v6.2.0, a full-featured regex engine
+  - Regular expression syntax help now provided through a RTF-based dialog
+  - Added a new "Edit" > "Insert" dialog to insert control characters
+  - New setting "Check Write Permission" auto-relaunches with elevation
+  - File change notifications get delayed until back to foreground
+  - Added more keywords to the Powershell lexer
+  - Added lexers for MathLab (*.m) and Windows registry files (*.reg)
+  - Improved Markdown lexer to handle escaped backticks in code blocks
 
 New in Notepad2-mod v4.2.25.998 (released August 06, 2017)
 

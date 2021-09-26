@@ -15,9 +15,15 @@
 
 ## Changes compared to the Notepad2-mod fork:
 
-* Switch to the [Onigmo Regex Engine](https://github.com/k-takata/Onigmo)
-* File-change notifications received while in the background are deferred until window is shown again
+* A switch to the [Onigmo Regex Engine](https://github.com/k-takata/Onigmo), with support for transforms in replacement strings
+* A colored, RTF-based regular expression syntax dialog (you can also copy from!)
+* A dedicated dialog for inserting control characters
+* File-change notifications received while in the background being deferred until window is shown again
+* The ability to auto-relaunch itself as an elevated process when necessary
 * More keywords being recognized for PowerShell syntax highlighting
+* Additional lexers, e.g. for MathLab (`*.m`) & Windows registry files (`*.reg`)
+* More keyboard shortcuts added here & there
+* And, last but not least: a new application icon!!
 
 ## Supported Operating Systems:
 
