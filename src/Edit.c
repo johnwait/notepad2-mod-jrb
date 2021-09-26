@@ -5117,6 +5117,18 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                     CheckDlgButton(hwnd, IDC_FINDTRANSFORMBS, BST_UNCHECKED);
                     PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_FINDTEXT)), 1);
                     break;
+
+				case IDC_REGEXPHELP:
+				case IDC_BACKSLASHHELP:
+				case IDC_WILDCARDHELP:
+				{
+					NMHDR nmhdr;
+					nmhdr.code = NM_CLICK;
+					nmhdr.idFrom = LOWORD(wParam);
+					nmhdr.hwndFrom = hwnd;
+					SendMessage(hwnd, WM_NOTIFY, MAKELONG(nmhdr.idFrom, 0), (LPARAM)&nmhdr);
+				} break;
+
             } return TRUE; // switch (LOWORD(wParam))
         
         case WM_SYSCOMMAND:
@@ -7026,6 +7038,8 @@ INT_PTR CALLBACK RegexSyntaxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 		case WM_DESTROY:
 			// Destroy resize handler
 			ResizeDlg_Destroy(hwnd, &cxRegexSyntaxDlg, &cyRegexSyntaxDlg);
+			if (hDlgFindReplace) SetForegroundWindow(hDlgFindReplace);
+
 			return FALSE;
 
 #if defined(_DEBUG) && defined(DEBUG_OUTPUT_UNHANDLED_WMS)
