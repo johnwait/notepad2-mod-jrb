@@ -174,6 +174,8 @@ public:
 
     const OnigRegion& GetRegion() const { return m_Region; };
 
+    std::string GetErrorInfo() override;
+
 private:
     std::string& translateRegExpr(std::string& regExprStr, bool wholeWord, bool wordStart, int eolMode, OnigOptionType& rxOptions);
 
@@ -280,12 +282,15 @@ Sci::Position OnigmoRegExEngine::FindText(Document* doc, Sci::Position minPos, S
  * Error return values:
  *  -1 => Not found
  *  -2 => Invalid regex
- *  -3 => Exception
+ *  -3 => ONIGMO-specific error
+ *  -4 => (Caught) Exception
+ *
+ * INVALID_REGEX, REGEX_ERROR & REGEX_EXCEPTION are defined in Scintilla.h
  */
 {
     if (!(pattern && (strlen(pattern) > 0))) {
         *length = 0;
-        return SciPos(-1);
+        return SciPos(INVALID_POSITION);
     }
 
     auto const docLen = SciPos(doc->Length());
@@ -342,10 +347,10 @@ Sci::Position OnigmoRegExEngine::FindText(Document* doc, Sci::Position minPos, S
                                m_CmplOptions, g_pOnigEncodingType, &m_OnigSyntax, &einfo);
             if (res != ONIG_NORMAL) {
                 onig_error_code_to_str(UCharPtr(m_ErrorInfo), res, &einfo);
-                return SciPos(-2); // -1 is normally used for not found, -2 is used here for invalid regex
+                return SciPos(INVALID_REGEX); // -1 is normally used for not found, -2 is used here for invalid regex
             }
         } catch (...) {
-            return SciPos(-2);
+            return SciPos(INVALID_REGEX);
         }
     }
 
@@ -382,12 +387,12 @@ Sci::Position OnigmoRegExEngine::FindText(Document* doc, Sci::Position minPos, S
         else
             result = onig_search(m_RegExpr, docBegPtr, docEndPtr, rangeEndPtr, rangeBegPtr, &m_Region, onigmoOptions);
     } catch (...) {
-        return SciPos(-3); // -1 is normally used for not found, -3 is used here for exception
+        return SciPos(REGEX_EXCEPTION); // -4 here is used here for an uncaught exception
     }
 
     if (result < ONIG_MISMATCH) {
         onig_error_code_to_str(UCharPtr(m_ErrorInfo), result);
-        return SciPos(-3);
+        return SciPos(REGEX_ERROR); // // -3 is used ONIGMO-specific errors
     }
 
     if ((result >= 0) && (rangeBegPtr <= rangeEndPtr)) {
@@ -402,6 +407,10 @@ Sci::Position OnigmoRegExEngine::FindText(Document* doc, Sci::Position minPos, S
 }
 // ============================================================================
 
+std::string OnigmoRegExEngine::GetErrorInfo() {
+	std::string sText(m_ErrorInfo, strlen(m_ErrorInfo));
+    return sText;
+}
 /*
 static int GrpNameCallback(const UChar* name, const UChar* name_end,
                            int ngroup_num, int* group_nums, regex_t* reg, void* arg)

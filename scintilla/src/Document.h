@@ -99,6 +99,8 @@ public:
 
 	///@return String with the substitutions, must remain valid until the next call or destruction
 	virtual const char *SubstituteByPosition(Document *doc, const char *text, Sci::Position *length) = 0;
+
+    virtual std::string GetErrorInfo() = 0;
 };
 
 /// Factory function for RegexSearchBase
@@ -187,8 +189,14 @@ public:
 	}
 };
 
-struct RegexError : public std::runtime_error {
-	RegexError() : std::runtime_error("regex failure") {}
+struct RegexCompileError : public std::runtime_error {
+	RegexCompileError() : std::runtime_error("regex compilation failure") {}
+};
+struct RegexRuntimeError : public std::runtime_error {
+	RegexRuntimeError() : std::runtime_error("regex execution failure") {}
+};
+struct RegexException : public std::runtime_error {
+	RegexException() : std::runtime_error("regex runtime exception") {}
 };
 
 /**
@@ -367,6 +375,8 @@ public:
 	bool TentativeActive() const { return cb.TentativeActive(); }
 
 	const char * SCI_METHOD BufferPointer() override { return cb.BufferPointer(); }
+    std::string SCI_METHOD GetRegexLastError() { return regex->GetErrorInfo(); }
+
 #ifdef X_SCINTILLA_RANGEGAP_FIX
 	const char *RangePointer(Sci::Position position, Sci::Position rangeLength) { return cb.DataPointer(position, rangeLength); }
 #else // !X_SCINTILLA_RANGEGAP_FIX

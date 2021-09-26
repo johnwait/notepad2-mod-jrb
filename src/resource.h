@@ -529,6 +529,9 @@
 #define IDS_BTN_DONTSAVE                50063
 #endif // JRB_BUILD
 #endif // FEAT_REPLACE_MSGBOX_BY_TASKDLG
+#define IDS_FIND_REGEX_INVALID          50070
+#define IDS_FIND_REGEX_ONIGERR          50071
+#define IDS_FIND_REGEX_EXCEPTN          50072
 #ifdef JRB_BUILD
 #define IDS_CTLCHAR_00_TOOLTIP          50100
 #define IDS_CTLCHAR_01_TOOLTIP          50101

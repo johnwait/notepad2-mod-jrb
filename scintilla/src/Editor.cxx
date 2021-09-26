@@ -4060,14 +4060,30 @@ Sci::Position Editor::FindText(
 			ft->lpstrText,
 			static_cast<int>(wParam),
 			&lengthFound);
-		if (pos != -1) {
+		// 2021-09-16: Onigmo RegEx engine returns (-2) on invalid patterns
+		switch (pos) { // INVALID_REGEX, REGEX_ERROR & REGEX_EXCEPTION defined in Scintilla.h
+			case INVALID_REGEX: throw RegexCompileError();
+			case REGEX_ERROR: throw RegexRuntimeError();
+			case REGEX_EXCEPTION: throw RegexException();
+		}
+		///if (pos != INVALID_POSITION) {
+		if (pos < 0) {
 			ft->chrgText.cpMin = static_cast<Sci_PositionCR>(pos);
 			ft->chrgText.cpMax = static_cast<Sci_PositionCR>(pos + lengthFound);
 		}
 		return pos;
-	} catch (RegexError &) {
-		errorStatus = SC_STATUS_WARN_REGEX;
-		return -1;
+	}
+	catch (RegexCompileError &) {
+		errorStatus = SC_STATUS_WARN_REGEX_INVALID;
+		return INVALID_REGEX;
+	}
+	catch (RegexRuntimeError &) {
+		errorStatus = SC_STATUS_WARN_REGEX_ERROR;
+		return REGEX_ERROR;
+	}
+	catch (RegexException &) {
+		errorStatus = SC_STATUS_WARN_REGEX_EXCEPTION;
+		return REGEX_EXCEPTION;
 	}
 }
 
@@ -4112,9 +4128,18 @@ Sci::Position Editor::SearchText(
 					static_cast<int>(wParam),
 					&lengthFound);
 		}
-	} catch (RegexError &) {
-		errorStatus = SC_STATUS_WARN_REGEX;
-		return INVALID_POSITION;
+	}
+	catch (RegexCompileError &) {
+		errorStatus = SC_STATUS_WARN_REGEX_INVALID;
+		return INVALID_REGEX;
+	}
+	catch (RegexRuntimeError &) {
+		errorStatus = SC_STATUS_WARN_REGEX_INVALID;
+		return REGEX_ERROR;
+	}
+	catch (RegexException &) {
+		errorStatus = SC_STATUS_WARN_REGEX_EXCEPTION;
+		return REGEX_EXCEPTION;
 	}
 	if (pos != INVALID_POSITION) {
 		SetSelection(pos, pos + lengthFound);
@@ -4156,10 +4181,20 @@ Sci::Position Editor::SearchInTarget(const char *text, Sci::Position length) {
 			targetEnd = pos + lengthFound;
 		}
 		return pos;
-	} catch (RegexError &) {
-		errorStatus = SC_STATUS_WARN_REGEX;
-		return -1;
 	}
+	catch (RegexCompileError &) {
+		errorStatus = SC_STATUS_WARN_REGEX_INVALID;
+		return INVALID_REGEX;
+	}
+	catch (RegexRuntimeError &) {
+		errorStatus = SC_STATUS_WARN_REGEX_INVALID;
+		return REGEX_ERROR;
+	}
+	catch (RegexException &) {
+		errorStatus = SC_STATUS_WARN_REGEX_EXCEPTION;
+		return REGEX_EXCEPTION;
+	}
+
 }
 
 void Editor::GoToLine(Sci::Line lineNo) {
@@ -5914,6 +5949,25 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 			sel.selType = Selection::selStream;
 			SetSelection(nEnd, nStart);
 			EnsureCaretVisible();
+		}
+		break;
+
+	case SCI_GETREGEXLASTERROR: {
+			if (lParam == 0) {
+				return pdoc->GetRegexLastError().length();
+			}
+			else {
+				char *ptr = CharPtrFromSPtr(lParam);
+				size_t iChar = pdoc->GetRegexLastError().length();
+				if (iChar) {
+					memcpy(ptr, pdoc->GetRegexLastError().c_str(), iChar);
+					ptr[iChar++] = '\0';
+				}
+				else {
+					ptr[0] = '\0';
+				}
+				return iChar;
+			}
 		}
 		break;
 

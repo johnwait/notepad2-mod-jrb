@@ -5290,21 +5290,37 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
     ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
     ttf.lpstrText = szFind2;
 
-    iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+    iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf); // calls into Sci::Position Editor::FindText()
+    // 2021-09-17: Now handling other FindText() regex-specific return values: (-2), (-3) & (-4)
+    switch (iPos) {
+        case INVALID_POSITION: // Not found (-1)
+            if (ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap && !fExtendSelection) {
+                if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW)) {
+                    ttf.chrg.cpMin = 0;
+                    iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+                } else
+                    bSuppressNotFound = TRUE;
+            }
+            // notfound
+            if (!bSuppressNotFound)
+                InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
+            return FALSE;
 
-    if (iPos == -1 && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap && !fExtendSelection) {
-        if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW)) {
-            ttf.chrg.cpMin = 0;
-            iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
-        } else
-            bSuppressNotFound = TRUE;
-    }
+        case INVALID_REGEX: // Invalid regex pattern (-2)
+            MsgBox(MBWARN, IDS_FIND_REGEX_INVALID);
+            return FALSE;
 
-    if (iPos == -1) {
-        // notfound
-        if (!bSuppressNotFound)
-            InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
-        return FALSE;
+        case REGEX_ERROR: { // Regex runtime error (-3)
+            int cchErrInfo = (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, 0) - 1;
+            char* pszErrInfo = LocalAlloc(LPTR, cchErrInfo + 1);
+            (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, (LPARAM)pszErrInfo);
+            MsgBox(MBWARN, IDS_FIND_REGEX_ONIGERR, pszErrInfo);
+            return FALSE;
+        }
+
+        case (REGEX_EXCEPTION): // Regex exception (-4)
+            MsgBox(MBFATAL, IDS_FIND_REGEX_EXCEPTN);
+            return FALSE;
     }
 
     if (!fExtendSelection)
@@ -5367,11 +5383,30 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
             bSuppressNotFound = TRUE;
     }
 
-    if (iPos == -1) {
-        // notfound
+    if (iPos == INVALID_POSITION) { // Not found (-1)
         if (!bSuppressNotFound)
             InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
         return FALSE;
+    }
+    else if (iPos < 0) {
+        // 2021-09-17: Check if we had regex-specific error return values
+        switch (iPos) {
+            case INVALID_REGEX: // Invalid regex pattern (-2)
+                MsgBox(MBWARN, IDS_FIND_REGEX_INVALID);
+                return FALSE;
+
+            case REGEX_ERROR: { // Regex runtime error (-3)
+                int cchErrInfo = (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, 0) - 1;
+                char* pszErrInfo = LocalAlloc(LPTR, cchErrInfo + 1);
+                (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, (LPARAM)pszErrInfo);
+                MsgBox(MBWARN, IDS_FIND_REGEX_ONIGERR, pszErrInfo);
+                return FALSE;
+            }
+
+            case REGEX_EXCEPTION: // Regex exception (-4)
+                MsgBox(MBFATAL, IDS_FIND_REGEX_EXCEPTN);
+                return FALSE;
+        }
     }
 
     if (!fExtendSelection)
@@ -5454,7 +5489,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
 
     // If we reached the end of the document and are allowed to wrap around, do so
     // with a new "find" operation
-    if (iPos == -1 && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap) {
+    if (iPos == INVALID_POSITION && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap) {
         if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW)) {
             ttf.chrg.cpMin = 0;
             iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
@@ -5463,12 +5498,31 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
     }
 
     // Check if the Scintilla edit came up empty-handed
-    if (iPos == -1) {
+    if (iPos == INVALID_POSITION) { // Not found (-1)
         // Search string not found; clean up and return
         LocalFree(pszReplace2);
         if (!bSuppressNotFound)
             InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
         return FALSE;
+    } else if (iPos < 0) {
+        // 2021-09-17: Check if we had regex-specific error return values
+        switch (iPos) {
+            case INVALID_REGEX: // Invalid regex pattern (-2)
+                MsgBox(MBWARN, IDS_FIND_REGEX_INVALID);
+                return FALSE;
+
+            case REGEX_ERROR: { // Regex runtime error (-3)
+                int cchErrInfo = (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, 0) - 1;
+                char* pszErrInfo = LocalAlloc(LPTR, cchErrInfo + 1);
+                (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, (LPARAM)pszErrInfo);
+                MsgBox(MBWARN, IDS_FIND_REGEX_ONIGERR, pszErrInfo);
+                return FALSE;
+            }
+
+            case REGEX_EXCEPTION: // Regex exception (-4)
+                MsgBox(MBFATAL, IDS_FIND_REGEX_EXCEPTN);
+                return FALSE;
+        }
     }
 
     // Make sure 
@@ -5488,7 +5542,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
     iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
 
     bSuppressNotFound = FALSE;
-    if (iPos == -1 && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap) {
+    if (iPos == INVALID_POSITION && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap) {
         if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW)) {
             ttf.chrg.cpMin = 0;
             iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
@@ -5496,7 +5550,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
             bSuppressNotFound = TRUE;
     }
 
-    if (iPos != -1)
+    if (iPos != INVALID_POSITION)
         EditSelectEx(hwnd, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
 
     else {
@@ -5715,13 +5769,34 @@ void EditMarkAll(HWND hwnd, int iMarkOccurrences, BOOL bMarkOccurrencesMatchCase
     while ((iPos = (int)SendMessage(hwnd, SCI_FINDTEXT,
         (bMarkOccurrencesMatchCase ? SCFIND_MATCHCASE : 0) | (bMarkOccurrencesMatchWords ? SCFIND_WHOLEWORD : 0),
                                     (LPARAM)&ttf))
-           != -1
+           >= 0
            && ++iMatchesCount < 2000) {
         // mark this match
         SendMessage(hwnd, SCI_INDICATORFILLRANGE, iPos, iSelCount);
         ttf.chrg.cpMin = ttf.chrgText.cpMin + iSelCount;
         if (ttf.chrg.cpMin == ttf.chrg.cpMax)
             break;
+    }
+
+    // 2021-09-17: Check if we had regex-specific error return values
+    if (iPos < 0) {
+        switch (iPos) {
+            case INVALID_REGEX: // Invalid regex pattern (-2)
+                MsgBox(MBWARN, IDS_FIND_REGEX_INVALID);
+                return;
+
+            case REGEX_ERROR: { // Regex runtime error (-3)
+                int cchErrInfo = (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, 0) - 1;
+                char* pszErrInfo = LocalAlloc(LPTR, cchErrInfo + 1);
+                (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, (LPARAM)pszErrInfo);
+                MsgBox(MBWARN, IDS_FIND_REGEX_ONIGERR, pszErrInfo);
+                return;
+            }
+
+            case REGEX_EXCEPTION: // Regex exception (-4)
+                MsgBox(MBFATAL, IDS_FIND_REGEX_EXCEPTN);
+                return;
+        }
     }
 
     LocalFree(pszText);
@@ -5788,7 +5863,8 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
     ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
     ttf.lpstrText = szFind2;
 
-    while ((iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf)) != -1) {
+    // 2021-09-17: Now handling other FindText() regex-specific return values
+    while ((iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf)) >= 0) {
         int iReplacedLen;
         //char ch;
 
@@ -5837,8 +5913,29 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
     if (bShowInfo) {
         if (iCount > 0)
             InfoBox(0, L"MsgReplaceCount", IDS_REPLCOUNT, iCount);
-        else
-            InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
+        else {
+            // 2021-09-17: Check if we had regex-specific error return values
+            switch (iPos) {
+                case INVALID_REGEX: // Invalid regex pattern (-2)
+                    MsgBox(MBWARN, IDS_FIND_REGEX_INVALID);
+                    return FALSE;
+
+                case REGEX_ERROR: { // Regex runtime error (-3)
+                    int cchErrInfo = (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, 0) - 1;
+                    char* pszErrInfo = LocalAlloc(LPTR, cchErrInfo + 1);
+                    (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, (LPARAM)pszErrInfo);
+                    MsgBox(MBWARN, IDS_FIND_REGEX_ONIGERR, pszErrInfo);
+                    return FALSE;
+                }
+
+                case REGEX_EXCEPTION: // Regex exception (-4)
+                    MsgBox(MBFATAL, IDS_FIND_REGEX_EXCEPTN);
+                    return FALSE;
+
+                default:
+                    InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
+            }
+        }
     }
 
     LocalFree(pszReplace2);
@@ -5981,8 +6078,29 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
     if (bShowInfo) {
         if (iCount > 0)
             InfoBox(0, L"MsgReplaceCount", IDS_REPLCOUNT, iCount);
-        else
-            InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
+        else {
+            // 2021-09-17: Check if we had regex-specific error return values
+            switch (iPos) {
+                case INVALID_REGEX: // Invalid regex pattern (-2)
+                    MsgBox(MBWARN, IDS_FIND_REGEX_INVALID);
+                    return FALSE;
+
+                case REGEX_ERROR: { // Regex runtime error (-3)
+                    int cchErrInfo = (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, 0) - 1;
+                    char* pszErrInfo = LocalAlloc(LPTR, cchErrInfo + 1);
+                    (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, (LPARAM)pszErrInfo);
+                    MsgBox(MBWARN, IDS_FIND_REGEX_ONIGERR, pszErrInfo);
+                    return FALSE;
+                }
+
+                case REGEX_EXCEPTION: // Regex exception (-4)
+                    MsgBox(MBFATAL, IDS_FIND_REGEX_EXCEPTN);
+                    return FALSE;
+
+                default:
+                    InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
+            }
+        }
     }
 
     LocalFree(pszReplace2);

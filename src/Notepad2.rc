@@ -1917,6 +1917,9 @@ BEGIN
     IDS_BTN_DONTSAVE        "Do&n't Save"
 #endif
 #endif // FEAT_REPLACE_MSGBOX_BY_TASKDLG
+    IDS_FIND_REGEX_INVALID  "The search pattern is not a valid regular expression.\nCheck and fix pattern before trying again."
+    IDS_FIND_REGEX_ONIGERR  "The regex engine (Onigmo) returned the following error: ""%s""."
+    IDS_FIND_REGEX_EXCEPTN  "An exception occured while compiling or executing the regular exception. No further details are available."
 END
 
 #ifdef JRB_BUILD
