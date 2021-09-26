@@ -102,7 +102,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Disabled</Optimization>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PreprocessorDefinitions>JRB_BUILD;SCI_NAMESPACE;NO_CXX11_REGEX;SCI_OWNREGEX;ONIG_EXTERN=extern;_WIN64;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;STATIC_BUILD;SCI_LEXER;USE_D2D;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>X_SCINTILLA_RANGEGAP_FIX;JRB_BUILD;SCI_NAMESPACE;NO_CXX11_REGEX;SCI_OWNREGEX;ONIG_EXTERN=extern;_WIN64;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;STATIC_BUILD;SCI_LEXER;USE_D2D;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>

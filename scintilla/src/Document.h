@@ -367,9 +367,12 @@ public:
 	bool TentativeActive() const { return cb.TentativeActive(); }
 
 	const char * SCI_METHOD BufferPointer() override { return cb.BufferPointer(); }
-    const char *RangePointer(Sci::Position position, Sci::Position rangeLength) { return cb.RangePointer(position, rangeLength); }
-    const char *ContentPointer(Sci::Position position, Sci::Position rangeLength) { return cb.DataPointer(position, rangeLength); }
-    Sci::Position GapPosition() const { return cb.GapPosition(); }
+#ifdef X_SCINTILLA_RANGEGAP_FIX
+	const char *RangePointer(Sci::Position position, Sci::Position rangeLength) { return cb.DataPointer(position, rangeLength); }
+#else // !X_SCINTILLA_RANGEGAP_FIX
+	const char *RangePointer(Sci::Position position, Sci::Position rangeLength) { return cb.RangePointer(position, rangeLength); }
+#endif
+	Sci::Position GapPosition() const { return cb.GapPosition(); }
 
 	int SCI_METHOD GetLineIndentation(Sci_Position line) override;
 	Sci::Position SetLineIndentation(Sci::Line line, Sci::Position indent);

@@ -305,55 +305,57 @@ public:
 		return body.data();
 	}
 
-    /// Return a pointer to a range of elements, first rearranging the buffer if
-    /// needed to make that range contiguous.
-    T *RangePointer(ptrdiff_t position, ptrdiff_t rangeLength) noexcept {
-        if (position < part1Length) {
-            if ((position + rangeLength) > part1Length) {
-                // Range overlaps gap, so move gap to start of range.
-                GapTo(position);
-                return body.data() + position + gapLength;
-            } else {
-                return body.data() + position;
-            }
-        } else {
-            return body.data() + position + gapLength;
-        }
-    }
+	/// Return a pointer to a range of elements, first rearranging the buffer if
+	/// needed to make that range contiguous.
+	T *RangePointer(ptrdiff_t position, ptrdiff_t rangeLength) noexcept {
+		if (position < part1Length) {
+			if ((position + rangeLength) > part1Length) {
+				// Range overlaps gap, so move gap to start of range.
+				GapTo(position);
+				return body.data() + position + gapLength;
+			} else {
+				return body.data() + position;
+			}
+		} else {
+			return body.data() + position + gapLength;
+		}
+	}
 
-    /// Return a pointer to a range of elements *excluding* the gap, while still
-    /// rearranging the buffer to make that range contiguous.
-    /// If the pointer is to end up at or past the end of the data (i.e. within
-    /// the gap once it's been pushed after all elements), the position returned
-    /// will be the end of the data block, never past it.
-    T *DataPointer(ptrdiff_t position, ptrdiff_t rangeLength) noexcept {
-        if (position >= part1Length) {
-            // Furthest position is at the end of the contiguous
-            // data block
-            return body.data() + part1Length;
-        } else { // position < part1Length
-            // Check if we have a contiguous data block of
-            // covering the whole range
-            // (i.e. from [position .. position + rangeLength] )
-            if ((position + rangeLength) > part1Length) {
-                // Range overlaps gap, so move gap to *end* of range.
-                // (i.e. moving the gap past position + rangeLength)
-                GapTo(position + rangeLength);
-                // Now, part1Length might have changed;
-                // check if we still go over
-                if (position > part1Length) {
-                    // Return furthest position possible
-                    return body.data() + part1Length;
-                } else {
-                    // We're good now
-                    return body.data() + position;
-                }
-            } else {
-                return body.data() + position;
-            }
-        }
-    }
+#ifdef X_SCINTILLA_RANGEGAP_FIX
+	/// Return a pointer to a range of elements *excluding* the gap, while still
+	/// rearranging the buffer to make that range contiguous.
+	/// If the pointer is to end up at or past the end of the data (i.e. within
+	/// the gap once it's been pushed after all elements), the position returned
+	/// will be the end of the data block, never past it.
+	T *DataPointer(ptrdiff_t position, ptrdiff_t rangeLength) noexcept {
+		if (position >= part1Length) {
+			// Furthest position is at the end of the contiguous
+			// data block
+			return body.data() + part1Length;
+		} else { // position < part1Length
+			// Check if we have a contiguous data block of
+			// covering the whole range
+			// (i.e. from [position .. position + rangeLength] )
+			if ((position + rangeLength) > part1Length) {
+				// Range overlaps gap, so move gap to *end* of range.
+				// (i.e. moving the gap past position + rangeLength)
+				GapTo(position + rangeLength);
+				// Now, part1Length might have changed;
+				// check if we still go over
+				if (position > part1Length) {
+					// Return furthest position possible
+					return body.data() + part1Length;
+				} else {
+					// We're good now
+					return body.data() + position;
+				}
+			} else {
+				return body.data() + position;
+			}
+		}
+	}
 
+#endif
 	/// Return the position of the gap within the buffer.
 	ptrdiff_t GapPosition() const noexcept {
 		return part1Length;

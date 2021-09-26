@@ -356,7 +356,7 @@ Sci::Position OnigmoRegExEngine::FindText(Document* doc, Sci::Position minPos, S
     // !!! Performance issue: Scintilla: moving Gap needs memcopy - high costs for find/replace in large document
     // 2019-08-12: Modified Scintilla's code to use something other than
     //             RangePointer(), which is optimized for insertion of text
-    //             and thus has a habit of giving out pointers passed passed
+    //             and thus has a habit of giving out pointers passed
     //             deleted text.
     //
     // TODO: Report bug at least to the Notepad3 project
@@ -367,10 +367,10 @@ Sci::Position OnigmoRegExEngine::FindText(Document* doc, Sci::Position minPos, S
     //     end with any of the quantifiers (?, *, + or {m,n}) but instead
     //     a fixed length section, e.g. [..](?:-(?:20|19)[0-9][0-9]))
     //  3) Match the regex pattern 
-    auto const docBegPtr = UCharCPtr(doc->ContentPointer(0, docLen));
-    auto const docEndPtr = UCharCPtr(doc->ContentPointer(docLen, 0));
-    auto const rangeBegPtr = UCharCPtr(doc->ContentPointer(rangeBeg, rangeLen));
-    auto const rangeEndPtr = UCharCPtr(doc->ContentPointer(rangeEnd, 0));
+    auto const docBegPtr = UCharCPtr(doc->RangePointer(0, docLen));
+    auto const docEndPtr = UCharCPtr(doc->RangePointer(docLen, 0));
+    auto const rangeBegPtr = UCharCPtr(doc->RangePointer(rangeBeg, rangeLen));
+    auto const rangeEndPtr = UCharCPtr(doc->RangePointer(rangeEnd, 0));
 
     OnigPosition result = ONIG_MISMATCH;
     try {
@@ -584,7 +584,7 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
                          */
                         // TODO: Since we're modifying the Onigmo regex engine,
                         //       me might as well define new option / behaviour
-                        //       flag for those new features
+                        //       flags for those new features
                         case 'L': // all-lowercase transform
                         case 'U': // all-uppercase transform
                         case 'l': // only-first-letter-lowercase transform
@@ -608,7 +608,9 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
                             m_SubstBuffer.push_back(rawReplStrg[j + 1]);
                             // let the if (!bReplaced) {} block append rawReplStrg[j+1]
                             ++j;
-                            // TODO: Confirm code above represents the desired behaviour
+                            // TODO: Confirm code above represents the desired behaviour;
+                            //       i.e. should everything that gets through here be added
+                            //            back as a literal, or (re)processed elsewhere?
                     } // switch()
                 } // if ( == "\{#}" || == "\{##}")
 #endif // X_ONIG_BACKREF_TRANSFORMS
@@ -648,20 +650,10 @@ const char* OnigmoRegExEngine::SubstituteByPosition(Document* doc, const char* t
                 // check for case transforms
                 if (chCaseXform) {
                     // copy backref, apply transform and append
-                    std::string sTmp(doc->ContentPointer(rBeg, len), static_cast<size_t>(len));
+                    std::string sTmp(doc->RangePointer(rBeg, len), static_cast<size_t>(len));
                     m_SubstBuffer.append(applyTransform(sTmp, chCaseXform));
                 } else { // no transform
-    /*
-     * 2020-01-30: A while ago we implemented Document::ContentPointer() as a
-     *             replacement for ::RangePointer() over issues with non-contiguous
-     *             string buffers sometimes causing an expected match to fail;
-     *             It now bears the question: shouldn't be also be using it here?!?
-     */
-#if FALSE
                     m_SubstBuffer.append(doc->RangePointer(rBeg, len), static_cast<size_t>(len));
-#else
-                    m_SubstBuffer.append(doc->ContentPointer(rBeg, len), static_cast<size_t>(len));
-#endif
                 }
                 bReplaced = true;
             }
