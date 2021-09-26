@@ -20,6 +20,7 @@
 
 // In-dev feature flags; to be decided on on the next feature-set freeze
 #define FEAT_REGEX_SYNTAX_RTFDLG
+#define FEAT_REGEX_SYNTAX_ALLOW_SELCOPY
 #define FEAT_NOTIFY_CHANGE_ON_ACTIVEAPP
 ///#if FALSE
 #define FEAT_REPLACE_MSGBOX_BY_TASKDLG
@@ -42,6 +43,7 @@
 #include <time.h>       // Notepad2.c
 #include <limits.h>     // Edit.c
 #include <uxtheme.h>    // Helpers.c
+#include <windowsx.h>   // Edit.c
 
 #define PARTIAL_SUCCESS(hr)   (((HRESULT)(hr)) == S_OK || (HRESULT)(hr) == STRSAFE_E_INSUFFICIENT_BUFFER)
 

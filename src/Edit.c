@@ -6688,16 +6688,22 @@ LRESULT CALLBACK RegexRichEditSubclassProc(HWND hwnd, UINT uiMsg, WPARAM wParam,
 
 		// Intercept WM_GETDLGCODE message, pass it to the control and modify its
 		// response upon return to unset that DLGC_HASSETSEL flag bit
+#ifndef FEAT_REGEX_SYNTAX_ALLOW_SELCOPY
 		case WM_GETDLGCODE:
+			// Prevent auto-selection of entire richedit's content on VK_TAB presses
 			return DefSubclassProc(hwnd, uiMsg, wParam, lParam)
 				& ~DLGC_HASSETSEL;
+#endif // !FEAT_REGEX_SYNTAX_ALLOW_SELCOPY
 
 		// Hide caret
 		case WM_SETFOCUS:
-			///lReturn = DefSubclassProc(hwnd, uiMsg, wParam, lParam);
+#ifdef FEAT_REGEX_SYNTAX_ALLOW_SELCOPY
+			lReturn = DefSubclassProc(hwnd, uiMsg, wParam, lParam);
+#else // !FEAT_REGEX_SYNTAX_ALLOW_SELCOPY
 			HideCaret(hwnd);
 			return TRUE;
-		
+#endif // FEAT_REGEX_SYNTAX_ALLOW_SELCOPY
+
 		// Have both scroll bars show at all times
 		case EN_UPDATE:
 			PostMessage(hwnd, EM_SHOWSCROLLBAR, SB_HORZ, 1);
@@ -6706,6 +6712,7 @@ LRESULT CALLBACK RegexRichEditSubclassProc(HWND hwnd, UINT uiMsg, WPARAM wParam,
 
 		case WM_SIZE:
 			// 2020-04-19: Offset control's rectangle with left and right margins
+			// Ref: https://stackoverflow.com/questions/39197843/how-to-set-the-top-bottom-margins-of-a-win32-richedit
 			lReturn = DefSubclassProc(hwnd, uiMsg, wParam, lParam);
 			RECT rc;
 			GetClientRect(hwnd, &rc);
@@ -6982,6 +6989,32 @@ INT_PTR CALLBACK RegexSyntaxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 
 			return TRUE;
 		}
+
+#ifdef FEAT_REGEX_SYNTAX_ALLOW_SELCOPY
+		case WM_CONTEXTMENU:
+			hRichEditCtlWnd = GetDlgItem(hwnd, IDC_REGEXSYNTAXRICHEDIT);
+			if ((HWND)wParam == hRichEditCtlWnd) {
+				HMENU m_hMenu = CreatePopupMenu();
+				InsertMenu(m_hMenu, 0, MF_BYCOMMAND | MF_STRING | MF_ENABLED, IDC_RTFDLG_COPY, L"Copy");
+				TrackPopupMenu(m_hMenu, TPM_TOPALIGN | TPM_LEFTALIGN, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), 0, hwnd, NULL);
+			}
+			return TRUE;
+#endif
+
+#ifdef FEAT_REGEX_SYNTAX_ALLOW_SELCOPY
+		case WM_COMMAND:
+		{
+			int wmId = LOWORD(wParam);
+			switch (wmId)
+			{
+				case IDC_RTFDLG_COPY:
+					hRichEditCtlWnd = GetDlgItem(hwnd, IDC_REGEXSYNTAXRICHEDIT);
+					SendMessage(hRichEditCtlWnd, WM_COPY, 0, 0);
+					return TRUE;
+			}
+			return FALSE;
+		}
+#endif // FEAT_REGEX_SYNTAX_ALLOW_SELCOPY
 
 		// Dialog close request
 		case WM_CLOSE:

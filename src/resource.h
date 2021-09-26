@@ -57,6 +57,9 @@
 #define IDC_ASCIIASUTF8                 102
 #define IDC_SHUFFLELINES                102 // Added on 2019-08-20
 #define IDC_WEBPAGE                     102
+#if defined(FEAT_REGEX_SYNTAX_RTFDLG) && defined(FEAT_REGEX_SYNTAX_ALLOW_SELCOPY)
+#define IDC_RTFDLG_COPY                 102 // Added on 2021-09-26
+#endif // defined(FEAT_REGEX_SYNTAX_RTFDLG) && defined(FEAT_REGEX_SYNTAX_ALLOW_SELCOPY)
 #define IDD_DEFENCODING                 103
 #define IDC_FINDWORD                    103
 #define IDC_RESIZEGRIP3                 103
