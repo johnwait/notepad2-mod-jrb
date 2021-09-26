@@ -19,9 +19,9 @@
 #define IDC_COPY                        100
 #define IDC_ENCODINGLIST                100
 #define IDC_SORTASCENDING               100 // Added on 2019-08-20
-#ifdef FEAT_RTFDLG_REGEX_SYNTAX
+#ifdef FEAT_REGEX_SYNTAX_RTFDLG
 #define IDC_REGEXSYNTAXRICHEDIT         100 // Added on 2019-10-22
-#endif // FEAT_RTFDLG_REGEX_SYNTAX
+#endif // FEAT_REGEX_SYNTAX_RTFDLG
 #define IDC_SEARCHEXE                   101
 #define IDR_POPUPMENU                   101
 #define IDC_GETOPENWITHDIR              101
@@ -40,9 +40,9 @@
 #define IDC_NOUNICODEDETECTION          101
 #define IDC_SORTDESCENDING              101 // Added on 2019-08-20
 #define IDC_COPYRIGHT                   101
-#ifdef FEAT_RTFDLG_REGEX_SYNTAX
+#ifdef FEAT_REGEX_SYNTAX_RTFDLG
 #define IDC_RESIZEGRIP2                 101
-#endif // FEAT_RTFDLG_REGEX_SYNTAX
+#endif // FEAT_REGEX_SYNTAX_RTFDLG
 #define IDC_STYLEEDIT                   102
 #define IDC_FINDCASE                    102
 #define IDC_OPENWITHDESCR               102
@@ -181,9 +181,9 @@
 #define IDC_CTLCHAR_1D                  130
 #define IDC_CTLCHAR_1E                  131
 #define IDC_CTLCHAR_1F                  132
-#ifdef FEAT_RTFDLG_REGEX_SYNTAX
+#ifdef FEAT_REGEX_SYNTAX_RTFDLG
 #define IDD_REGEXHELP                   130
-#endif // FEAT_RTFDLG_REGEX_SYNTAX
+#endif // FEAT_REGEX_SYNTAX_RTFDLG
 #endif // JRB_BUILD
 #define IDACC_FIND                      200
 #define IDACC_REPLACE                   201

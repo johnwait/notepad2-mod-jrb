@@ -5151,7 +5151,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                         if (IsDlgButtonChecked(hwnd, IDC_DOTMATCHALL) == BST_CHECKED) {
                             MsgBox(MBINFO, IDS_REGEXPHELP_DOTALL);
                         } else {
-#ifdef FEAT_RTFDLG_REGEX_SYNTAX
+#ifdef FEAT_REGEX_SYNTAX_RTFDLG
                             // 2019-10-22: Replace message box with RTF-based dialog
                             ///MsgBox(MBINFO, IDS_REGEXPHELP);
                             if (!IsWindow(hDlgRegexSyntax))
@@ -5166,9 +5166,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                                 }
                             }
                             break;
-#else // !defined(FEAT_RTFDLG_REGEX_SYNTAX)
+#else // !defined(FEAT_REGEX_SYNTAX_RTFDLG)
                             MsgBox(MBINFO, IDS_REGEXPHELP);
-#endif // FEAT_RTFDLG_REGEX_SYNTAX
+#endif // FEAT_REGEX_SYNTAX_RTFDLG
                         }
 #else // !defined(JRB_BUILD)
                         MsgBox(MBINFO, IDS_REGEXPHELP);
@@ -6671,7 +6671,7 @@ static BOOL LoadResAsciiString(HINSTANCE hInst, UINT nResId, LPCTSTR pszRsType, 
 	return TRUE;
 }
 
-#ifdef FEAT_RTFDLG_REGEX_SYNTAX
+#ifdef FEAT_REGEX_SYNTAX_RTFDLG
 
 //=============================================================================
 //
@@ -7029,7 +7029,7 @@ HWND RegexSyntaxDlg(HWND hwnd, UINT uiRegexSyntaxResId)
 	return hDlg;
 }
 
-#endif // FEAT_RTFDLG_REGEX_SYNTAX
+#endif // FEAT_REGEX_SYNTAX_RTFDLG
 //=============================================================================
 //
 //  EditInsertCtlCharDlgProcW()

@@ -654,11 +654,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
         if (IsWindow(hDlgInsertCtlChar) && (msg.hwnd == hDlgInsertCtlChar || IsChild(hDlgInsertCtlChar, msg.hwnd)))
             if (IsDialogMessage(hDlgInsertCtlChar, &msg))
                 continue;
-#ifdef FEAT_RTFDLG_REGEX_SYNTAX
+#ifdef FEAT_REGEX_SYNTAX_RTFDLG
         if (IsWindow(hDlgRegexSyntax) && (msg.hwnd == hDlgRegexSyntax || IsChild(hDlgRegexSyntax, msg.hwnd)))
             if (IsDialogMessage(hDlgRegexSyntax, &msg))
                 continue;
-#endif // FEAT_RTFDLG_REGEX_SYNTAX
+#endif // FEAT_REGEX_SYNTAX_RTFDLG
 #endif // JRB_BUILD
 
         if (!TranslateAccelerator(hwnd, hAccMain, &msg)) {
