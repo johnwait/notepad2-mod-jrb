@@ -4067,7 +4067,7 @@ Sci::Position Editor::FindText(
 			case REGEX_EXCEPTION: throw RegexException();
 		}
 		///if (pos != INVALID_POSITION) {
-		if (pos < 0) {
+		if (pos >= 0) {
 			ft->chrgText.cpMin = static_cast<Sci_PositionCR>(pos);
 			ft->chrgText.cpMax = static_cast<Sci_PositionCR>(pos + lengthFound);
 		}
