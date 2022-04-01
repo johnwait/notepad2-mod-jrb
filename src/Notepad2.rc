@@ -98,7 +98,7 @@ BEGIN
         POPUP "&Launch"
         BEGIN
             MENUITEM "&New Window\tAlt+N",          IDM_FILE_NEWWINDOW
-            MENUITEM "&Empty Window\tAlt+0",        IDM_FILE_NEWWINDOW2
+            MENUITEM "&Empty Window\tCtrl+Alt+N",   IDM_FILE_NEWWINDOW2
             MENUITEM SEPARATOR
             MENUITEM "Execute &Document\tCtrl+L",   IDM_FILE_LAUNCH
             MENUITEM "&Open with...\tAlt+L",        IDM_FILE_OPENWITH
@@ -110,11 +110,11 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "&Encoding"
         BEGIN
-            MENUITEM "&ANSI",                           IDM_ENCODING_ANSI
-            MENUITEM "&Unicode",                        IDM_ENCODING_UNICODE
+            MENUITEM "&ANSI\tCtrl+7",                   IDM_ENCODING_ANSI
+            MENUITEM "UTF-&8\tCtrl+8",                  IDM_ENCODING_UTF8
+            MENUITEM "UTF-8 with &Signature\tCtrl+9",   IDM_ENCODING_UTF8SIGN
+            MENUITEM "&Unicode\tCtrl+0",                IDM_ENCODING_UNICODE
             MENUITEM "Unicode &Big Endian",             IDM_ENCODING_UNICODEREV
-            MENUITEM "UTF-&8",                          IDM_ENCODING_UTF8
-            MENUITEM "UTF-8 with &Signature",           IDM_ENCODING_UTF8SIGN
             MENUITEM "&More...\tF9",                    IDM_ENCODING_SELECT
             MENUITEM SEPARATOR
 #ifdef JRB_BUILD
@@ -385,7 +385,7 @@ BEGIN
         MENUITEM "Sticky Window &Position",     IDM_VIEW_STICKYWINPOS
         MENUITEM "&Always On Top\tAlt+T",       IDM_VIEW_ALWAYSONTOP
         MENUITEM "Minimi&ze To Tray",           IDM_VIEW_MINTOTRAY
-        MENUITEM "Transparent &Mode\tCtrl+0",   IDM_VIEW_TRANSPARENT
+        MENUITEM "Transparent &Mode\tAlt+0",    IDM_VIEW_TRANSPARENT
         MENUITEM SEPARATOR
         MENUITEM "Single &File Instance",       IDM_VIEW_SINGLEFILEINSTANCE
         MENUITEM "File &Change Notification...\tAlt+F5",
@@ -397,7 +397,7 @@ BEGIN
             MENUITEM "Filename and &Directory",     IDM_VIEW_SHOWFILENAMEFIRST
 
             MENUITEM "Full &Pathname",              IDM_VIEW_SHOWFULLPATH
-            MENUITEM "&Text Excerpt\tCtrl+9",       IDM_VIEW_SHOWEXCERPT
+            MENUITEM "&Text Excerpt",               IDM_VIEW_SHOWEXCERPT
         END
         POPUP "Esc &Key Function"
         BEGIN
@@ -472,8 +472,19 @@ END
 
 IDR_MAINWND ACCELERATORS
 BEGIN
-    "0",            IDM_VIEW_TRANSPARENT,   VIRTKEY, CONTROL, NOINVERT
-    "0",            IDM_FILE_NEWWINDOW2,    VIRTKEY, ALT, NOINVERT
+// 2022-04-01: Allocated/re-assigned the following accelerators:
+//             - CTRL+7 to IDM_ENCODING_ANSI (as in, ASCII 7-bit);
+//             - CTRL+8 to IDM_ENCODING_UTF8;
+//             - CTRL+9 to IDM_ENCODING_UTF8SIGN;
+//             - CTRL+0 to IDM_ENCODING_UNICODE.
+    "0",            IDM_ENCODING_UNICODE,   VIRTKEY, CONTROL, NOINVERT
+// 2022-04-01: Changed accelerator for IDM_VIEW_TRANSPARENT from CTRL+0 to
+//             ALT+0 (after having changed ALT+0 previous target)
+/// "0",            IDM_VIEW_TRANSPARENT,   VIRTKEY, CONTROL, NOINVERT
+    "0",            IDM_VIEW_TRANSPARENT,   VIRTKEY, ALT, NOINVERT
+// 2022-04-01: Changed accelerator for IDM_FILE_NEWWINDOW2 from ALT+0 to
+//             CTRL+ALT+N
+/// "0",            IDM_FILE_NEWWINDOW2,    VIRTKEY, ALT, NOINVERT
     "0",            IDM_VIEW_WORDWRAPSYMBOLS, VIRTKEY, SHIFT, CONTROL,
                                                     NOINVERT
     "1",            CMD_STRINGIFY,          VIRTKEY, CONTROL, NOINVERT
@@ -486,9 +497,14 @@ BEGIN
     "4",            CMD_EMBRACE2,           VIRTKEY, CONTROL, NOINVERT
     "5",            CMD_EMBRACE3,           VIRTKEY, CONTROL, NOINVERT
     "6",            CMD_EMBRACE4,           VIRTKEY, CONTROL, NOINVERT
+    "7",            IDM_ENCODING_ANSI,      VIRTKEY, CONTROL, NOINVERT
+    "8",            IDM_ENCODING_UTF8,      VIRTKEY, CONTROL, NOINVERT
     "8",            IDM_VIEW_SHOWWHITESPACE, VIRTKEY, SHIFT, CONTROL,
                                                     NOINVERT
-    "9",            CMD_TOGGLETITLE,        VIRTKEY, CONTROL, NOINVERT
+// 2022-04-01: Unallocated CTRL+9 for toggling the "Text Excerpt" within the
+//             window's title; accelerator will be reassigned
+/// "9",            CMD_TOGGLETITLE,        VIRTKEY, CONTROL, NOINVERT
+    "9",            IDM_ENCODING_UTF8SIGN,  VIRTKEY, CONTROL, NOINVERT
     "9",            IDM_VIEW_SHOWEOLS,      VIRTKEY, SHIFT, CONTROL,
                                                     NOINVERT
     "A",            IDM_EDIT_SELECTALL,     VIRTKEY, CONTROL, NOINVERT
@@ -503,7 +519,7 @@ BEGIN
     "C",            IDM_EDIT_HEX2CHAR,      VIRTKEY, CONTROL, ALT, NOINVERT
     "C",            IDM_EDIT_COPYLINE,      VIRTKEY, SHIFT, CONTROL,
                                                     NOINVERT
-    // 2019-08-20: Ctrl+Shift+Alt+C => Show new dialog for insertion of control chars
+    // 2019-08-20: Ctrl+Alt+Shift+C => Show new dialog for insertion of control chars
 #ifdef JRB_BUILD
     "C",            IDM_EDIT_INSERT_CTLCHAR, VIRTKEY, SHIFT, CONTROL, ALT,
                                                     NOINVERT
@@ -553,6 +569,7 @@ BEGIN
                                                     NOINVERT
     "N",            IDM_FILE_NEW,           VIRTKEY, CONTROL, NOINVERT
     "N",            IDM_FILE_NEWWINDOW,     VIRTKEY, ALT, NOINVERT
+    "N",            IDM_FILE_NEWWINDOW2,    VIRTKEY, CONTROL, ALT, NOINVERT
     "N",            IDM_VIEW_LINENUMBERS,   VIRTKEY, SHIFT, CONTROL,
                                                     NOINVERT
     "O",            IDM_FILE_OPEN,          VIRTKEY, CONTROL, NOINVERT

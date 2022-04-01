@@ -2075,12 +2075,12 @@ public:
 			}
 
 			const size_t lenOut = ::WideCharToMultiByte(cp, 0,
-				&utf16Folded[0], lenFlat,
+				&utf16Folded[0], static_cast<int>(lenFlat),
 				NULL, 0, NULL, 0);
 
 			if (lenOut < sizeFolded) {
 				::WideCharToMultiByte(cp, 0,
-					&utf16Folded[0], lenFlat,
+					&utf16Folded[0], static_cast<int>(lenFlat),
 					folded, static_cast<int>(lenOut), NULL, 0);
 				return lenOut;
 			} else {
