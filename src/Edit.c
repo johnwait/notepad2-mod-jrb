@@ -5301,10 +5301,13 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
                 } else
                     bSuppressNotFound = TRUE;
             }
-            // notfound
-            if (!bSuppressNotFound)
-                InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
-            return FALSE;
+            // 2022-04-02: BUGFIX: Re-checking SCI_FINDTEXT's (updated) return value
+            if (iPos == INVALID_POSITION) { // Not found (-1)
+                if (!bSuppressNotFound)
+                    InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
+                return FALSE;
+            }
+            break;
 
         case INVALID_REGEX: // Invalid regex pattern (-2)
             MsgBox(MBWARN, IDS_FIND_REGEX_INVALID);
