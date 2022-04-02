@@ -5376,40 +5376,40 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
     ttf.lpstrText = szFind2;
 
     iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
-
     iLength = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
-    if (iPos == -1 && ttf.chrg.cpMin < iLength && !lpefr->bNoFindWrap && !fExtendSelection) {
-        if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap2", IDS_FIND_WRAPRE)) {
-            ttf.chrg.cpMin = iLength;
-            iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
-        } else
-            bSuppressNotFound = TRUE;
-    }
-
-    if (iPos == INVALID_POSITION) { // Not found (-1)
-        if (!bSuppressNotFound)
-            InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
-        return FALSE;
-    }
-    else if (iPos < 0) {
-        // 2021-09-17: Check if we had regex-specific error return values
-        switch (iPos) {
-            case INVALID_REGEX: // Invalid regex pattern (-2)
-                MsgBox(MBWARN, IDS_FIND_REGEX_INVALID);
-                return FALSE;
-
-            case REGEX_ERROR: { // Regex runtime error (-3)
-                int cchErrInfo = (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, 0) - 1;
-                char* pszErrInfo = LocalAlloc(LPTR, cchErrInfo + 1);
-                (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, (LPARAM)pszErrInfo);
-                MsgBox(MBWARN, IDS_FIND_REGEX_ONIGERR, pszErrInfo);
+    // 2021-09-17: Now handling other FindText() regex-specific return values: (-2), (-3) & (-4)
+    switch (iPos) {
+        case INVALID_POSITION: // Not found (-1)
+            if (iPos == -1 && ttf.chrg.cpMin < iLength && !lpefr->bNoFindWrap && !fExtendSelection) {
+                if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap2", IDS_FIND_WRAPRE)) {
+                    ttf.chrg.cpMin = iLength;
+                    iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+                } else
+                    bSuppressNotFound = TRUE;
+            }
+            // 2022-04-02: BUGFIX: Re-checking SCI_FINDTEXT's (updated) return value
+            if (iPos == INVALID_POSITION) { // Not found (-1)
+                if (!bSuppressNotFound)
+                    InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
                 return FALSE;
             }
+            break;
 
-            case REGEX_EXCEPTION: // Regex exception (-4)
-                MsgBox(MBFATAL, IDS_FIND_REGEX_EXCEPTN);
-                return FALSE;
+        case INVALID_REGEX: // Invalid regex pattern (-2)
+            MsgBox(MBWARN, IDS_FIND_REGEX_INVALID);
+            return FALSE;
+
+        case REGEX_ERROR: { // Regex runtime error (-3)
+            int cchErrInfo = (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, 0) - 1;
+            char* pszErrInfo = LocalAlloc(LPTR, cchErrInfo + 1);
+            (int)SendMessage(hwnd, SCI_GETREGEXLASTERROR, 0, (LPARAM)pszErrInfo);
+            MsgBox(MBWARN, IDS_FIND_REGEX_ONIGERR, pszErrInfo);
+            return FALSE;
         }
+
+        case REGEX_EXCEPTION: // Regex exception (-4)
+            MsgBox(MBFATAL, IDS_FIND_REGEX_EXCEPTN);
+            return FALSE;
     }
 
     if (!fExtendSelection)
