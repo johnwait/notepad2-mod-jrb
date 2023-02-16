@@ -40,6 +40,7 @@ extern HINSTANCE g_hInstance;
 //extern LPMALLOC  g_lpMalloc;
 extern DWORD dwLastIOError;
 extern HWND hDlgFindReplace;
+extern BOOL bMatchBraces; // in Notepad2.c
 extern UINT cpLastFind;
 extern BOOL bReplaceInitialized;
 
@@ -5030,6 +5031,17 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                         //EndDialog(hwnd,LOWORD(wParam));
                         DestroyWindow(hwnd);
                         hDlgFindReplace = NULL;
+                        // 2023-02-15: Reactivate temporarily-disabled visual brace matching
+                        //             while Find/Replace dialog was being shown & used *if*
+                        //             settings was indeed in effect.
+                        if (bMatchBraces) {
+                            struct SCNotification scn;
+                            scn.nmhdr.hwndFrom = hwndEdit;
+                            scn.nmhdr.idFrom = IDC_EDIT;
+                            scn.nmhdr.code = SCN_UPDATEUI;
+                            scn.updated = SC_UPDATE_CONTENT;
+                            SendMessage(hwnd, WM_NOTIFY, IDC_EDIT, (LPARAM)&scn);
+                        }
                     }
 
                     switch (LOWORD(wParam)) {
@@ -5071,8 +5083,20 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                     break;
 
                 case IDCANCEL:
-                    //EndDialog(hwnd,IDCANCEL);
+                    ///EndDialog(hwnd,IDCANCEL);
                     DestroyWindow(hwnd);
+                    hDlgFindReplace = NULL;
+                    // 2023-02-15: Reactivate temporarily-disabled visual brace matching
+                    //             while Find/Replace dialog was being shown & used *if*
+                    //             settings was indeed in effect.
+                    if (bMatchBraces) {
+                        struct SCNotification scn;
+                        scn.nmhdr.hwndFrom = hwndEdit;
+                        scn.nmhdr.idFrom = IDC_EDIT;
+                        scn.nmhdr.code = SCN_UPDATEUI;
+                        scn.updated = SC_UPDATE_CONTENT;
+                        SendMessage(hwndMain, WM_NOTIFY, IDC_EDIT, (LPARAM)&scn);
+                    }
                     break;
 
                 case IDACC_FIND:

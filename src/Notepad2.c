@@ -1043,8 +1043,21 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             }
 
             // Destroy find / replace dialog
-            if (IsWindow(hDlgFindReplace))
+            if (IsWindow(hDlgFindReplace)) {
                 DestroyWindow(hDlgFindReplace);
+                hDlgFindReplace = NULL;
+                // 2023-02-15: Reactivate temporarily-disabled visual brace matching
+                //             while Find/Replace dialog was being shown & used *if*
+                //             settings was indeed in effect.
+                if (bMatchBraces) {
+                    struct SCNotification scn;
+                    scn.nmhdr.hwndFrom = hwndEdit;
+                    scn.nmhdr.idFrom = IDC_EDIT;
+                    scn.nmhdr.code = SCN_UPDATEUI;
+                    scn.updated = SC_UPDATE_CONTENT;
+                    SendMessage(hwnd, WM_NOTIFY, IDC_EDIT, (LPARAM)&scn);
+                }
+            }
 
             // call SaveSettings() when hwndToolbar is still valid
             SaveSettings(FALSE);
@@ -3586,6 +3599,10 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 PostMessage(hDlgFindReplace, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hDlgFindReplace, IDC_FINDTEXT)), 1);
             }
         }
+        // 2023-02-15: Temporarily disable visual brace matching while
+        //             Find/Replace dialog is being shown and used
+        if (bMatchBraces)
+            SendMessage(hwndEdit, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
         break;
 
 #ifdef BOOKMARK_EDITION
@@ -3749,6 +3766,10 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 PostMessage(hDlgFindReplace, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hDlgFindReplace, IDC_FINDTEXT)), 1);
             }
         }
+        // 2023-02-15: Temporarily disable visual brace matching while
+        //             Find/Replace dialog is being shown and used
+        if (bMatchBraces)
+            SendMessage(hwndEdit, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
         break;
 
     case IDM_EDIT_GOTOLINE:
@@ -4972,7 +4993,24 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 EditMarkAll(hwndEdit, iMarkOccurrences, bMarkOccurrencesMatchCase, bMarkOccurrencesMatchWords);
 
                 // Brace Match
-                if (bMatchBraces) {
+                // 2023-02-15: Now disabling brace matching while Find/Replace dialog is shown & used.
+                /*             Reasoning:
+                 *                When searching complex documents, upon a Find/Replace match being
+                 *                found, the program can spend a significant amount of computing time
+                 *                and power to visually match the brace found at the landing position
+                 *                (i.e. where a search match was just found).
+                 *                As such, when that happens, sometimes going from one Find/Replace
+                 *                match to the next can take several seconds *even* when such two
+                 *                matches might only be less than a few characters appart.
+                 *             Possible improvement (TODO?):
+                 *                Profile brace-matching operation to confirm that processing indeed
+                 *                lays strictly & only on Scintilla's Document::BraceMatch()'s part,
+                 *                and not an underlying operation or piece of code makes the process
+                 *                slower than it should, like (maybe) our f751537 (2019-08-19) patch
+                 *                on Scintilla's code that created SplitVector<T>::DataPointer(),
+                 *                CellBuffer::DataPointer() and Document::ContentPointer().
+                 */
+                if (bMatchBraces && (!IsWindow(hDlgFindReplace) || !IsWindowVisible(hDlgFindReplace))) {
                     int iPos;
                     char c;
 
