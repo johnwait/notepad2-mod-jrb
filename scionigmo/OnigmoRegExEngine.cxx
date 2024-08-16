@@ -359,20 +359,61 @@ Sci::Position OnigmoRegExEngine::FindText(Document* doc, Sci::Position minPos, S
 
     // ---  search document range for pattern match   ---
     // !!! Performance issue: Scintilla: moving Gap needs memcopy - high costs for find/replace in large document
+
     // 2019-08-12: Modified Scintilla's code to use something other than
     //             RangePointer(), which is optimized for insertion of text
     //             and thus has a habit of giving out pointers passed
     //             deleted text.
     //
     // TODO: Report bug at least to the Notepad3 project
+    //       [2024-08-16: Notepad3 fixed it (unintentionally?) thru their commit 66c1209]
+    //
     // Steps to reproduce bug:
-    //  1) Paste some predefined text in a Scntilla's edit window.
-    //  2) Devise a regular expression that matches the whole text, using
+    //  1) Devise a regular expression to match an end of line, using
     //     at least the $ anchor and making sure the regex doesn't
     //     end with any of the quantifiers (?, *, + or {m,n}) but instead
-    //     a fixed length section, e.g. [..](?:-(?:20|19)[0-9][0-9]))
-    //  3) Match the regex pattern 
-    auto const docBegPtr = UCharCPtr(doc->RangePointer(0, docLen));
+    //     a fixed length section.
+    //       e.g. (?:-(?:20|19)[0-9][0-9])$
+    //  2) Build the subject string that is expected to match pattern
+    //     devised in step 1), and then paste it into Scintilla's edit
+    //     window _after_ having it typed & copied from *another* text
+    //     editor. If caret ends on the same line of text, type a line
+    //     return manually.
+    //  IMPORTANT: Text in step 2) MUST have been pasted, and in one go;
+    //             typing the text directly within Scintilla's edit window
+    //             instead (char-by-char) will FAIL to reproduce the bug.
+    //             If needed, go back to step 2), copy the whole text,
+    //             create a new document discarding the current one,
+    //             and paste back the copied text.
+    //       e.g.: <start-of-doc>16-08-2024<CR><LF>
+    //  3) Match the regex pattern.
+    //  4) Delete part of the pasted text from its end, e.g. by a few
+    //     characters *including* the final line return, such that the
+    //     pattern should no longer match.
+    //  5) Try matching the regex pattern again.
+    //     If it STILL matches: the regex engine is given access to a version of
+    //                          the buffer still containing deleted text/chars,
+    //                          => bug successfully reproduced
+    //     If it DOES NOT match: the regex engine is given access to an up-to-date
+    //                           version of the document buffer.
+    //                           => bug absent/fixed
+    // If bug was reproduced:
+    //  6) Delete the first char on the text's line and try matching the
+    //     regex pattern again. It should no longer match, indicating that
+    //     the document's buffer has collapsed into a single memory block.
+    //
+    // 2024-08-16: Revisited bug, so as to support updating Scintilla's
+    //             code base by undoing modifications by the original fix.
+    //      **BTW: The original bugfix was left out of all Release builds
+    //             due to its dedicated preprocessor define missing (!!!)
+    //             in the project's configuration (sorry!)
+    //
+    // BUGFIX: (definitive): Using Document::BufferPointer() collapses
+    //         the buffer into a single block while returning the same
+    //         pointer as doc->RangePointer(0, docLen) does.
+    //
+    ///auto const docBegPtr = UCharCPtr(doc->RangePointer(0, docLen));
+    auto const docBegPtr = UCharCPtr(doc->BufferPointer());
     auto const docEndPtr = UCharCPtr(doc->RangePointer(docLen, 0));
     auto const rangeBegPtr = UCharCPtr(doc->RangePointer(rangeBeg, rangeLen));
     auto const rangeEndPtr = UCharCPtr(doc->RangePointer(rangeEnd, 0));
