@@ -13,7 +13,7 @@
 #define ProjectName              "Notepad2-mod-jrb"
 #define ProjectHead              "Jonathan R.-Brochu"
 #define ProjectRepo              "https://github.com/johnwait/notepad2-mod-jrb"
-#define CopyrightNotice          "Copyright © 2004-2017, Florian Balmer et al.; Copyright © 2010-2017 XhmikosR; Copyright © 2019-2023" + ProjectHead + " et al."
+#define CopyrightNotice          "Copyright © 2004-2017, Florian Balmer et al.; Copyright © 2010-2017 XhmikosR; Copyright © 2019-2024" + ProjectHead + " et al."
 #define AppTaskbarGrpId          "Notepad2"
 ;
 #define Files_MainBinary         "Notepad2-jrb.exe"

@@ -37,7 +37,7 @@
     #define MY_APPNAME                   L"Notepad2-mod-jrb"
     #define VERSION_FILENAME             L"Notepad2-jrb"
     #define VERSION_DESCRIPTION          MY_APPNAME ///L"Notepad2-mod-jrb, a personal fork of XhmikosR's Notepad2-mod"
-    #define VERSION_JRB_COPYRIGHT        L"Notepad2-mod-jrb © 2019-2023 Contributors; see Readme-mod-jrb.txt"
+    #define VERSION_JRB_COPYRIGHT        L"Notepad2-mod-jrb © 2019-2024 Contributors; see Readme-mod-jrb.txt"
     #define VERSION_JRB_PAGEDISPLAY      L"https://github.com/johnwait/notepad2-mod-jrb/"
     #define VERSION_MOD_COPYRIGHT        L"Notepad2-mod © 2010-2017 All contributors; see Readme-mod.txt"
     #define VERSION_MOD_PAGEDISPLAY      L"https://xhmikosr.github.io/notepad2-mod/"
