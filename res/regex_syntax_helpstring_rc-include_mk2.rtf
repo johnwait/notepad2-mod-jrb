@@ -1,0 +1,104 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 Segoe UI;}{\f1\fnil\fcharset0 Consolas;}}
+{\colortbl ;\red100\green107\blue134;\red165\green165\blue165;\red79\green129\blue189;\red128\green100\blue162;\red171\green60\blue76;\red247\green150\blue70;\red0\green176\blue80;}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\fi-1136\li1136\tx1136\cf1\ul\b\f0\fs18\lang4105\par
+Characters and classes:\cf0\par
+
+\pard\fi284\cf1\ulnone\b0\i Matches...\cf0\i0\par
+
+\pard\fi-852\li852\tx852\b\f1 .\b0\f0\tab Any character \ul except\ulnone  line breaks, *unless* the related dialog option is ticked\par
+\b\f1 [\cf2 ..\cf0 ]\b0\f0\tab Character class set (\b\f1 [\cf3 abc\cf0 ]\b0\f0 ), range (\b\f1 [\cf3 a-c\cf0 ]\b0\f0 ) or a mix of both (\b\f1 [\cf3 a-cfh-k\cf0 ]\b0\f0 )\par
+\b\f1 [^\cf2 ..\cf0 ]\b0\f0\tab Negated char class set (\b\f1 [^\cf3 abc\cf0 ]\b0\f0 ), range (\b\f1 [^\cf3 a-c\cf0 ]\b0\f0 ) or mixed (\b\f1 [^\cf3 a-cfh-k\cf0 ]\b0\f0 )\par
+\b\f1 [:\cf2 xyz\cf0 :]\b0\f0\tab POSIX bracket expression (alnum, alpha, ascii, blank, cntrl, graph, lower, etc.)\par
+
+\pard\fi-852\li852\tx237\tx379\tx2272\tx2414\b\f1\\d\tab\cf2\b0 ;\cf0\tab\b\\D\b0\f0\tab Any single digit\tab\b ;\b0\tab Any non-digit character\par
+\b\f1\\s\tab\cf2\b0 ;\cf0\tab\b\\S\b0\f0\tab Any whitespace\tab\b ;\b0\tab Any non-whitespace character\par
+
+\pard\fi-852\li852\tx237\tx379\tx2541\tx2691\b\f1\\w\tab\cf2\b0 ;\cf0\tab\b\\W\b0\f0\tab Any word character\tab\b ;\b0\tab Any non-word character\par
+
+\pard\fi-852\li852\tx237\tx379\tx3886\tx4036\b\f1\\h\tab\cf2\b0 ;\cf0\tab\b\\H\b0\f0\tab Any hexadecimal (i.e. \cf3\b\f1 [0-9a-fA-F]\cf0\b0\f0 )\tab\b ;\b0\tab Any non-hexadecimal character\par
+
+\pard\fi-852\li852\tx852\b\f1\\x\cf4 ##\cf0\b0\f0\tab ASCII char whose code is the hexadecimal value \cf4\b\f1 ##\cf0\b0\f0 h (i.e. \f1 0x\cf4\b ##)\cf0\b0\f0 , from \cf3\b\f1\\x00\cf0\b0\f0  to \cf3\b\f1\\xFF\cf0\b0\f0\par
+\b\f1\\\cf4 ###\cf0\b0\f0\tab ASCII char whose code is the octcal value \cf4\b\f1 ###\cf0\b0\f0 o, from \cf3\b\f1\\000\cf0\b0\f0  to \cf3\b\f1\\777\cf0\b0\f0\par
+\b\f1\\x\{\cf4 #\cf0\}\b0\f0\tab Unicode character by its hexadecimal codepoint value, for \cf4\b\f1 #\cf0  => \cf4 0\cf0  to \cf4 FFFF\cf0\b0\f0\par
+
+\pard\fi-852\li852\tx852\tx3976\tx4828\b\f1\\t\b0\f0\tab Horizontal tab, i.e. \cf3\b\f1\\x09\cf0\f0\tab\f1\\a\b0\f0\tab Bell character, i.e. \cf3\b\f1\\x07\cf0\b0\f0\par
+\b\f1\\v\b0\f0\tab Vertical tab, i.e. \cf3\b\f1\\x0B\tab\cf0\\e\b0\f0\tab Escape char, i.e. \cf3\b\f1\\x1B\par
+\cf0\\n\b0\f0\tab Line feed, i.e. \cf3\b\f1\\x0A\cf0\f0\tab\f1\\f\b0\f0\tab Form feed, i.e. \cf3\b\f1\\x0C\cf0\b0\f0\par
+
+\pard\fi-852\li852\tx852\tx3266\tx4828\tx5964\b\f1\\r\b0\f0\tab Carriage return, i.e. \cf3\b\f1\\x0D\tab\cf5\f0 *** \f1\\b\b0\f0  does \b NOT\b0  match backspace chars, i.e. \b\f1\\x08\cf0\b0\f0\par
+
+\pard\fi-1136\li1136\tx1136\par
+\cf1\ul\b Anchors:\par
+
+\pard\fi-852\li852\tx257\tx386\tx852\tx1993\tx2130\tx3408\tx3834\tx4260\tx5680\tx5822\cf0\ulnone\f1\\A\tab\cf2\b0 ;\cf0\tab\b\\Z\b0\f0\tab Start of text\tab\b ;\b0\tab End of text\tab\b\f1 ^  \cf2\b0 ;\cf0\tab\b $\b0\f0\tab Start of a line\tab\b ;\b0\tab End of a line\par
+
+\pard\fi-852\li852\tx257\tx386\tx852\tx1988\tx2130\tx3408\tx3834\tx4260\tx5680\tx5822\b\f1\\<\tab\cf2\b0 ;\cf0\tab\b\\>\b0\f0\tab Start of word\tab\b ;\b0\tab End of word\tab\b\f1\\b \cf2\b0 ;\cf0\f0\tab\b\f1\\B\b0\f0\tab Word boundary\tab\b ;\b0\tab Non-w. boundary\par
+
+\pard\fi-852\li852\tx257\tx386\tx852\b\f1\\Q\tab\cf2\'85\cf0\tab\\E\b0\f0\tab Escaped sequence of chars, where everything between \b\f1\\Q\b0\f0  & \b\f1\\E\b0\f0  matches literally\par
+
+\pard\fi-1136\li1136\tx1136\par
+\cf1\ul\b Quantifier:\par
+
+\pard\fi284\ulnone\b0\i Matches preceeding...\cf0\i0\par
+
+\pard\fi-852\li852\tx852\tx3976\tx4686\b\f1 ?\b0\f0\tab\b 0\b0  or \b 1\b0  times\tab\b\f1\{\cf4 n\cf0\}\b0\f0\tab Exactly \cf4\b n\cf0\b0  times\par
+\b\f1 *\b0\f0\tab\b 0\b0  or \b more\b0  times\tab\b\f1\{\cf4 m\cf0 ,\cf4 n\cf0\}\b0\f0\tab Between \cf4\b m\cf0\b0  & \cf4\b n\cf0\b0  times (inclusive)\par
+
+\pard\fi-852\li852\tx3976\tx4686\b\f1 +\b0\f0\tab\b 1\b0  or \b more\b0  times\tab\b\f1\{,\cf4 n\cf0\}\b0\f0\tab Up to \cf4\b n\cf0\b0  times\par
+
+\pard\fi-852\li852\tx852\tx4686\tx5112\cf2\b\f1 ..\cf0 ?\b0\f0\tab Lazy modifier (does incremental backtracking),\tab e.g.:\tab\cf3\b\f1 ?\cf0 ?\cf2\b0 ,\cf0\b  \cf3 *\cf0 ?\cf2\b0 ,\cf0\b  \cf3 +\cf0 ? \cf2 &\cf0  \cf3\{\cf4 m\cf3 ,\cf4 n\cf3\}\cf0 ?\b0\f0\par
+\cf2\b\f1 ..\cf0 +\b0\f0\tab Possessive modifier (disallows backtracking),\tab e.g.:\tab\cf3\b\f1 ?\cf0 +\cf2\b0 ,\cf0\b  \cf3 *\cf0 +\cf2\b0 ,\cf0\b  \cf3 +\cf0 + \cf2 &\cf0  \cf3\{\cf4 m\cf3 ,\cf4 n\cf3\}\cf0 +\b0\f0\par
+
+\pard\fi-1136\li1136\tx1136\par
+
+\pard\fi-1136\li1136\tx1136\tx3976\tx4828\cf1\ul\b Subexpressions:\cf0\ulnone\b0\tab\cf1\ul\b Backreferences:\cf0\b0\par
+
+\pard\fi-852\li852\tx852\tx3976\tx4697\cf2\ulnone\b\f1 ..\cf0 |\cf2 ..\cf0\b0\f0\tab Alternation\f1\tab\b\\\cf4 #\cf0\b0\f0\tab For \cf4\b\f1 #\cf0  => \cf4 1\cf0  to \cf4 9\cf0\b0\par
+\b (\cf2 ..\cf0 )\b0\f0\tab Capturing group\tab\b\f1\\k<\cf4 #\cf0 >\b0\f0\tab For \cf4\b\f1 #\cf0  => \cf4 1\cf0  to \cf4 99\cf0\b0\f0\par
+
+\pard\fi-852\li852\tx852\tx3976\tx4697\tx4828\b\f1 (?:\cf2 ..\cf0 )\b0\f0\tab Non-capturing group\tab\b\f1\\k'\cf4 #\cf0 '\b0\f0\tab For \cf4\b\f1 #\cf0  => \cf4 1\cf0  to \cf4 99\cf0\b0\f0\par
+
+\pard\fi-852\li852\tx852\tx3976\tx4697\b\f1 (?>\cf2 ..\cf0 )\b0\f0\tab Atomic group (non-capturing)\tab\b\f1 (?P=\cf4 #\cf0 )\tab\b0\f0 For \cf4\b\f1 #\cf0  => \cf4 1\cf0  to \cf4 99\cf0\b0\f0\par
+
+\pard\fi-852\li852\tx852\tx4828\tx5964\b\f1 (?#\cf2 ..\cf0 )\b0\f0\tab Comment\tab\par
+
+\pard\fi-1136\li1136\tx1136\par
+
+\pard\nowidctlpar\tx1988\cf1\ul\b Backref Transforms:\ulnone  \super BETA\nosupersub\tab\b0\i Change the letter casing of backreferences found in between\'85\ul\b\i0\par
+
+\pard\fi-852\li852\tx437\tx850\tx3510\tx3960\tx4320\tx5964\cf0\ulnone\f1\\U \cf2\'85\cf0\b0\tab\b\\E\b0\f0\tab Change all letters to \ul u\ulnone pper case\b\f1\tab\\F \cf2\'85\cf0\b0\tab\b\\E\b0\f0\tab Use \ul ph\ulnone rase-casing,\tab e.g. \cf6\b\f1 U\b0 lll\b -\b0 ll lll\cf0\f0\par
+\b\f1\\L \cf2\'85\cf0\b0\tab\b\\E\b0\f0\tab Change all letters to \ul l\ulnone ower case\b\f1\tab\\I \cf2\'85\cf0\b0\tab\b\\E\b0\f0\tab Use t\ul i\ulnone tle-casing,\tab e.g. \cf6\b\f1 U\b0 lll\b -\b0 ll \b U\b0 ll\cf0\f0\par
+\b\f1\\u\cf2 ..\cf0\b0\f0\tab\tab First letter of \cf2\b\f1 ..\cf0\b0\f0  to \ul u\ulnone pper case\b\f1\tab\\N \cf2\'85\cf0\b0\tab\b\\E\b0\f0\tab Use \ul n\ulnone ame-casing,\tab e.g. \cf6\b\f1 U\b0 lll\b -U\b0 l \b U\b0 ll\cf0\f0\par
+
+\pard\fi-852\li852\tx432\tx850\tx2430\tx3974\tx4410\tx4694\b\f1\\l\cf2 ..\cf0\b0\f0\tab\tab First letter of \cf2\b\f1 ..\cf0\b0\f0  to \ul l\ulnone ower case\par
+
+\pard\fi-1136\li1136\tx1136\par
+\cf1\ul\b Named Capturing Groups:\cf0\ulnone\b0\par
+
+\pard\tx1846\tx2414\tx4118\tx4686\b\f1 (?<\cf6 name\cf0 >\cf3 /regex/\cf0 )\f0\tab\cf2\b0 /or/\cf0\tab\b\f1 (?'\cf6 name\cf0 '\cf3 /regex/\cf0 )\b0\f0\tab\cf2 /or/\cf0\tab\b\f1 (?P<\cf6 name\cf0 >\cf3 /regex/\cf0 )\b0\f0\par
+
+\pard\fi-1136\li1136\tx1136\par
+\cf1\ul\b Named Backreferences:\cf0\b0\par
+
+\pard\tx1562\tx2698\tx4118\tx5112\ulnone\b\f1\\k<\cf6 name\cf0 >\b0\f0\tab\cf2 /or/\cf0\tab\b\f1\\k'\cf6 name\cf0 '\b0\f0\tab\cf2 /or/\cf0\tab\b\f1 (?P=\cf6 name\cf0 )\b0\f0\par
+
+\pard\fi-1136\li1136\tx1136\par
+\cf1\ul\b Subroutine Calls (sub-expression recall):\cf0\b0\par
+
+\pard\tx1136\tx1846\tx2982\tx3692\tx4828\tx5538\ulnone\b\f1\\g<\cf6 name\cf0 >\b0\f0\tab\cf2 /or/\cf0\tab\b\f1\\g'\cf6 name\cf0 '\b0\f0\tab\cf2 /or/\cf0\tab\b\f1 (?P>\cf6 name\cf0 )\b0\f0\tab\cf2 /or/\cf0\tab\b\f1 (?&\cf6 name\cf0 )\b0\f0\par
+
+\pard\fi-1136\li1136\tx1136\par
+\cf1\ul\b Conditionals\cf0\b0\par
+
+\pard\fi-1846\li1846\tx284\tx1846\tx2698\tx4118\cf2\ulnone\b\f1 ..\cf0\tab (?=\cf3 /regex/\cf0 )\b0\f0\tab Positive\tab lookahead =>\tab first \cf2\b\f1 ..\cf0\b0\f0  followed by \cf3\b\f1 /regex/\cf0\b0\f0\par
+\cf2\b\f1 ..\cf0\tab (?!\cf3 /regex/\cf0 )\b0\f0\tab Negative\tab lookahead =>\tab first \cf2\b\f1 ..\cf0\b0\f0  *not* followed by \cf3\b\f1 /regex/\cf0\b0\f0\par
+
+\pard\fi-1846\li1846\tx1278\tx1846\tx2698\tx4118\b\f1 (?<=\cf3 /regex/\cf0 )\tab\cf2 ..\cf0\b0\f0\tab Positive\tab <= lookbehind\tab first \cf2\b\f1 ..\cf0\b0\f0  preceeded by \cf3\b\f1 /regex/\cf0\b0\f0\par
+\b\f1 (?<!\cf3 /regex/\cf0 )\tab\cf2 ..\cf0\b0\f0\tab Negative\tab <= lookbehind\tab first \cf2\b\f1 ..\cf0\b0\f0  *not* preceeded by \cf3\b\f1 /regex/\cf0\b0\f0\par
+
+\pard\tx2272\tx4970\b\f1 (?(\cf2 ..\cf0 )\cf7 /then/\cf0 |\cf5 /else/\cf0 )\b0\f0\tab Conditional: if \b\f1 (\cf2 ..\cf0 )\b0\f0  then match \cf7\b\f1 /then/\cf0\b0\f0 ; or else match \cf5\b\f1 /else/\cf0\b0\f0\par
+
+\pard\fi-1136\li1136\tx1136\par
+}
+ 

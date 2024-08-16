@@ -64,7 +64,7 @@ IDC_COPY                CURSOR                  "..\\res\\Copy.cur"
 // Rich-Text
 //
 
-IDR_RTFREGEXSYNTAX      RTF                     "..\\res\\regex_syntax_helpstring_rc-include.rtf"
+IDR_RTFREGEXSYNTAX      RTF                     "..\\res\\regex_syntax_helpstring_rc-include_mk2.rtf"
 
 /////////////////////////////////////////////////////////////////////////////
 //
