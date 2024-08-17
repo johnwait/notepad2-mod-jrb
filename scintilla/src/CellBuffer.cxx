@@ -598,12 +598,6 @@ const char *CellBuffer::RangePointer(Sci::Position position, Sci::Position range
 	return substance.RangePointer(position, rangeLength);
 }
 
-#ifdef X_SCINTILLA_RANGEGAP_FIX
-const char *CellBuffer::DataPointer(Sci::Position position, Sci::Position rangeLength) {
-	return substance.DataPointer(position, rangeLength);
-}
-
-#endif
 Sci::Position CellBuffer::GapPosition() const noexcept {
 	return substance.GapPosition();
 }

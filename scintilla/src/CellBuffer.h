@@ -150,9 +150,6 @@ public:
 	void GetStyleRange(unsigned char *buffer, Sci::Position position, Sci::Position lengthRetrieve) const;
 	const char *BufferPointer();
 	const char *RangePointer(Sci::Position position, Sci::Position rangeLength);
-#ifdef X_SCINTILLA_RANGEGAP_FIX
-	const char *DataPointer(Sci::Position position, Sci::Position rangeLength);
-#endif
 	Sci::Position GapPosition() const noexcept;
 
 	Sci::Position Length() const noexcept;
